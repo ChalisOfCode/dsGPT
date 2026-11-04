@@ -94,3 +94,57 @@ async def test_binary_read_error_does_not_override_verified_completion(tmp_path)
     assert context["build_state"]["completion_ready"]
     assert "Call finish now" in context["next_step"]
     assert "The last read_asset failed" not in context["next_step"]
+
+
+def test_source_read_preserves_targeted_edit_guidance_after_rejected_overwrite(tmp_path):
+    from dsgpt.project_tools import ProjectAction
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(
+            db, tid, "Implement the requested behavior without losing existing code"
+        )
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(
+        work,
+        tid,
+        ProjectAction(
+            tool="write_file", path="main.py", content="keep = 1\nchange = 0\n", summary="Initial"
+        ),
+    )
+    commit(
+        work,
+        tid,
+        ProjectAction(
+            tool="write_file", path="main.py", content="change = 1\n", summary="Incorrect overwrite"
+        ),
+    )
+    commit(work, tid, ProjectAction(tool="read_file", path="main.py", summary="Read for repair"))
+    messages = prompt(store, work, tid)
+    hint = json.loads(messages[1]["content"])["next_step"]
+    assert "Do not call write_file on this path" in hint
+    assert "expected_sha256" in hint and "old_text" in hint and "new_text" in hint
+    observed = next(
+        json.loads(m["content"].removeprefix("Recorded tool result: "))
+        for m in messages
+        if m["content"].startswith("Recorded tool result: ")
+    )
+    assert observed["content"] == "keep = 1\nchange = 0\n"
+    commit(
+        work,
+        tid,
+        ProjectAction(
+            tool="edit_file",
+            path="main.py",
+            old_text="change = 0",
+            new_text="change = 1",
+            expected_sha256=observed["sha256"],
+            summary="Targeted repair",
+        ),
+    )
+    assert (
+        store.one("SELECT content FROM work_files WHERE task_id=? AND path=?", (tid, "main.py"))[
+            "content"
+        ]
+        == "keep = 1\nchange = 1\n"
+    )

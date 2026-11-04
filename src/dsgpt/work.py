@@ -1331,6 +1331,22 @@ class WorkRegistry:
                         )
                     context["next_step"] = hint or next_step
                     messages[1]["content"] = canonical(context)
+                if (
+                    action.get("tool") == "read_file"
+                    and not clipped.get("error")
+                    and not completion_ready
+                ):
+                    context["next_step"] = (
+                        "This is an EXISTING source file. Do not call write_file on this path. "
+                        "If more source is needed, read_file at next_offset; do not repeat the "
+                        "same page. To implement a change, call edit_file with this path, the "
+                        "returned sha256 as expected_sha256, an exact unique old_text copied "
+                        "from the displayed source, and the replacement in new_text. Preserve "
+                        "unrelated code. Put large new functionality in small NEW modules with "
+                        "write_file, then use a small edit_file to wire them into existing source. "
+                        "Build and test the actual implementation before marking coverage."
+                    )
+                    messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_requirements" and not clipped.get("error"):
                     context["next_step"] = (
                         "Continue reading this requirement at next_offset before implementing it."
