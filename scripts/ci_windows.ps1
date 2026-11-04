@@ -28,7 +28,19 @@ New-Item -ItemType Directory -Force dist, artifacts/windows, reports/windows | O
 Copy-Item shared/backend/*.whl dist/
 python scripts/build_acceptance_kit.py --output dist/dsGPT-Acceptance --cache "$env:RUNNER_TEMP/acceptance-inputs" --client shared/windows-client --android shared/android/acceptance.apk --android-test shared/android/acceptance-test.apk
 $portable = "$PWD/dist/dsGPT-Acceptance/python/python.exe"
-& $portable -B -I -m dsgpt_acceptance --kit dist/dsGPT-Acceptance --ci --no-phone --output "$env:RUNNER_TEMP/acceptance-results"
+try {
+    & $portable -B -I -m dsgpt_acceptance --kit dist/dsGPT-Acceptance --ci --no-phone --output "$env:RUNNER_TEMP/acceptance-results"
+} finally {
+    # Retain only fixed stage/check labels and results, never private logs or profiles.
+    $reportPath = "$env:RUNNER_TEMP/acceptance-results/report/report.json"
+    if (Test-Path $reportPath) {
+        $observed = Get-Content $reportPath | ConvertFrom-Json
+        @{
+            native_client_stage = $observed.native_client_stage
+            checks = @($observed.checks | Select-Object name,status,seconds)
+        } | ConvertTo-Json -Depth 4 | Set-Content reports/windows/acceptance-stages.json
+    }
+}
 $report = Get-Content "$env:RUNNER_TEMP/acceptance-results/report/report.json" | ConvertFrom-Json
 foreach ($name in @('Kit file integrity','Start isolated backend','Chat, restart, cancellation, pairing and diagnostics','Windows client and Credential Manager')) {
     if (($report.checks | Where-Object name -eq $name).status -ne 'PASS') { throw "Required check did not pass: $name" }

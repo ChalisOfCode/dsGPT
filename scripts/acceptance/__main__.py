@@ -986,8 +986,15 @@ class Runner:
                 time.sleep(0.2)
             raise AssertionError("Native client UI did not reach the expected state")
 
+        def stage(name):
+            # Fixed labels only: no expressions, credentials, URLs or page content.
+            self.report["native_client_stage"] = name
+            self.save()
+
         try:
+            stage("open_isolated_webview")
             client, cdp = open_client()
+            stage("credential_roundtrip")
             invoke("connect", {"origin": self.origin, "token": self.token})
             require(
                 invoke("restore_connection") == self.origin, "Credential Manager write/read failed"
@@ -1000,6 +1007,7 @@ class Runner:
             cdp = None
             self.stop(client)
             time.sleep(1)
+            stage("restore_after_restart")
             client, cdp = open_client()
             require(
                 invoke("restore_connection") == self.origin, "Credential lost across app restart"
@@ -1010,10 +1018,10 @@ class Runner:
                 "Native request failed after reopening",
             )
             require(cdp.evaluate("document.body.innerText.length") > 50, "Client UI did not render")
+            stage("submit_chat_through_ui")
             wait_ui("!!document.querySelector('textarea[aria-label=Message]')")
             cdp.evaluate(
-                "[...document.querySelectorAll('button')].find(b => "
-                "b.innerText.includes('New chat')).click()"
+                "document.querySelector('button[aria-label=\"New chat\"]').click()"
             )
             cdp.evaluate(
                 "(() => { const s=document.querySelector('select[aria-label=Model]'); "
@@ -1028,19 +1036,19 @@ class Runner:
                 "t.dispatchEvent(new Event('input',{bubbles:true})); })()"
             )
             wait_ui(
-                "[...document.querySelectorAll('button')].some(b => "
-                "b.innerText.includes('Send') && !b.disabled)"
+                "!!document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)')"
             )
             cdp.evaluate(
-                "[...document.querySelectorAll('button')].find(b => "
-                "b.innerText.includes('Send') && !b.disabled).click()"
+                "document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)').click()"
             )
             wait_ui(
                 "[...document.querySelectorAll('article')].some(a => "
                 "a.innerText.includes('ACCEPTANCE'))"
             )
+            stage("revoke_acceptance_credential")
             invoke("disconnect")
             require(invoke("restore_connection") is None, "Acceptance credential cleanup failed")
+            stage("completed")
             return {
                 "real_webview": True,
                 "credential_manager_roundtrip": True,
