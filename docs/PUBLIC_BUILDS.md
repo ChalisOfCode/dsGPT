@@ -8,7 +8,7 @@ The private development archive and its complete history remain private.
 
 Every job checks that its repository is public and `DSGPT_ZERO_COST_READY` is
 `true` before allocating a runner. Leave that variable unset until all these facts
-are directly verified in the owner's account:
+are checked in the owner's account, recording any unavailable historical inventory:
 
 1. The archive's Settings → Actions → General says **Disable actions**, and all
    running/queued runs have been stopped. This must apply to the entire repository.
@@ -24,7 +24,12 @@ are directly verified in the owner's account:
    one day. Changing retention does not retroactively shorten older artifacts.
 
 The variable is an activation record, not a substitute for billing enforcement.
-If any setting is inaccessible, record it as unverified and keep jobs disabled.
+If spending enforcement or runner/storage limits cannot be verified, keep jobs
+disabled. An inaccessible historical archive cache inventory is recorded as
+unverified, not as zero: keep archive Actions disabled, do not delete its data,
+and disable dependency cache writes in public jobs while that review is open.
+This permits independent public work under verified $0 usage blocking without
+claiming the archive storage review is complete.
 Never raise a budget or use a paid fallback to bypass a blocked job. The assistant
 must manage runs and failures itself when authenticated capabilities allow it.
 
@@ -63,8 +68,9 @@ allowance or simultaneous uploads. Verified account-level usage blocking is stil
 required. If the guard fails, keep useful failure information in job logs and
 preserve needed artifacts before proposing cleanup; never expand the allowance.
 
-Dependency caches contain pip/npm packages, Gradle modules/wrapper and Cargo
-registry sources. No model weights, build target trees, browser sessions, signing
+Dependency cache actions are currently removed and rejected by the policy check
+while historical cache inventory is unresolved. Future reviewed caches may contain
+only pip/npm packages, Gradle modules/wrapper and Cargo registry sources. No model weights, build target trees, browser sessions, signing
 keys or user files are cached. Keep GitHub's repository cache cap within the free
 allowance so eviction, not paid overflow, handles growth. There are no cron jobs,
 `pull_request_target` workflows, write tokens, cloud machines or paid security scans.

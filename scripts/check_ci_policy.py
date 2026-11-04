@@ -32,6 +32,8 @@ def check(root):
                 uses = step.get("uses", "")
                 if uses and not re.fullmatch(r"actions/[a-z-]+(?:/[a-z-]+)?@[0-9a-f]{40}", uses):
                     errors.append(prefix + ": unpinned/unreviewed action")
+                if uses.startswith("actions/cache") or step.get("with", {}).get("cache"):
+                    errors.append(prefix + ": cache writes are disabled during storage review")
                 if uses.startswith("actions/checkout@"):
                     if step.get("with", {}).get("persist-credentials") != "false":
                         errors.append(prefix + ": checkout credentials retained")

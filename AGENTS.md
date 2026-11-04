@@ -19,11 +19,15 @@ paid fallback. Public compute is free; that does not establish free storage.
 Before enabling jobs, verify account-wide $0 budgets with **Stop usage**, private
 archive Actions disablement and queued/running runs, existing artifact/cache usage,
 and a public-repository cache limit no greater than the included 10 GB. Record the
-observations. Only then set `DSGPT_ZERO_COST_READY=true`. An unset variable disables
+observations and any inaccessible historical inventory. If the archive cache API
+and UI are unavailable, keep its Actions disabled and leave its storage untouched;
+public jobs may proceed with verified account usage blocking and no cache writes.
+This exception does not mark the historical inventory complete. Only then set `DSGPT_ZERO_COST_READY=true`. An unset variable disables
 every job before runner allocation. This variable records an administrative check;
 it cannot enforce billing settings or prove they remain unchanged.
 
-Artifacts have one-day retention and size checks; caches contain dependencies only.
+Artifacts have one-day retention and size checks. Dependency cache writes are
+disabled while historical cache inventory remains unresolved.
 Preserve irreplaceable deliverables before proposing deletion. Disabling workflows
 or shortening retention does not delete existing storage or cancel accrued charges.
 Never publish secrets in logs/artifacts or give signing secrets to pull requests.
