@@ -1,0 +1,21 @@
+dsGPT live dictation third-party software
+
+Vosk 0.3.45: https://github.com/alphacep/vosk-api (Apache-2.0).
+Publisher binary: vosk-0.3.45-py3-none-win_amd64.whl from PyPI.
+Unmodified Windows runtime DLLs include libgcc, libstdc++ and winpthreads.
+GCC runtime: GPL-3.0 with GCC Runtime Library Exception; license texts included.
+GCC sources: https://gcc.gnu.org/releases.html and https://github.com/gcc-mirror/gcc
+MinGW winpthreads sources: https://github.com/mingw-w64/mingw-w64
+Vosk's Kaldi/OpenFst implementation is Apache-2.0.
+Source/build recipes: https://github.com/alphacep/vosk-api/tree/v0.3.45
+
+Offline speech model: vosk-model-en-us-0.22-lgraph, Alpha Cephei, Apache-2.0.
+Source and model: https://alphacephei.com/vosk/models
+SHA256: d9838b4aaa82a75c4a17f5aca300eaca129aaab2a7cbf951bafbb500eb9c4334
+Downloaded automatically into the user's data directory; no audio is saved.
+
+Python dependency distribution metadata and license files, where supplied by
+publishers, remain under python/Lib/site-packages/*.dist-info.
+CFFI (MIT), pycparser (BSD), requests (Apache-2.0), urllib3 (MIT),
+charset-normalizer (MIT), websockets (BSD), srt (MIT).
+Existing packaged certifi, idna and tqdm satisfy Vosk's remaining dependencies.

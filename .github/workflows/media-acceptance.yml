@@ -1,0 +1,82 @@
+name: Fresh media and binary-tool acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: media-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+  PYTHONUTF8: '1'
+jobs:
+  media:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - name: Prepare pinned backend and the actual CPU model
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes zstd
+          python -m pip install -r requirements-dev.lock
+          python -m pip install --no-deps --no-build-isolation -e .
+          mkdir -p evidence
+          python scripts/prepare_complex_model_ci.py --directory "$RUNNER_TEMP/media-runtime" --output evidence/model-runtime.json --port 11435 --threads 4
+      - name: Build the exact isolated toolchain after cold-load/unload succeeds
+        run: |
+          python scripts/prepare_app_toolchain.py --directory "$RUNNER_TEMP/media-tools"
+          recipe="$(python -c 'from dsgpt.tool_setup import recipe_digest; print(recipe_digest())')"
+          docker build --build-arg DSGPT_BASE_IMAGE=python@sha256:2ed6491b93cd49272ee6de2b5a38440c3448360322c089fc23e370722d74179d --label "org.dsgpt.recipe=$recipe" -t dsgpt-media-ci "$RUNNER_TEMP/media-tools"
+          docker image inspect --format '{{.Id}}' dsgpt-media-ci > evidence/image-id.txt
+      - name: Verify binary modification and complete long-recording tools
+        run: |
+          image="$(cat evidence/image-id.txt)"
+          python -I scripts/live_assets.py --image "$image" --output evidence/assets
+          python -I scripts/live_media.py --image "$image" --output evidence/media-tools
+          python -I scripts/live_long_media.py --image "$image" --sample evidence/media-tools/sample.wav --output evidence/long-tools
+      - name: Fresh short and long tasks using actual model decisions
+        timeout-minutes: 245
+        run: |
+          python -I scripts/live_media_agent.py --sample-wav evidence/media-tools/sample.wav \
+            --output evidence/fresh-model --source-commit "$GITHUB_SHA" \
+            --endpoint http://127.0.0.1:11435 --model huihui_ai/qwen3.5-abliterated:9b \
+            --execution docker --image "$(cat evidence/image-id.txt)" \
+            --cases short long --context 16384 --output-tokens 2048 --threads 4 \
+            --max-seconds 7200 --max-steps 60
+      - name: Check bounded retained evidence
+        id: storage
+        if: always() && !cancelled()
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: python scripts/ci_artifact_guard.py evidence
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always() && steps.storage.outcome == 'success' && !cancelled()
+        with:
+          name: media-${{ github.sha }}
+          path: evidence/
+          retention-days: 1
+          if-no-files-found: error
+
+  windows-binaries:
+    needs: media
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with: {name: 'media-${{ github.sha }}', path: evidence}
+      - name: Run the exact reviewed original and modified EXEs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          Expand-Archive evidence/assets/asset-evidence.zip -DestinationPath reviewed
+          $before = & ./reviewed/original.exe
+          if ($before -ne 'ORIGINAL_MARKER') { throw 'Original fixture failed' }
+          $after = & ./reviewed/modified.exe
+          if ($after -ne 'MODIFIED_MARKER') { throw 'Modified fixture failed' }

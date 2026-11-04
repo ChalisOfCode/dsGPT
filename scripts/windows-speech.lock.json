@@ -1,0 +1,44 @@
+{
+  "wheels": [
+    {
+      "file": "pycparser-2.23-py3-none-any.whl",
+      "sha256": "e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934",
+      "bytes": 118140
+    },
+    {
+      "file": "requests-2.34.2-py3-none-any.whl",
+      "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+      "bytes": 73075
+    },
+    {
+      "file": "vosk-0.3.45-py3-none-win_amd64.whl",
+      "sha256": "6994ddc68556c7e5730c3b6f6bad13320e3519b13ce3ed2aa25a86724e7c10ac",
+      "bytes": 13997596
+    },
+    {
+      "file": "srt-3.5.3-py3-none-any.whl",
+      "sha256": "1acba0ec749e27ba09e098db64c101b264f2c11ed1f4d021d4f3484ff4071ceb",
+      "bytes": 22513
+    },
+    {
+      "file": "urllib3-2.8.0-py3-none-any.whl",
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "bytes": 135717
+    },
+    {
+      "file": "cffi-2.0.0-cp313-cp313-win_amd64.whl",
+      "sha256": "19f705ada2530c1167abacb171925dd886168931e0a7b78f5bffcae5c6b5be75",
+      "bytes": 183402
+    },
+    {
+      "file": "charset_normalizer-3.5.2-cp313-cp313-win_amd64.whl",
+      "sha256": "78456a747de8dc58360ffa581f30a002baf5aa28cb262536545e91f113ed7639",
+      "bytes": 206489
+    },
+    {
+      "file": "websockets-15.0.1-cp313-cp313-win_amd64.whl",
+      "sha256": "e09473f095a819042ecb2ab9465aee615bd9c2028e4ef7d933600a8401c79561",
+      "bytes": 176837
+    }
+  ]
+}

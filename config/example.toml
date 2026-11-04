@@ -1,0 +1,30 @@
+# Developer configuration, not an installer. Model files are not downloaded automatically.
+# Keep Ollama bound to localhost, and enable OLLAMA_NO_CLOUD=1 in its own process environment.
+# Add only your exact Tailscale Serve hostname to allowed_hosts when configuring remote access.
+allowed_hosts = ["127.0.0.1", "localhost", "[::1]"]
+allowed_origins = []
+
+# Optional, separately running self-hosted SearXNG with JSON output enabled.
+# [research]
+# search_origin = "http://127.0.0.1:8888"
+
+[[models]]
+id = "qwen35-9b-na"
+name = "Qwen3.5 9B"
+runtime = "ollama"
+endpoint = "http://127.0.0.1:11434"
+runtime_model = "qwen3.5:9b"
+abliterated = false
+context = 8192
+output_tokens = 1024
+
+[[models]]
+id = "qwen35-9b-a"
+name = "Qwen3.5 9B"
+runtime = "ollama"
+endpoint = "http://127.0.0.1:11434"
+runtime_model = "huihui_ai/qwen3.5-abliterated:9b"
+abliterated = true
+context = 8192
+output_tokens = 1024
+
