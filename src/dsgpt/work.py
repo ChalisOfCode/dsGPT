@@ -1103,6 +1103,24 @@ class WorkRegistry:
                 "mark_requirement with its requirement_id, an explanation in content and "
                 "existing evidence_paths. Do not repeat an already-applied edit."
             )
+        empty_project_hint = None
+        if not files:
+            if build and build["target"] in {"apk", "exe", "apps"}:
+                platform = "windows" if build["target"] == "exe" else "android"
+                empty_project_hint = (
+                    "The project has ZERO source files. Listing again will not create them. "
+                    "Call scaffold_app with platform=" + platform + " and the requested app title "
+                    "to create starter source, then inspect and implement the requested behavior. "
+                    "For both platforms, also scaffold windows. Starter files are not finished "
+                    "features and do not establish requirement coverage."
+                )
+            elif not build:
+                empty_project_hint = (
+                    "The current project has ZERO source files. Create the requested files with "
+                    "write_file; listing again will not create them."
+                )
+        if empty_project_hint:
+            next_step = empty_project_hint
         media_blockers = specification["coverage"].get("media", [])
         if media_blockers:
             blocker = media_blockers[0]
@@ -1322,6 +1340,8 @@ class WorkRegistry:
                         "behavior and test it. A scaffold or generated review is not evidence "
                         "that the requested features exist. Use only observed evidence paths."
                     )
+                    if not clipped.get("has_more") and empty_project_hint:
+                        context["next_step"] = empty_project_hint
                     messages[1]["content"] = canonical(context)
                 pair[1]["content"] = "Recorded tool result: " + canonical(clipped)
                 if action.get("tool") == "read_asset":

@@ -186,3 +186,40 @@ def test_source_only_completion_needs_enabled_current_coverage_and_actual_files(
     with store.transaction() as db:
         db.execute("DELETE FROM work_files WHERE task_id=?", (tid,))
     assert not work._completion_ready(tid)
+
+
+@pytest.mark.parametrize(
+    "target,platform", [("apk", "android"), ("exe", "windows"), ("apps", "android")]
+)
+def test_empty_app_project_guides_scaffolding_without_claiming_features(tmp_path, target, platform):
+    store, work, _, _ = setup(tmp_path)
+    task = work.create(
+        "Requested app", "Build an app with editable tasks.", "local", build_target=target
+    )
+    tid = task["id"]
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, task["requirements"])
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    for tool in ("list_files", "read_requirements"):
+        commit(work, tid, ProjectAction(tool=tool, requirement_id=1, summary="Inspect"))
+        row = store.one("SELECT * FROM work_tasks WHERE id=?", (tid,))
+        session = store.one("SELECT * FROM work_sessions WHERE task_id=?", (tid,))
+        context = json.loads(
+            work._guided_prompt(row, session, work.models["local"], [])[1]["content"]
+        )
+        assert "ZERO source files" in context["next_step"]
+        assert "scaffold_app with platform=" + platform in context["next_step"]
+        assert "not finished" in context["next_step"]
+        assert not context["build_state"]["completion_ready"]
+    commit(
+        work,
+        tid,
+        ProjectAction(
+            tool="scaffold_app", platform=platform, title="Requested app", summary="Create starter"
+        ),
+    )
+    row = store.one("SELECT * FROM work_tasks WHERE id=?", (tid,))
+    session = store.one("SELECT * FROM work_sessions WHERE task_id=?", (tid,))
+    context = json.loads(work._guided_prompt(row, session, work.models["local"], [])[1]["content"])
+    assert "ZERO source files" not in context["next_step"]
+    assert not context["build_state"]["completion_ready"]

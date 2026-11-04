@@ -64,10 +64,7 @@ def native_ui(setup):
 
         wait_for(lambda: evaluate("!!document.querySelector('textarea[aria-label=Message]')"))
         assert evaluate("window.__TAURI_INTERNALS__.invoke('restore_connection')") == managed.ORIGIN
-        evaluate(
-            "[...document.querySelectorAll('button')]"
-            ".find(b=>b.innerText.includes('New chat')).click()"
-        )
+        evaluate("document.querySelector('button[aria-label=\"New chat\"]').click()")
         evaluate(
             "(() => {const t=document.querySelector('textarea[aria-label=Message]'); "
             "Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')"
@@ -76,12 +73,10 @@ def native_ui(setup):
         )
         wait_for(
             lambda: evaluate(
-                "[...document.querySelectorAll('button')].some(b=>b.innerText.includes('Send')&&!b.disabled)"
+                "!!document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)')"
             )
         )
-        evaluate(
-            "[...document.querySelectorAll('button')].find(b=>b.innerText.includes('Send')&&!b.disabled).click()"
-        )
+        evaluate("document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)').click()")
         wait_for(
             lambda: evaluate(
                 "[...document.querySelectorAll('article')].some(a=>a.innerText.includes('READY'))"
