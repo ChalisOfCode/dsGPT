@@ -129,3 +129,42 @@ def test_cpu_extraction_keeps_required_libraries_and_validates_skipped_paths(tmp
     archive(source, [("../unselected-gpu/escape", b"unsafe")])
     with pytest.raises(RuntimeError, match="escapes"):
         ci.extract_archive(source, tmp_path / "rejected", tmp_path / "bad.log", 10, cpu_only=True)
+
+
+@pytest.mark.parametrize(
+    "after",
+    [
+        {},
+        {".": {"oom": 1, "oom_kill": 0}},
+        {".": {"oom": 2, "oom_kill": 1}},
+        {"other": {"oom": 2, "oom_kill": 0}},
+    ],
+)
+def test_preflight_cannot_claim_no_oom_with_reset_missing_or_increased_counters(after):
+    with pytest.raises(RuntimeError, match="OOM"):
+        ci.verify_no_oom({".": {"oom": 2, "oom_kill": 0}}, after)
+
+
+def test_oom_snapshot_includes_ancestor_events(tmp_path):
+    proc, groups = tmp_path / "proc", tmp_path / "groups"
+    (proc / "self").mkdir(parents=True)
+    (proc / "self/cgroup").write_text("0::/child\n")
+    (groups / "child").mkdir(parents=True)
+    (groups / "memory.events").write_text("low 0\noom 3\noom_kill 1\n")
+    (groups / "child/memory.events").write_text("oom 0\noom_kill 0\n")
+    before = ci.oom_snapshot(proc, groups)
+    assert ci.verify_no_oom(before, ci.oom_snapshot(proc, groups))["verified"]
+    (groups / "memory.events").write_text("oom 4\noom_kill 2\n")
+    with pytest.raises(RuntimeError, match="increased"):
+        ci.verify_no_oom(before, ci.oom_snapshot(proc, groups))
+
+
+@pytest.mark.parametrize("content", [None, "oom 0\n", "oom -1\noom_kill 0\n"])
+def test_missing_or_invalid_oom_evidence_fails_closed(tmp_path, content):
+    (tmp_path / "proc/self").mkdir(parents=True)
+    (tmp_path / "proc/self/cgroup").write_text("0::/\n")
+    (tmp_path / "groups").mkdir()
+    if content is not None:
+        (tmp_path / "groups/memory.events").write_text(content)
+    with pytest.raises(RuntimeError, match="OOM"):
+        ci.oom_snapshot(tmp_path / "proc", tmp_path / "groups")

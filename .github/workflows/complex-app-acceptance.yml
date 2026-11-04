@@ -62,7 +62,7 @@ jobs:
           python -I scripts/live_complex_app_model.py \
             --image "$DSGPT_IMAGE_ID" --source-commit "$GITHUB_SHA" \
             --model huihui_ai/qwen3.5-abliterated:9b --abliterated \
-            --model-digest 4290bae9417b9d17bf08ec2cc821c4f6b7de2cea710bec968db87e95c88a0997 \
+            --model-digest 92a443adb124f5e805bbdee23fdb38fcd22a7bf00a1016b53f764e741369c600 \
             --endpoint http://127.0.0.1:11435 --context 16384 --output-tokens 4096 \
             --cpu-threads 4 --batch-size 64 --release-before-build \
             --state "$RUNNER_TEMP/complex-app-fresh-state" \

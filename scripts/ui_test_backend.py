@@ -182,6 +182,10 @@ def main():
             ),
             SlowInference(),
         )
+        # UI fixtures must not provision real Docker tools when CI happens to have
+        # Docker installed. Auto-target tasks block deterministically; real toolchain
+        # setup is exercised by the separate acceptance workflows.
+        app.state.work.tool_setup = None
         credential = app.state.auth.initialize_owner()["token"]
         app.state.research.reader = FixtureReader()
         app.state.work.references.reader = FixtureReader()

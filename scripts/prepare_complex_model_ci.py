@@ -31,7 +31,9 @@ ARCHIVE_URL = (
 ARCHIVE_SHA256 = "c9490e0f520be21271d969e6703f012268b1d39f8b70dd58854e5bfef7a75bb6"
 ARCHIVE_BYTES = 1525346571
 MODEL_TAG = "huihui_ai/qwen3.5-abliterated:9b"
-MODEL_SHA256 = "4290bae9417b9d17bf08ec2cc821c4f6b7de2cea710bec968db87e95c88a0997"
+MODEL_SHA256 = "92a443adb124f5e805bbdee23fdb38fcd22a7bf00a1016b53f764e741369c600"
+MODEL_GGUF_SHA256 = "afb54ad43a39f947407f5cabc59856348d70e072baa5c62d436332157c151bcd"
+MODEL_GGUF_BYTES = 6594462816
 MAX_EXTRACTED_BYTES = 12 * 1024**3
 MAX_ARCHIVE_MEMBERS = 100_000
 
@@ -95,6 +97,41 @@ def available_memory(proc=Path("/proc"), cgroup=Path("/sys/fs/cgroup")):
         "ancestor_available_bytes": limits,
         "effective_available_bytes": min([host, *limits]),
     }
+
+
+def oom_snapshot(proc=Path("/proc"), cgroup=Path("/sys/fs/cgroup")):
+    """Read every visible ancestor counter; missing evidence never means zero OOMs."""
+    membership = (proc / "self/cgroup").read_text(encoding="ascii")
+    paths = [line[3:] for line in membership.splitlines() if line.startswith("0::")]
+    require(len(paths) == 1, "Cannot establish OOM counter hierarchy")
+    relative = PurePosixPath(paths[0])
+    require(relative.is_absolute() and ".." not in relative.parts, "Invalid OOM hierarchy")
+    current = cgroup.joinpath(*relative.parts[1:])
+    require(current.is_dir(), "OOM hierarchy is not visible")
+    counters = {}
+    for group in (current, *current.parents):
+        if not group.is_relative_to(cgroup):
+            break
+        path = group / "memory.events"
+        if path.exists():
+            with path.open(encoding="ascii") as stream:
+                raw = stream.read(4097)
+            require(len(raw) <= 4096, "OOM counters exceeded bound")
+            values = dict(line.split() for line in raw.splitlines())
+            require({"oom", "oom_kill"} <= values.keys(), "Incomplete OOM counters")
+            values = {key: int(values[key]) for key in ("oom", "oom_kill")}
+            require(all(value >= 0 for value in values.values()), "Negative OOM counter")
+            counters[str(group.relative_to(cgroup))] = values
+    require(bool(counters), "No OOM counters available")
+    return counters
+
+
+def verify_no_oom(before, after):
+    require(bool(before) and before.keys() == after.keys(), "OOM hierarchy changed or missing")
+    for scope, counters in before.items():
+        require(set(counters) == {"oom", "oom_kill"}, "Incomplete prior OOM counters")
+        require(counters == after[scope], "OOM counters increased or reset during cold load")
+    return {"verified": True, "counter_scopes": sorted(before), "increases": 0}
 
 
 def require_memory(record, model_bytes, reserve_bytes=4 * 1024**3):
@@ -506,14 +543,21 @@ def main():
         ]
         require(len(matches) == 1, "Pulled model tag is missing or ambiguous")
         model = matches[0]
+        report["observed_model"] = {key: model.get(key) for key in ("name", "digest", "size")}
         require(
             str(model.get("digest", "")).removeprefix("sha256:") == MODEL_SHA256,
             "Pulled model digest differs from the pinned acceptance model",
         )
         report["model"] = {key: model.get(key) for key in ("name", "digest", "size", "details")}
+        weights = args.directory / "models/blobs" / ("sha256-" + MODEL_GGUF_SHA256)
+        require(weights.is_file() and not weights.is_symlink(), "Pinned model weights missing")
+        require(weights.stat().st_size == MODEL_GGUF_BYTES, "Pinned model weight size differs")
+        require(file_digest(weights) == MODEL_GGUF_SHA256, "Pinned model weight bytes differ")
+        report["weight_identity"] = {"sha256": MODEL_GGUF_SHA256, "bytes": MODEL_GGUF_BYTES}
         report["resources"] = available_memory()
         report["memory_admission"] = require_memory(report["resources"], model.get("size"))
         report["stage"] = "cold_load_preflight"
+        report["oom_before"] = oom_snapshot()
         report["actual_model_inference_by_preparer"] = True
         persist(args.output, report)
         probe = api(
@@ -536,8 +580,10 @@ def main():
             },
         )
         require(
-            probe.get("done") is True and bool(probe.get("response", "").strip()),
-            "Cold-load inference returned no completed answer",
+            probe.get("done") is True
+            and probe.get("model") == MODEL_TAG
+            and probe.get("response", "").strip() == "OK",
+            "Cold-load inference did not return the expected answer from the pinned model",
         )
         deadline = time.monotonic() + 30
         while api(origin, "/api/ps", 10).get("models") and time.monotonic() < deadline:
@@ -546,6 +592,8 @@ def main():
             not api(origin, "/api/ps", 10).get("models"),
             "Preflight model did not unload before toolchain compilation",
         )
+        report["oom_after"] = oom_snapshot()
+        report["oom_check"] = verify_no_oom(report["oom_before"], report["oom_after"])
         report["cold_load_preflight"] = {
             "passed": True,
             "unloaded": True,

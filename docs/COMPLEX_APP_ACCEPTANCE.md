@@ -46,7 +46,7 @@ python -I scripts/live_complex_app_model.py \
   --image "$DSGPT_IMAGE_ID" \
   --source-commit "$DSGPT_SOURCE_COMMIT" \
   --model huihui_ai/qwen3.5-abliterated:9b --abliterated \
-  --model-digest 4290bae9417b9d17bf08ec2cc821c4f6b7de2cea710bec968db87e95c88a0997 \
+  --model-digest 92a443adb124f5e805bbdee23fdb38fcd22a7bf00a1016b53f764e741369c600 \
   --endpoint http://127.0.0.1:11434 --context 16384 --output-tokens 4096 \
   --cpu-threads 2 --batch-size 64 \
   --state /tmp/dsgpt-complex-model-state \
@@ -150,3 +150,23 @@ hashes. `bounded_fixture_passed` is distinct from arbitrary-task reliability. Ke
 long-media tests, authenticated account workflows, document layout/formula checks,
 project grouping and owner-device acceptance on their own checklists. These scripts
 do not produce a release ZIP.
+
+
+### Registry metadata review, 2026-11-04
+
+The first public retry rejected a changed manifest before inference. The old
+manifest pin `4290bae9417b9d17bf08ec2cc821c4f6b7de2cea710bec968db87e95c88a0997`
+was no longer returned by the tag; a direct digest request returned HTTP 404.
+The reviewed replacement manifest is
+`92a443adb124f5e805bbdee23fdb38fcd22a7bf00a1016b53f764e741369c600`.
+Its GGUF is still the same 6,594,462,816-byte 9B Q4_K_M weight file,
+`afb54ad43a39f947407f5cabc59856348d70e072baa5c62d436332157c151bcd`,
+recorded by the earlier model-copy audit. Preparation now independently hashes
+that file as well as checking the manifest identity reported by Ollama.
+
+Reviewed registry configuration selects family `qwen35`, renderer/parser `qwen3.5`,
+a literal `{{ .Prompt }}` template and parameters temperature 1, top_k 20,
+top_p 0.95. Harness request overrides remain explicit. This is a newly reviewed
+metadata pin, not a claim that the old and new manifests are byte-identical.
+The original prompts, context, model weights and acceptance requirements remain.
+Fresh end-to-end acceptance is still required; old results are not transferred.
