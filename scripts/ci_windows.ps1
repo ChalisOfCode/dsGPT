@@ -61,6 +61,16 @@ python scripts/check_application_install.py --installer dist/dsGPT-Setup.exe --i
 foreach ($name in @('application-installation.json','first.json','restart.json')) {
     Copy-Item "$env:RUNNER_TEMP/application-results/$name" "reports/windows/$name"
 }
-python scripts/package_acceptance_kit.py --kit dist/dsGPT-Acceptance --output artifacts/windows/acceptance-components.zip
+# Always package and fingerprint the tested kit. No downstream job consumes this
+# final ZIP. On push/PR retain its receipt instead of charging the shared storage
+# allowance for another copy; a manual CI dispatch retains the full kit.
+$packed = "dist/ci-packed"
+New-Item -ItemType Directory -Force $packed | Out-Null
+python scripts/package_acceptance_kit.py --kit dist/dsGPT-Acceptance --output "$packed/acceptance-components.zip"
+python scripts/ci_provenance.py write $packed $env:GITHUB_SHA
+Copy-Item "$packed/SOURCE.json" artifacts/windows/tested-kit-receipt.json
+if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+    Copy-Item "$packed/acceptance-components.zip" artifacts/windows/
+}
 python scripts/ci_provenance.py write artifacts/windows $env:GITHUB_SHA
 # The CI installer embeds the distinct test APK and is intentionally not published.
