@@ -134,7 +134,13 @@ def test_build_loop_records_failure_repairs_collects_and_finishes(tmp_path):
         assert not (tmp_path / "main.txt").exists()
 
 
-def test_build_request_tries_automatic_setup_and_reports_missing_docker(tmp_path):
+def test_build_request_tries_automatic_setup_and_reports_missing_docker(tmp_path, monkeypatch):
+    def missing_docker():
+        raise SandboxError("Docker is not installed")
+
+    # Exercise the missing dependency deliberately, even on Docker-equipped CI.
+    monkeypatch.setattr("dsgpt.sandbox.docker_binary", missing_docker)
+    monkeypatch.setattr("dsgpt.tool_setup.docker_binary", missing_docker)
     agent = AgentFixture([])
     app, _, headers = setup(tmp_path, agent)
     with TestClient(app, headers=headers) as client:

@@ -37,12 +37,14 @@ jobs:
         with: {python-version: '3.12'}
       - name: Install locked dependencies and check source
         run: |
+          sudo apt-get update
+          sudo apt-get install --yes poppler-utils tesseract-ocr tesseract-ocr-eng python3-pil
           python -m pip install -r requirements-dev.lock
           python -m pip install --no-deps --no-build-isolation -e .
           ruff check src tests scripts
           python scripts/check_ci_policy.py
       - name: Backend regression tests
-        run: pytest -q --junitxml=reports/backend.xml
+        run: pytest -v -o faulthandler_timeout=120 --junitxml=reports/backend.xml
       - name: Build backend wheel once
         run: |
           python -m build --wheel --no-isolation
