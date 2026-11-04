@@ -331,6 +331,7 @@ def test_guided_prompt_preserves_requirement_eof_in_recorded_read(tmp_path):
         for message in messages
         if message["content"].startswith("Recorded tool result: ")
     )
+    assert "Do not repeat the same read" in json.loads(messages[1]["content"])["next_step"]
     assert recorded["content"] == row["requirements"]
     assert recorded["next_offset"] is None and recorded["has_more"] is False
 

@@ -20,6 +20,7 @@ from .work_asset_tools import asset_comparison_hint, asset_read_hint, related_as
 from .work_references import WorkReferences
 from .work_research import WorkResearch
 from .work_specs import SpecReview, WorkSpecs, excerpt, infer_target
+from .work_transcripts import explicit_whole_recording
 from .work_web import WorkWeb
 
 MEDIA_INSTRUCTIONS = """
@@ -1102,6 +1103,12 @@ class WorkRegistry:
                 "mark_requirement with its requirement_id, an explanation in content and "
                 "existing evidence_paths. Do not repeat an already-applied edit."
             )
+        media_blockers = specification["coverage"].get("media", [])
+        if media_blockers:
+            blocker = media_blockers[0]
+            next_step = blocker["hint"] + " Source: " + blocker.get("source_path", "unknown")
+            if blocker.get("next_start") is not None:
+                next_step += " Start at " + str(blocker["next_start"]) + " seconds."
         context = {
             "requirements": specification,
             "next_step": next_step,
@@ -1236,6 +1243,9 @@ class WorkRegistry:
                                 context["build_state"]["latest"]["transcription"],
                                 specification["current_section"]["requirement_id"],
                                 coverage=context["build_state"].get("media_progress"),
+                                whole_recording=(
+                                    True if explicit_whole_recording(row["requirements"]) else None
+                                ),
                             ),
                         }
                         companion = {
@@ -1286,6 +1296,9 @@ class WorkRegistry:
                         context["build_state"].get("latest", {}).get("transcription"),
                         specification["current_section"]["requirement_id"],
                         coverage=context["build_state"].get("media_progress"),
+                        whole_recording=(
+                            True if explicit_whole_recording(row["requirements"]) else None
+                        ),
                     )
                     if clipped.get("error") == "asset_is_not_utf8_text_or_offset_splits_character":
                         hint = (
@@ -1299,6 +1312,16 @@ class WorkRegistry:
                             "evidence."
                         )
                     context["next_step"] = hint or next_step
+                    messages[1]["content"] = canonical(context)
+                if action.get("tool") == "read_requirements" and not clipped.get("error"):
+                    context["next_step"] = (
+                        "Continue reading this requirement at next_offset before implementing it."
+                        if clipped.get("has_more")
+                        else "This requirement page reached its end. Do not repeat the same read. "
+                        "Inspect the actual project with list_files/read_file, implement missing "
+                        "behavior and test it. A scaffold or generated review is not evidence "
+                        "that the requested features exist. Use only observed evidence paths."
+                    )
                     messages[1]["content"] = canonical(context)
                 pair[1]["content"] = "Recorded tool result: " + canonical(clipped)
                 if action.get("tool") == "read_asset":

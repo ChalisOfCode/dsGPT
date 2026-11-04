@@ -79,6 +79,13 @@ def _whole_recording_hint(transcription, whole_recording=None, coverage=None):
             + coverage["error"]
             + ". Investigate it before finishing."
         )
+    if (
+        transcription.get("start_seconds") == 0
+        and transcription.get("end_seconds") == transcription.get("media_duration_seconds")
+        and transcription.get("next_start") is None
+        and transcription.get("end_seconds") is not None
+    ):
+        return None  # One full window already supplies the complete output pair.
     following = coverage.get("next_start") if coverage else transcription.get("next_start")
     if following is not None:
         return "The whole recording is not covered yet. Next JSON action: " + canonical(

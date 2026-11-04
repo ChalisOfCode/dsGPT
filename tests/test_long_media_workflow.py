@@ -349,3 +349,67 @@ async def test_failed_empty_replacement_hides_previous_pair_until_successful_ret
             work_assets.lookup(db, tid, fresh["transcription"]["transcript_path"])["id"]
             == fresh["artifacts"][0]["id"]
         )
+
+
+async def test_whole_recording_cannot_be_marked_complete_from_first_window(tmp_path):
+    from dsgpt.work_specs import WorkSpecs
+    from dsgpt.work_transcripts import whole_recording_blockers
+
+    store, builds, tid, _ = setup(tmp_path, duration=601)
+    result = await window(builds, tid, 1, 0)
+    with store.transaction() as db:
+        blockers = whole_recording_blockers(db, tid)
+        assert blockers[0]["next_start"] == 300
+        action = ProjectAction(
+            tool="mark_requirement",
+            requirement_id=1,
+            content="The first window technically satisfies the entire recording.",
+            evidence_paths=[result["transcription"]["transcript_path"]],
+            summary="Done",
+        )
+        assert WorkSpecs.coverage(db, tid, action)["error"] == "whole_recording_coverage_incomplete"
+        assert not WorkSpecs.finish_state(db, tid, "")["ready"]
+    await window(builds, tid, 2, 300)
+    await window(builds, tid, 3, 600)
+    with store.connect() as db:
+        assert whole_recording_blockers(db, tid)[0]["error"] == "whole_recording_assembly_required"
+    merged = await builds.execute(
+        tid,
+        4,
+        ProjectAction(
+            tool="assemble_transcript", path="inputs/long.wav", summary="Join complete recording"
+        ),
+    )
+    assert "error" not in merged
+    with store.connect() as db:
+        assert whole_recording_blockers(db, tid) == []
+
+
+async def test_explicit_excerpt_does_not_require_full_recording(tmp_path):
+    from dsgpt.work_transcripts import whole_recording_blockers
+
+    store, builds, tid, _ = setup(tmp_path, duration=601)
+    with store.transaction() as db:
+        db.execute(
+            "UPDATE work_tasks SET requirements=? WHERE id=?",
+            ("Do not transcribe the whole recording. Transcribe only the first five minutes.", tid),
+        )
+    await window(builds, tid, 1, 0)
+    with store.connect() as db:
+        assert whole_recording_blockers(db, tid) == []
+
+
+@pytest.mark.parametrize(
+    "prompt,expected",
+    [
+        ("Transcribe the whole recording.", True),
+        ("Subtitle the entire video.", True),
+        ("Do not transcribe the whole recording.", False),
+        ("Transcribe only an excerpt of the full audio.", False),
+        ("Summarize the entire recording.", False),
+    ],
+)
+def test_explicit_whole_recording_scope(prompt, expected):
+    from dsgpt.work_transcripts import explicit_whole_recording
+
+    assert explicit_whole_recording(prompt) is expected

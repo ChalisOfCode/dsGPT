@@ -312,6 +312,11 @@ class WorkSpecs:
 
     @staticmethod
     def coverage(db, task_id, action):
+        from .work_transcripts import whole_recording_blockers
+
+        blockers = whole_recording_blockers(db, task_id)
+        if blockers:
+            return {"error": "whole_recording_coverage_incomplete", "media": blockers}
         row = db.execute(
             "SELECT notes FROM work_spec_sections WHERE task_id=? AND ordinal=?",
             (task_id, action.requirement_id),
@@ -357,8 +362,10 @@ class WorkSpecs:
 
     @staticmethod
     def finish_state(db, task_id, snapshot):
+        from .work_transcripts import whole_recording_blockers
+
         if not db.execute("SELECT 1 FROM work_specs WHERE task_id=?", (task_id,)).fetchone():
-            return {"ready": True, "enabled": False}
+            return {"ready": not whole_recording_blockers(db, task_id), "enabled": False}
         rows = db.execute(
             (
                 "SELECT ordinal,notes,status,evidence_paths,snapshot_sha256 FROM "
@@ -382,8 +389,10 @@ class WorkSpecs:
                 or row["snapshot_sha256"] != expected
             ):
                 missing.append(row["ordinal"])
+        media = whole_recording_blockers(db, task_id)
         return {
-            "ready": not missing,
+            "media": media,
+            "ready": not missing and not media,
             "enabled": True,
             "total": len(rows),
             "remaining": len(missing),

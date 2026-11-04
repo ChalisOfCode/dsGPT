@@ -200,3 +200,92 @@ def assembly_result(plan, artifacts):
         },
         "read": "Read and compare both assembled outputs; recognition accuracy remains unverified.",
     }
+
+
+def explicit_whole_recording(requirements):
+    """Recognize explicit positive whole-media requests, not model-generated reviews.
+
+    Ambiguous/negated requests retain the existing scope-review path.
+    """
+    import re
+
+    for sentence in re.split(r"[.!?\n]", requirements.lower()):
+        if re.search(r"\b(?:not|never|don't|instead|only|excerpt)\b", sentence):
+            continue
+        if re.search(r"\b(?:transcrib\w*|caption\w*|subtitl\w*)\b", sentence) and re.search(
+            r"\b(?:whole|entire|full|complete)\s+(?:recording|audio|video)\b", sentence
+        ):
+            return True
+    return False
+
+
+def whole_recording_blockers(db, task_id):
+    """Do not let a generated coverage review waive an explicit whole-media request."""
+    row = db.execute("SELECT requirements FROM work_tasks WHERE id=?", (task_id,)).fetchone()
+    if not row or not explicit_whole_recording(row["requirements"]):
+        return []
+    paths = set()
+    for execution in db.execute(
+        "SELECT result FROM work_executions WHERE task_id=? "
+        "AND json_extract(action,'$.tool')='transcribe_media'",
+        (task_id,),
+    ):
+        speech = json.loads(execution["result"] or "{}").get("transcription") or {}
+        if speech.get("source_path"):
+            paths.add(speech["source_path"])
+    blockers = []
+    for path in sorted(paths):
+        state = coverage_state(db, task_id, path)
+        if state.get("assembly_ready") and state["selected_window_count"] > 1:
+            receipts = {
+                item["path"]: item for item in work_assets.inventory(db, task_id)["receipts"]
+            }
+            assembled = False
+            for execution in db.execute(
+                "SELECT id,result FROM work_executions WHERE task_id=? AND status='completed' "
+                "AND cleanup_pending=0 AND json_extract(action,'$.tool')='assemble_transcript'",
+                (task_id,),
+            ):
+                result = json.loads(execution["result"] or "{}")
+                speech = result.get("transcription") or {}
+                if (
+                    speech.get("source_path") != path
+                    or speech.get("coverage_sha256") != state["coverage_sha256"]
+                    or speech.get("source_sha256") != state["source_sha256"]
+                    or speech.get("full_audio_coverage") is not True
+                ):
+                    continue
+                expected = {
+                    "receipts/" + item["path"]: item for item in result.get("artifacts", [])
+                }
+                pair = [speech.get("transcript_path"), speech.get("subtitles_path")]
+                if all(
+                    name in receipts
+                    and name in expected
+                    and receipts[name]["execution_id"] == execution["id"]
+                    and all(
+                        receipts[name][key] == expected[name].get(key)
+                        for key in ("id", "sha256", "bytes")
+                    )
+                    for name in pair
+                ):
+                    assembled = True
+                    break
+            if not assembled:
+                blockers.append(
+                    {
+                        **state,
+                        "error": "whole_recording_assembly_required",
+                        "hint": "Call assemble_transcript, then review its complete output pair.",
+                    }
+                )
+        if not state.get("assembly_ready"):
+            blockers.append(
+                {
+                    **state,
+                    "error": "whole_recording_coverage_incomplete",
+                    "hint": "Transcribe the next missing window before marking coverage. "
+                    "A partial transcript cannot satisfy the original whole-recording request.",
+                }
+            )
+    return blockers

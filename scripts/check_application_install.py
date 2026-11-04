@@ -200,12 +200,11 @@ def main():
     )
     for step in ("first", "restart"):
         subprocess.run(
-            [
-                str(args.installer.resolve()),
-                "/S",
-                "/NOSETUP",
-                "/D=" + str(args.install_dir.resolve()),
-            ],
+            # NSIS parses /D as an unquoted command-line tail, including spaces.
+            # Passing a Python argument list quotes it and silently loses the override.
+            subprocess.list2cmdline([str(args.installer.resolve()), "/S", "/NOSETUP"])
+            + " /D="
+            + str(args.install_dir.resolve()),
             check=True,
             timeout=180,
         )
@@ -230,7 +229,9 @@ def main():
     assert databases, "Persistent database missing"
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in databases if p.is_file()}
     subprocess.run(
-        [str(args.install_dir / "Uninstall.exe"), "/S", "_?=" + str(args.install_dir)],
+        subprocess.list2cmdline([str(args.install_dir / "Uninstall.exe"), "/S"])
+        + " _?="
+        + str(args.install_dir.resolve()),
         check=True,
         timeout=120,
     )
