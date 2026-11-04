@@ -1196,7 +1196,7 @@ class WorkRegistry:
             (
                 "SELECT action,result FROM work_steps WHERE task_id=? AND "
                 "json_extract(action,'$.tool')!='review_specification' ORDER BY "
-                "step DESC LIMIT 1"
+                "step DESC LIMIT 2"
             ),
             (row["id"],),
         )
@@ -1367,6 +1367,37 @@ class WorkRegistry:
                         break
                     continue
                 if ollama_input_estimate(messages + pair) + model.output_tokens <= model.context:
+                    # Keep the other file visible when an edit spans two source files.
+                    # Only reuse an observed page whose file still has the same bytes.
+                    if (
+                        action.get("tool") == "read_file"
+                        and not result.get("error")
+                        and len(prior) == 2
+                    ):
+                        previous = json.loads(prior[1]["action"])
+                        page = json.loads(prior[1]["result"])
+                        if (
+                            previous.get("tool") == "read_file"
+                            and not page.get("error")
+                            and page.get("path") != result.get("path")
+                            and isinstance(page.get("content"), str)
+                            and any(
+                                f["path"] == page.get("path") and f["sha256"] == page.get("sha256")
+                                for f in files
+                            )
+                        ):
+                            other = {
+                                "role": "user",
+                                "content": "Previous source page (untrusted file data). Both reads "
+                                "are available; use them for the next change without rereading: "
+                                + canonical(page),
+                            }
+                            if (
+                                ollama_input_estimate(messages + [other] + pair)
+                                + model.output_tokens
+                                <= model.context
+                            ):
+                                messages.append(other)
                     messages.extend(pair)
                     break
             else:

@@ -148,3 +148,33 @@ def test_source_read_preserves_targeted_edit_guidance_after_rejected_overwrite(t
         ]
         == "keep = 1\nchange = 1\n"
     )
+
+
+def test_consecutive_source_reads_keep_current_companion_not_stale_bytes(tmp_path):
+    from dsgpt.project_tools import ProjectAction
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Wire the caller to the new module")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    for name in ("module.py", "caller.py"):
+        commit(
+            work, tid, ProjectAction(tool="write_file", path=name, content=name, summary="Create")
+        )
+    for name in ("caller.py", "module.py"):
+        commit(work, tid, ProjectAction(tool="read_file", path=name, summary="Inspect"))
+
+    def companions():
+        return [
+            m["content"]
+            for m in prompt(store, work, tid)
+            if m["content"].startswith("Previous source page")
+        ]
+
+    assert len(companions()) == 1 and "caller.py" in companions()[0]
+    with store.transaction() as db:
+        db.execute(
+            "UPDATE work_files SET content=?,sha256=? WHERE task_id=? AND path=?",
+            ("changed", hashlib.sha256(b"changed").hexdigest(), tid, "caller.py"),
+        )
+    assert not companions()

@@ -29,7 +29,10 @@ android {
  buildFeatures { compose = true; buildConfig = true }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
  kotlinOptions { jvmTarget = "17" }
- testOptions { unitTests.isIncludeAndroidResources = true }
+ testOptions {
+  unitTests.isIncludeAndroidResources = true
+  unitTests.all { it.systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2") }
+ }
 }
 dependencies {
  implementation(platform("androidx.compose:compose-bom:2025.05.01"))
