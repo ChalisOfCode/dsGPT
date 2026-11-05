@@ -209,3 +209,36 @@ def test_source_read_grammar_retains_edits_and_partial_or_changed_rereads():
         (page, {"a.py": "changed"}),
     ]:
         assert "a.py" in grammar(modified, rev)["read_file"]["path"]["enum"]
+
+
+def test_noop_edit_returns_source_without_counting_as_implementation(tmp_path):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import visible_source_read
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement a referenced module")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "from module import main\nmain()\n"
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    for a in [
+        ProjectAction(tool="write_file", path="caller.py", content=body, summary="Create caller"),
+        ProjectAction(
+            tool="edit_file",
+            path="caller.py",
+            old_text="main()",
+            new_text="main()",
+            expected_sha256=digest,
+            summary="No change",
+        ),
+    ]:
+        commit(work, tid, a)
+    messages = prompt(store, work, tid)
+    result = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
+    assert result["error"] == "edit_has_no_change" and result["content"] == body
+    assert result["sha256"] == digest and result["has_more"] is False
+    assert visible_source_read(messages, {"caller.py": digest}) == "caller.py"
+    assert visible_source_read(messages, {"caller.py": "changed"}) is None
+    context = json.loads(messages[1]["content"])
+    assert "No bytes changed" in context["next_step"]
+    assert not context["build_state"]["completion_ready"]

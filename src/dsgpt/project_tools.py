@@ -294,6 +294,21 @@ def action_schema(
     return {"oneOf": variants, "$defs": ProjectAction.model_json_schema().get("$defs", {})}
 
 
+def source_page(row, path, offset):
+    excerpt = row["content"][offset:].encode()[:3000].decode("utf-8", errors="ignore")
+    return {
+        "path": path,
+        "sha256": row["sha256"],
+        "content": excerpt,
+        "offset": offset,
+        "total_characters": len(row["content"]),
+        "next_offset": offset + len(excerpt)
+        if offset + len(excerpt) < len(row["content"])
+        else None,
+        "has_more": offset + len(excerpt) < len(row["content"]),
+    }
+
+
 class ProjectTools:
     def __init__(self, store):
         self.store = store
@@ -430,10 +445,12 @@ class ProjectTools:
                 }
             if action.old_text == action.new_text:
                 return {
+                    **source_page(row, action.path, 0),
                     "error": "edit_has_no_change",
-                    "help": "The file already contains this text; this is not a hash mismatch. "
-                    "Do not repeat the edit. Verify the requested behavior, then record "
-                    "requirement coverage or perform the remaining build/test checks.",
+                    "help": "The proposed replacement equals the original text. No bytes changed. "
+                    "The current source page is attached. If the desired line already exists, "
+                    "implement the missing code it refers to, or test the behavior. Only edit "
+                    "this location again if the replacement actually changes it.",
                 }
             content = row["content"].replace(action.old_text, action.new_text, 1)
             if len(content.encode()) > MAX_FILE_BYTES:
@@ -452,20 +469,7 @@ class ProjectTools:
         if tool == "read_file":
             if not row:
                 return {"error": "file_not_found"}
-            excerpt = (
-                row["content"][action.offset :].encode()[:3000].decode("utf-8", errors="ignore")
-            )
-            return {
-                "path": action.path,
-                "sha256": row["sha256"],
-                "content": excerpt,
-                "offset": action.offset,
-                "total_characters": len(row["content"]),
-                "next_offset": action.offset + len(excerpt)
-                if action.offset + len(excerpt) < len(row["content"])
-                else None,
-                "has_more": action.offset + len(excerpt) < len(row["content"]),
-            }
+            return source_page(row, action.path, action.offset)
         if (row and row["sha256"] != action.expected_sha256) or (
             not row and action.expected_sha256
         ):

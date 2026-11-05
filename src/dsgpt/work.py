@@ -59,7 +59,10 @@ def visible_source_read(messages, revisions):
     if (
         not isinstance(action, dict)
         or not isinstance(page, dict)
-        or action.get("tool") != "read_file"
+        or not (
+            action.get("tool") == "read_file"
+            or (action.get("tool") == "edit_file" and page.get("error") == "edit_has_no_change")
+        )
     ):
         return None
     path = page.get("path")
@@ -1380,6 +1383,13 @@ class WorkRegistry:
                         "write_file, then use a small edit_file to wire them into existing source. "
                         "Build and test the actual implementation before marking coverage."
                     )
+                    messages[1]["content"] = canonical(context)
+                if (
+                    action.get("tool") == "edit_file"
+                    and clipped.get("error") == "edit_has_no_change"
+                    and not completion_ready
+                ):
+                    context["next_step"] = clipped["help"]
                     messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_requirements" and not clipped.get("error"):
                     context["next_step"] = (
