@@ -159,3 +159,27 @@ whitespace checks passed. The four-file diff was manually reviewed and the pinne
 tracked-source secret scanner found no leaks; this is a limited scan, not a proof
 of general security. The f153f70 actual-model run remains unchanged and its result
 must be assessed independently of these later harness changes.
+
+## Candidate requirement navigation
+
+The earlier 8b65f13 model evidence contains a Task data class with String IDs and
+unrequested due-date fields, contrary to the later exact domain contract. This
+was not a completed application or a failed independent domain-test result.
+Inspection showed guided prompts include only the current section and a short
+overview; the already-reviewed section notes were accessible only by an explicit
+list_requirements call. Missing cross-section context is a recovery hypothesis,
+not an established explanation of the model's reasoning.
+
+The candidate adds a bounded page of section IDs and existing navigation notes
+only when it fits after current source and error evidence. Notes are explicitly
+non-authoritative; exact originals still require read_requirements. It preserves
+all original bytes, coverage requirements and tool feedback, has next/previous
+index offsets, and cannot cross task boundaries. When no index fits, the existing
+prompt is returned unchanged. The live f153f70 run has not been altered.
+
+Three navigation regressions passed. Full candidate suite: 1104 tests plus six
+subtests passed in 112.00 seconds; Ruff and whitespace checks passed. Separately,
+the complete published 893deb6 suite passed 1101 tests plus six subtests in
+104.42 seconds. Candidate real-model behavior remains unverified. Keep this
+candidate separate until the active run's outcome is reviewed; do not launch a
+duplicate acceptance job to test it concurrently.

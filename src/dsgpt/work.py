@@ -1577,6 +1577,40 @@ class WorkRegistry:
             ]
             if ollama_input_estimate(candidate) + model.output_tokens <= model.context:
                 messages = candidate
+        return self._with_requirement_navigation(messages, row["id"], model)
+
+    def _with_requirement_navigation(self, messages, task_id, model):
+        """Use spare context for cross-section navigation, never displace live evidence."""
+        context = json.loads(messages[1]["content"])
+        requirements = context["requirements"]
+        if requirements["coverage"]["total"] <= 1:
+            return messages
+        ordinal = requirements["current_section"]["requirement_id"]
+        offset = ((ordinal - 1) // 8) * 8
+        with self.store.connect() as db:
+            listing = self.specs.listing(db, task_id, offset)
+        for cap in (220, 120, 60):
+            navigation = {
+                **listing,
+                "offset": offset,
+                "previous_offset": offset - 8 if offset else None,
+                "sections": [
+                    {**section, "notes": excerpt(section["notes"], cap)}
+                    for section in listing["sections"]
+                ],
+                "usage": (
+                    "Model-written navigation notes, not authoritative requirements or "
+                    "completion evidence. Before defining shared data, APIs or UI behavior, "
+                    "read the relevant exact sections with read_requirements. "
+                    "list_requirements pages the rest of this index."
+                ),
+            }
+            expanded = {**context, "requirements": {**requirements, "navigation": navigation}}
+            candidate = [
+                messages[0], {**messages[1], "content": canonical(expanded)}, *messages[2:]
+            ]
+            if ollama_input_estimate(candidate) + model.output_tokens <= model.context:
+                return candidate
         return messages
 
     async def _inspect_asset_image(self, task_id, model, path):
