@@ -195,6 +195,35 @@ def steps(store, task_id):
     ]
 
 
+def progress_event(phase, task, history):
+    """Expose recorded action categories, never request/source/credential text."""
+    event = {"phase": phase, "status": task["status"], "step": task["session"]["step"]}
+    if not history:
+        return event
+    latest = history[-1]
+    action, result = latest["action"], latest["result"]
+    allowed = set(ProjectAction.model_json_schema()["properties"]["tool"]["enum"])
+    allowed.update({"review_specification", "review_image"})
+    event["last_action"] = (
+        "invalid_response" if "invalid_output" in action
+        else action.get("tool") if action.get("tool") in allowed else "unknown"
+    )
+    event["last_result"] = (
+        "validation_rejected" if result.get("error") == "invalid_action"
+        else "tool_error" if result.get("error") or result.get("exit_code") not in (None, 0)
+        else "recorded"
+    )
+    if "invalid_output" in action:
+        event["rejected_response_characters"] = len(action["invalid_output"])
+    repeated = 0
+    for previous in reversed(history):
+        if previous["action"] != action:
+            break
+        repeated += 1
+    event["consecutive_identical_actions"] = repeated
+    return event
+
+
 def restart_snapshot(store, task_id):
     task = store.one("SELECT requirements FROM work_tasks WHERE id=?", (task_id,))
     return {
@@ -392,7 +421,7 @@ def inject_user_fault(store, task_id):
 def repair_observed(history, after, execution_results=None):
     failed = None
     for step in history:
-        if step["step"] <= after or step["action"]["tool"] not in {"build_project", "run"}:
+        if step["step"] <= after or step["action"].get("tool") not in {"build_project", "run"}:
             continue
         result = step["result"]
         result = (execution_results or {}).get(result.get("execution_id"), result)
@@ -496,13 +525,14 @@ def run(args, report):
                 step = task["session"]["step"]
                 state = (phase, task["status"], step)
                 if state != prior_step:
+                    history = steps(app.state.store, task_id)
                     print(
-                        json.dumps({"phase": phase, "status": task["status"], "step": step}),
+                        json.dumps(progress_event(phase, task, history)),
                         flush=True,
                     )
                     prior_step = state
                     report["last_task"] = task
-                    report["last_steps"] = steps(app.state.store, task_id)
+                    report["last_steps"] = history
                     save_report(args.output, report)
                 if task["status"] in {"completed", "blocked", "stopped"}:
                     break
@@ -565,10 +595,11 @@ def continue_followup(args, report, client, app, task_id, deadline, after):
         step = task["session"]["step"]
         state = (task["status"], step)
         if state != previous:
-            print(json.dumps({"phase": "followup", "status": state[0], "step": step}), flush=True)
+            history = steps(app.state.store, task_id)
+            print(json.dumps(progress_event("followup", task, history)), flush=True)
             previous = state
             report["last_task"] = task
-            report["last_steps"] = steps(app.state.store, task_id)
+            report["last_steps"] = history
             save_report(args.output, report)
         if task["status"] in {"completed", "blocked", "stopped"}:
             break

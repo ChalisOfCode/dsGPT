@@ -137,3 +137,25 @@ The fresh actual 9B run 42114834765 remains on f153f70 and is left undisturbed;
 this follow-up change is not part of that run and cannot inherit its outcome.
 Before publishing, public storage inventory was 61 artifacts, 91354358 unexpired
 bytes; no duplicate model acceptance run or artifact deletion was initiated.
+
+## Acceptance harness follow-up audit
+
+Read-only progress logging now classifies the last persisted action and result,
+and counts consecutive identical actions. It never logs prompt/source text,
+paths, validator messages or model summaries. This does not modify model requests,
+actions, the task database, budgets or acceptance decisions.
+
+A regression reproduced a KeyError in the compiler-repair checker when a rejected
+response appeared in follow-up history. Rejections lack an action tool field.
+The checker now skips these non-executed entries while still requiring an actual
+marker compiler failure followed by a successful build. Tests also reject histories
+with only rejections or a missing failed/successful build. No app implementation or
+model action was substituted.
+
+The harness suite passed 41 focused cases, including log-data exclusion, nonzero
+compiler exits and rejected-action repair history. The full suite before the final
+two log-classifier cases passed 1099 tests plus 6 subtests in 93.56 seconds. Ruff and
+whitespace checks passed. The four-file diff was manually reviewed and the pinned
+tracked-source secret scanner found no leaks; this is a limited scan, not a proof
+of general security. The f153f70 actual-model run remains unchanged and its result
+must be assessed independently of these later harness changes.

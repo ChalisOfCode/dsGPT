@@ -23,6 +23,49 @@ def test_declared_source_commit_keeps_actual_checkout_identity():
     assert record["python_modules"]
 
 
+def test_live_progress_reports_repeated_rejections_without_replaying_content():
+    raw = 'private source, prompt or credential must not be logged'
+    invalid = {
+        "action": {"invalid_output": raw},
+        "result": {"error": "invalid_action", "fields": [{"message": raw}]},
+    }
+    task = {"status": "running", "session": {"step": 3}}
+    history = [
+        {"action": {"tool": "read_file", "path": raw}, "result": {"content": raw}},
+        invalid, invalid,
+    ]
+    before = json.dumps(history)
+    event = acceptance.progress_event("initial", task, history)
+    assert event == {
+        "phase": "initial", "status": "running", "step": 3,
+        "last_action": "invalid_response", "last_result": "validation_rejected",
+        "rejected_response_characters": len(raw), "consecutive_identical_actions": 2,
+    }
+    assert raw not in json.dumps(event)
+    assert json.dumps(history) == before
+
+
+@pytest.mark.parametrize("tool,reported", [("edit_file", "edit_file"), ("secret", "unknown")])
+def test_live_progress_exposes_only_allowlisted_action_categories(tool, reported):
+    task = {"status": "running", "session": {"step": 1}}
+    event = acceptance.progress_event("followup", task, [{
+        "action": {"tool": tool, "summary": "do not publish", "new_text": "source"},
+        "result": {"error": "private failure detail", "stderr": "sensitive log"},
+    }])
+    assert event["last_action"] == reported and event["last_result"] == "tool_error"
+    assert event["consecutive_identical_actions"] == 1
+    assert not {"summary", "new_text", "error", "stderr"} & event.keys()
+
+
+@pytest.mark.parametrize("exit_code,outcome", [(0, "recorded"), (1, "tool_error")])
+def test_live_progress_classifies_actual_build_exit_code(exit_code, outcome):
+    task = {"status": "running", "session": {"step": 1}}
+    event = acceptance.progress_event("initial", task, [{
+        "action": {"tool": "build_project"}, "result": {"exit_code": exit_code},
+    }])
+    assert event["last_result"] == outcome
+
+
 @pytest.mark.parametrize(
     "field", ["python_modules", "harness_sha256", "requirements_sha256", "followup_sha256"]
 )

@@ -97,6 +97,25 @@ def test_repair_evidence_requires_real_compiler_error_before_success():
             acceptance.repair_observed(history, 5, full)
 
 
+def test_compiler_repair_check_survives_rejected_model_responses_without_counting_them():
+    rejected = {
+        "step": 8, "action": {"invalid_output": "incomplete JSON"},
+        "result": {"error": "invalid_action"},
+    }
+    failed = {
+        "step": 9, "action": {"tool": "build_project"},
+        "result": {"exit_code": 1, "stderr": "error: DSGPT_ACCEPTANCE_REPAIR"},
+    }
+    passed = {"step": 11, "action": {"tool": "build_project"}, "result": {"exit_code": 0}}
+    between = {**rejected, "step": 10}
+    assert acceptance.repair_observed([rejected, failed, between, passed], 5) == {
+        "failure_step": 9, "repaired_build_step": 11,
+    }
+    for history in ([rejected, passed], [failed, between], [rejected, between]):
+        with pytest.raises(AssertionError, match="No actual marker compiler failure"):
+            acceptance.repair_observed(history, 5)
+
+
 def test_declared_user_fault_preserves_original_source_and_is_not_a_model_step(tmp_path):
     store = Store(tmp_path)
     work = WorkRegistry(store)
