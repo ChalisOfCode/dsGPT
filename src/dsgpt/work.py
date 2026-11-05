@@ -1294,7 +1294,7 @@ class WorkRegistry:
         prior = self.store.all(
             (
                 "SELECT action,result FROM work_steps WHERE task_id=? AND "
-                "json_extract(action,'$.tool')!='review_specification' ORDER BY "
+                "coalesce(json_extract(action,'$.tool'),'')!='review_specification' ORDER BY "
                 "step DESC LIMIT 2"
             ),
             (row["id"],),
@@ -1456,6 +1456,16 @@ class WorkRegistry:
                     and not completion_ready
                 ):
                     context["next_step"] = clipped["help"]
+                    messages[1]["content"] = canonical(context)
+                if clipped.get("error") == "invalid_action" and not completion_ready:
+                    context["next_step"] = (
+                        "The previous response was rejected and NO action was executed. "
+                        "Use the recorded validation error to choose a corrected action. "
+                        "Do not repeat the rejected response. For an incomplete JSON string, "
+                        "reduce the change to one small edit or new module, with a compact "
+                        "summary and a complete JSON object. Read the intended file before "
+                        "editing; old_text must come from that file, not a different file."
+                    )
                     messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_requirements" and not clipped.get("error"):
                     context["next_step"] = (

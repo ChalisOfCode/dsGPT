@@ -76,3 +76,31 @@ in repository settings; no archive settings or contents were changed.
   Gitleaks scanned the tracked working snapshot (about 3.67 MB) and found no leaks.
   This scan does not establish that the entire application is secure. A fresh
   actual-model pass is still required; regression fixtures do not prove it.
+
+## Routine platform success and invalid-action feedback recovery
+
+Routine CI 42102598215 passed all nine jobs on
+8b65f1346b25bdf4e6e3e9e1dd83a23ad13ad4cc, including disposable Windows installer
+acceptance and Android emulator lifecycle instrumentation. This does not verify
+owner hardware or production Android signing continuity.
+
+Fresh actual-model run 42102733380 failed at step 17 with invalid_action. The model
+emitted the same incomplete JSON edit three times, with repeated import text, and
+no rejected edit executed. The source-history query used a SQL comparison on the
+missing tool field in invalid-output records; NULL excluded those records from the
+next prompt. The correction includes these validation failures while continuing
+to exclude specification-review records. It gives bounded repair guidance and
+retains the three-failure stop. No malformed response is repaired or executed by
+the controller, and acceptance requirements remain unchanged.
+
+Original evidence ZIP SHA-256:
+757cd929baf5dbb93c7040725bd2ac938b154879e37acfcba41751b025776e8c.
+The digest matched GitHub; the original ZIP was saved separately before expiry.
+The new regressions verify malformed JSON and unknown actions remain visible as
+errors, raw rejected text stays out of prompts, source bytes stay unchanged, and
+three invalid attempts still block. Focused recovery tests: 28 passed; Ruff clean.
+Full regression suite: 1091 tests and 6 subtests passed. Manual review covered the
+three changed files; the pinned tracked-source Gitleaks scan found no leaks in
+about 3.68 MB. This is a limited source scan, not a security certification.
+Public inventory before retry: 51 artifacts, 75221919 unexpired bytes. No jobs
+were active and no artifacts, signing material or source history were deleted.
