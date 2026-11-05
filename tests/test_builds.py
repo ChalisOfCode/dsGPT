@@ -381,9 +381,13 @@ asyncio.run(main())
     child = subprocess.Popen([sys.executable, "-c", program, str(data), task["id"], str(marker)])
     try:
         deadline = time.monotonic() + 5
-        while not marker.exists() and time.monotonic() < deadline:
+        # File creation precedes write/close. Kill only after the fixture effect is
+        # observable, otherwise this tests interruption of the fixture's write.
+        while time.monotonic() < deadline:
+            if marker.exists() and marker.read_text() == "one trusted fixture effect":
+                break
             time.sleep(0.01)
-        assert marker.exists()
+        assert marker.read_text() == "one trusted fixture effect"
     finally:
         child.kill()
         child.wait(timeout=5)

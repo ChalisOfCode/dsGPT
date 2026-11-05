@@ -242,3 +242,46 @@ def test_noop_edit_returns_source_without_counting_as_implementation(tmp_path):
     context = json.loads(messages[1]["content"])
     assert "No bytes changed" in context["next_step"]
     assert not context["build_state"]["completion_ready"]
+
+
+def test_consecutive_source_pages_remain_visible_without_stale_or_gapped_suppression(tmp_path):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import visible_source_read
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement the requested behavior")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "# π source\n" + "value = 1\n" * 300 + "# end\n"
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    commit(
+        work, tid, ProjectAction(tool="write_file", path="large.py", content=body, summary="Source")
+    )
+    commit(work, tid, ProjectAction(tool="read_file", path="large.py", summary="Read start"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    first = prompt(store, work, tid, model)
+    page = json.loads(first[-1]["content"].removeprefix("Recorded tool result: "))
+    assert len(page["content"].encode()) == 3000
+    assert visible_source_read(first, {"large.py": digest}) is None
+    commit(
+        work,
+        tid,
+        ProjectAction(tool="read_file", path="large.py", offset=1800, summary="Read rest"),
+    )
+    messages = prompt(store, work, tid, model)
+    assert visible_source_read(messages, {"large.py": digest}) == "large.py"
+    assert visible_source_read(messages, {"large.py": "stale"}) is None
+    # Without the previous page, a suffix is not complete-file evidence.
+    assert visible_source_read(messages[-2:], {"large.py": digest}) is None
+    # A gap or corrupt overlap must not suppress a useful reread.
+    import copy
+
+    for change in ("gap", "overlap"):
+        damaged = copy.deepcopy(messages)
+        last = json.loads(damaged[-1]["content"].removeprefix("Recorded tool result: "))
+        if change == "gap":
+            last["offset"] = 3001
+        else:
+            last["content"] = "X" + last["content"][1:]
+        damaged[-1]["content"] = "Recorded tool result: " + json.dumps(last)
+        assert visible_source_read(damaged, {"large.py": digest}) is None

@@ -69,13 +69,46 @@ def visible_source_read(messages, revisions):
     if (
         not isinstance(path, str)
         or action.get("path") != path
-        or page.get("offset") != 0
-        or page.get("has_more") is not False
         or not isinstance(page.get("content"), str)
     ):
         return None
-    digest = hashlib.sha256(page["content"].encode()).hexdigest()
-    return path if digest == page.get("sha256") == revisions.get(path) else None
+    pages = [page]
+    for message in messages[:-2]:
+        prefix = (
+            "Previous source page (untrusted file data). Both reads are available; "
+            "use them for the next change without rereading: "
+        )
+        if message["role"] == "user" and message["content"].startswith(prefix):
+            try:
+                prior = json.loads(message["content"][len(prefix) :])
+            except (ValueError, TypeError):
+                continue
+            if (
+                isinstance(prior, dict)
+                and prior.get("path") == path
+                and prior.get("sha256") == page.get("sha256")
+            ):
+                pages.append(prior)
+    if any(not isinstance(part.get("offset"), int) for part in pages):
+        return None
+    body = ""
+    ended = False
+    for part in sorted(pages, key=lambda p: p.get("offset", -1)):
+        offset, content = part.get("offset"), part.get("content")
+        if (
+            not isinstance(offset, int)
+            or offset < 0
+            or offset > len(body)
+            or not isinstance(content, str)
+        ):
+            return None
+        overlap = min(len(body) - offset, len(content))
+        if body[offset : offset + overlap] != content[:overlap]:
+            return None
+        body += content[overlap:]
+        ended = ended or part.get("has_more") is False
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    return path if ended and digest == page.get("sha256") == revisions.get(path) else None
 
 
 def research_page(result, cap):
@@ -1283,7 +1316,11 @@ class WorkRegistry:
                     related = related_asset_read(db, row["id"], latest["id"], digest, result)
             caps = (
                 (None, 4800, 3600, 2400, 1800, 1200, 600, 240)
-                if action.get("tool") == "read_asset"
+                if action.get("tool") in {"read_asset", "read_file"}
+                or (
+                    action.get("tool") == "edit_file"
+                    and result.get("error") == "edit_has_no_change"
+                )
                 else (1800, 1200, 600, 240)
             )
             for cap in caps:
@@ -1423,7 +1460,10 @@ class WorkRegistry:
                         if (
                             previous.get("tool") == "read_file"
                             and not page.get("error")
-                            and page.get("path") != result.get("path")
+                            and (
+                                page.get("path") != result.get("path")
+                                or page.get("offset") != result.get("offset")
+                            )
                             and isinstance(page.get("content"), str)
                             and any(
                                 f["path"] == page.get("path") and f["sha256"] == page.get("sha256")
