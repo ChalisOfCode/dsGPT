@@ -1525,7 +1525,10 @@ class WorkRegistry:
                     break
             else:
                 # A bounded pointer, not a silent partial source file.
-                context["next_step"] = next_step  # No page was included; do not advance its offset.
+                # A rejected action has no source/build log to reread. Keep its
+                # recovery instruction even when the separate history pair cannot fit.
+                if result.get("error") != "invalid_action":
+                    context["next_step"] = next_step
                 context["previous_result"] = {
                     "tool": action.get("tool"),
                     "error": result.get("error"),
@@ -1533,6 +1536,12 @@ class WorkRegistry:
                     "sha256": result.get("sha256"),
                     "note": "Full result is recorded; read a smaller page or read_build_log.",
                 }
+                if result.get("error") == "invalid_action":
+                    context["previous_result"] = {
+                        "error": "invalid_action",
+                        "fields": result.get("fields", [])[:3],
+                        "note": "Rejected response remains in the step log; no action executed.",
+                    }
                 if action.get("tool") == "read_asset":
                     context = compact_asset_context(context)
                 messages[1]["content"] = canonical(context)

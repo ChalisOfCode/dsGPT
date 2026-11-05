@@ -104,3 +104,36 @@ three changed files; the pinned tracked-source Gitleaks scan found no leaks in
 about 3.68 MB. This is a limited source scan, not a security certification.
 Public inventory before retry: 51 artifacts, 75221919 unexpired bytes. No jobs
 were active and no artifacts, signing material or source history were deleted.
+
+## Tight-context rejection feedback and controller retry checks
+
+Routine CI 42114760303 passed all nine jobs on
+f153f7006c6b076752c415ea50b959decf92ea42. The original Windows and Android
+diagnostic artifact ZIPs were SHA-256 verified and saved together before expiry.
+Combined evidence ZIP SHA-256:
+43ec276332c5d56ee4bcbcfdf3dca4eec9ed01083b31177c85ab1106c8a74084.
+Windows installation/reinstallation preserved credentials, chats and models;
+Android lifecycle instrumentation passed. These are routine platform checks,
+not production-signing, owner-hardware or actual 9B complex-app completion evidence.
+
+A new controller-level regression exposed another feedback loss: if the separate
+history messages could not fit the configured context, the fallback discarded
+validation details and restored generic guidance to read source/build logs. An
+invalid response has executed neither a source operation nor a build. The fallback
+now retains the rejection guidance and up to three bounded validator fields in
+the context. The complete rejected output stays in its original step record and
+is not replayed to the model. Original requirements remain saved and pageable.
+
+Four streamed-response controller cases cover 8192 and 16384 context settings,
+both a valid subsequent edit and three rejected responses. They check the final
+prompt budget, no mutation by rejected responses, actual application of the valid
+edit and the unchanged three-failure stop. These use an explicit inference fixture;
+they do not establish real-model recovery. All six rejection tests passed; the
+full suite passed 1095 tests plus 6 subtests in 86.70 seconds. Ruff passed. Manual
+review covers the three changed files; the pinned tracked-source Gitleaks scan
+found no leaks in approximately 3.68 MB. This is not a security certification.
+
+The fresh actual 9B run 42114834765 remains on f153f70 and is left undisturbed;
+this follow-up change is not part of that run and cannot inherit its outcome.
+Before publishing, public storage inventory was 61 artifacts, 91354358 unexpired
+bytes; no duplicate model acceptance run or artifact deletion was initiated.
