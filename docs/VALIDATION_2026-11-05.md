@@ -183,3 +183,48 @@ the complete published 893deb6 suite passed 1101 tests plus six subtests in
 104.42 seconds. Candidate real-model behavior remains unverified. Keep this
 candidate separate until the active run's outcome is reviewed; do not launch a
 duplicate acceptance job to test it concurrently.
+
+## Actual f153f70 outcome and retained-source recovery
+
+Fresh original-request actual 9B run 42114834765 on
+f153f7006c6b076752c415ea50b959decf92ea42 finished with failure. Initial step 16
+stopped with no_progress after three reads of the unchanged MainActivity source.
+Step 13 rejected an existing-file write, step 14 read that source, and step 15
+rejected incomplete JSON without executing an edit. Step 16 then requested the
+same source again. This run did not validate later runtime or harness changes.
+Generated-app Windows/Android/native-join jobs were skipped, not passed.
+
+Original evidence artifact 13459147047 was downloaded and its digest verified:
+106470 bytes, SHA256
+`00070f30dd72838a8d60efe8c578e2ab16ef32439a11cc92c5304928f8113452`.
+It was preserved durably as `libfile_77637d3c33308191bac4acac0aaf351c`.
+The model phase took 2858.445 seconds. No model action or app implementation was
+replaced. No completed TaskLedger APK/EXE is claimed.
+
+The controller retained the rejection but dropped the preceding source page, and
+its recovery instruction told the model to read the intended file. The correction
+keeps an observed, unchanged source page across consecutive rejected responses
+when it fits alongside the validator feedback. Hash validation gates reuse. Only
+complete visible bytes can suppress a redundant read in the action schema;
+partial/stale/absent pages remain readable. An intervening non-rejection operation
+stops this carry-forward. The unchanged repeated-failure limits still apply.
+
+Five focused regressions cover current source, consecutive rejections, changed
+bytes, partial pages and intervening operations. The combined recovery, source-read
+and navigation suites passed 24 tests, including the existing 8192/16384-context
+streamed-response checks. An initial longer instruction exceeded the tight-context
+case; shortening it resolved that regression without dropping validator feedback.
+These tests use explicit fixtures and do not prove actual 9B recovery.
+
+The requirement-navigation candidate ee9d7bc is incorporated in the next retry:
+its bounded navigation notes may help avoid inconsistent cross-section choices,
+but exact requirements and completion evidence remain authoritative. Public
+inventory before this retry was 72 artifacts totaling 107594178 unexpired bytes;
+no storage cleanup or duplicate acceptance run was needed.
+
+Final combined tree validation: 1109 tests plus 6 subtests passed in 97.10 seconds;
+Ruff and whitespace checks passed. Manual publication review covered the three
+changed files and the previously audited navigation candidate. The pinned
+tracked-source Gitleaks scan reported no leaks in approximately 3.71 MB. This
+limited scan does not certify the whole project secure. Current owner hardware
+and actual-model recovery on this new tree remain unverified pending fresh runs.

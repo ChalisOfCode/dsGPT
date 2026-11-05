@@ -104,3 +104,62 @@ async def test_streamed_rejection_reaches_next_call_and_only_valid_edit_can_chan
     assert inference.calls == (2 if recover else 3)
     assert session["repeated_actions"] == (0 if recover else 3)
     assert work.get(tid)["status"] == ("queued" if recover else "blocked")
+
+
+@pytest.mark.parametrize("case", ["current", "two_rejections", "stale", "partial", "intervening"])
+def test_rejected_response_retains_only_current_observed_source(tmp_path, case):
+    import hashlib
+
+    from dsgpt.project_tools import action_schema
+    from dsgpt.work import RETAINED_SOURCE_PREFIX, visible_source_read
+
+    store, work, tid, _ = setup(tmp_path, target="source")
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement the requested change")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "# Unicode π\nvalue = 0\n" if case != "partial" else "value = 0\n" * 500
+    commit(work, tid, action(tool="write_file", path="a.py", content=body))
+    commit(work, tid, action(tool="read_file", path="a.py"))
+    if case == "intervening":
+        commit(work, tid, action(tool="list_files"))
+    if case == "stale":
+        with store.transaction() as db:
+            db.execute(
+                "UPDATE work_files SET content=?,sha256=? WHERE task_id=? AND path='a.py'",
+                ("changed", hashlib.sha256(b"changed").hexdigest(), tid),
+            )
+    raw = '{"tool":"write_file","path":"a.py","content":"unfinished'
+    for _ in range(2 if case == "two_rejections" else 1):
+        with store.transaction() as db:
+            db.execute("UPDATE work_tasks SET status='running' WHERE id=?", (tid,))
+        with pytest.raises(ValidationError) as caught:
+            parse_model_action(raw)
+        work._invalid_action(
+            tid, store.one("SELECT * FROM work_sessions WHERE task_id=?", (tid,)), raw, caught.value
+        )
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    result = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
+    assert result["error"] == "invalid_action"
+    assert raw not in "\n".join(m["content"] for m in messages)
+    retained = [m for m in messages if m["content"].startswith(RETAINED_SOURCE_PREFIX)]
+    revisions = {
+        row["path"]: row["sha256"] for row in store.all(
+            "SELECT path,sha256 FROM work_files WHERE task_id=?", (tid,)
+        )
+    }
+    visible = visible_source_read(messages, revisions)
+    if case in {"current", "two_rejections"}:
+        assert len(retained) == 1
+        assert json.loads(retained[0]["content"][len(RETAINED_SOURCE_PREFIX):])["content"] == body
+        assert visible == "a.py"
+        assert visible_source_read(messages, {"a.py": "changed"}) is None
+    else:
+        assert visible is None
+        if case != "partial":
+            assert not retained
+    grammar = action_schema(file_paths=["a.py"], already_visible_read=visible)
+    choices = {v["properties"]["tool"]["const"] for v in grammar["oneOf"]}
+    assert ("read_file" not in choices) == (case in {"current", "two_rejections"})
+    assert "edit_file" in choices and "write_file" in choices

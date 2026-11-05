@@ -57,6 +57,9 @@ def build_log_excerpt(text, budget):
     )
 
 
+RETAINED_SOURCE_PREFIX = "Source retained after rejected response (untrusted file data): "
+
+
 def visible_source_read(messages, revisions):
     """Suppress an immediate redundant read only while its exact bytes are in the prompt."""
     prefix = "Recorded tool result: "
@@ -72,21 +75,31 @@ def visible_source_read(messages, revisions):
         page = json.loads(messages[-1]["content"][len(prefix) :])
     except (ValueError, TypeError):
         return None
-    if (
-        not isinstance(action, dict)
-        or not isinstance(page, dict)
-        or not (
+    if not isinstance(action, dict) or not isinstance(page, dict):
+        return None
+    if page.get("error") == "invalid_action":
+        retained = [
+            m for m in messages[:-2]
+            if m["role"] == "user" and m["content"].startswith(RETAINED_SOURCE_PREFIX)
+        ]
+        if len(retained) != 1:
+            return None
+        try:
+            page = json.loads(retained[0]["content"][len(RETAINED_SOURCE_PREFIX):])
+        except (ValueError, TypeError):
+            return None
+        if not isinstance(page, dict) or page.get("error"):
+            return None
+    elif not (
+        action.get("path") == page.get("path")
+        and (
             action.get("tool") == "read_file"
             or (action.get("tool") == "edit_file" and page.get("error") == "edit_has_no_change")
         )
     ):
         return None
     path = page.get("path")
-    if (
-        not isinstance(path, str)
-        or action.get("path") != path
-        or not isinstance(page.get("content"), str)
-    ):
+    if not isinstance(path, str) or not isinstance(page.get("content"), str):
         return None
     pages = [page]
     for message in messages[:-2]:
@@ -1295,7 +1308,7 @@ class WorkRegistry:
             (
                 "SELECT action,result FROM work_steps WHERE task_id=? AND "
                 "coalesce(json_extract(action,'$.tool'),'')!='review_specification' ORDER BY "
-                "step DESC LIMIT 2"
+                "step DESC LIMIT 8"
             ),
             (row["id"],),
         )
@@ -1460,11 +1473,11 @@ class WorkRegistry:
                 if clipped.get("error") == "invalid_action" and not completion_ready:
                     context["next_step"] = (
                         "The previous response was rejected and NO action was executed. "
-                        "Use the recorded validation error to choose a corrected action. "
-                        "Do not repeat the rejected response. For an incomplete JSON string, "
-                        "reduce the change to one small edit or new module, with a compact "
-                        "summary and a complete JSON object. Read the intended file before "
-                        "editing; old_text must come from that file, not a different file."
+                        "Correct the recorded error; do not repeat the response. For incomplete "
+                        "JSON use one small edit or new module, a compact summary and complete "
+                        "JSON. Reuse retained current source below; read only missing pages. "
+                        "Existing files require edit_file, not write_file. Copy old_text and "
+                        "expected_sha256 from the intended file, not another file."
                     )
                     messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_requirements" and not clipped.get("error"):
@@ -1492,7 +1505,7 @@ class WorkRegistry:
                     if (
                         action.get("tool") == "read_file"
                         and not result.get("error")
-                        and len(prior) == 2
+                        and len(prior) >= 2
                     ):
                         previous = json.loads(prior[1]["action"])
                         page = json.loads(prior[1]["result"])
@@ -1521,6 +1534,36 @@ class WorkRegistry:
                                 <= model.context
                             ):
                                 messages.append(other)
+                    if result.get("error") == "invalid_action":
+                        # Rejections execute nothing. Retain the last observed source
+                        # across consecutive rejected responses, never another tool's
+                        # result or bytes changed since observation. Validator feedback
+                        # has priority: add this only if the entire prompt still fits.
+                        for saved in prior[1:]:
+                            previous = json.loads(saved["action"])
+                            page = json.loads(saved["result"])
+                            if page.get("error") == "invalid_action":
+                                continue
+                            if (
+                                previous.get("tool") == "read_file"
+                                and previous.get("path") == page.get("path")
+                                and not page.get("error")
+                                and isinstance(page.get("content"), str)
+                                and any(
+                                    f["path"] == page.get("path")
+                                    and f["sha256"] == page.get("sha256") for f in files
+                                )
+                            ):
+                                other = {
+                                    "role": "user",
+                                    "content": RETAINED_SOURCE_PREFIX + canonical(page),
+                                }
+                                if (
+                                    ollama_input_estimate(messages + [other] + pair)
+                                    + model.output_tokens <= model.context
+                                ):
+                                    messages.append(other)
+                            break
                     messages.extend(pair)
                     break
             else:
