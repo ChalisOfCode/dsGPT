@@ -146,7 +146,12 @@ jobs:
           mkdir -p artifacts/android
           cd clients/android
           bash gradlew --no-daemon testDebugUnitTest assembleRelease
-          cp app/build/outputs/apk/release/app-release-unsigned.apk ../../artifacts/android/production-unsigned.apk
+          # Routine consumers use only the two acceptance APKs. Keep evidence of
+          # the separate production build without retaining an unused binary.
+          release_apk=app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$release_apk"
+          sha256sum "$release_apk" > ../../artifacts/android/production-unsigned.sha256
+          stat -c '%s' "$release_apk" > ../../artifacts/android/production-unsigned.bytes
           bash gradlew --no-daemon -Pacceptance assembleDebug assembleDebugAndroidTest
           cp app/build/outputs/apk/debug/app-debug.apk ../../artifacts/android/acceptance.apk
           cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk ../../artifacts/android/acceptance-test.apk
