@@ -4,6 +4,11 @@ import httpx
 
 from .config import Model
 
+# Local CPU inference can spend several minutes evaluating a long prompt before
+# emitting its first streamed byte. Keep this bounded below the Work task limit,
+# while avoiding a false runtime failure at the old three-minute HTTP default.
+LOCAL_INFERENCE_READ_TIMEOUT = 900
+
 
 def ollama_input_estimate(messages):
     """Conservative UTF-8 bound shared by context assembly and the inference guard."""
@@ -83,7 +88,9 @@ class LocalInference:
             base_url=model.endpoint.rstrip("/"),
             trust_env=False,
             follow_redirects=False,
-            timeout=httpx.Timeout(connect=10, read=180, write=30, pool=10),
+            timeout=httpx.Timeout(
+                connect=10, read=LOCAL_INFERENCE_READ_TIMEOUT, write=30, pool=10
+            ),
             transport=(
                 httpx.AsyncHTTPTransport(uds=str(self.local_socket))
                 if self.local_socket

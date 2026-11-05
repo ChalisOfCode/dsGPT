@@ -228,3 +228,70 @@ changed files and the previously audited navigation candidate. The pinned
 tracked-source Gitleaks scan reported no leaks in approximately 3.71 MB. This
 limited scan does not certify the whole project secure. Current owner hardware
 and actual-model recovery on this new tree remain unverified pending fresh runs.
+
+## 5e3e396 routine CI and fresh acceptance checkpoint
+
+Published runtime commit `5e3e39613e445e2005bc969fdb419755e21b69fe`
+(tree `3d32c1b564fed47ed6d80ea2c2e58af05eb7aa83`) passed all nine routine CI jobs
+in run 42123850503. Backend JUnit reports 1115 cases (1109 tests plus six subtests),
+zero failures/errors/skips. Windows regressions report 138 cases with one skip,
+zero failures/errors. Android instrumentation reports one passed lifecycle and
+diagnostics case. Browser and Android unit-test reports were retained too.
+
+The actual installed Windows-app receipt confirms native-window launch, Credential
+Manager restoration, a local reply, scheduled backend restart and owner/chat/model
+preservation through reinstall. Its qwen3:1.7b installation fixture is separate
+from the actual 9B complex application acceptance and does not replace it. The
+legacy inventory stage records a local-inference BLOCKED entry, while the dedicated
+installed-app acceptance succeeded; production/physical usability remains REVIEW.
+No owner PC/Pixel/GPU, Docker Linux or Tailscale behavior is claimed by this run.
+
+Five original report ZIPs were digest-verified and preserved in
+`dsGPT-ci-test-evidence-5e3e396.zip`, 43018 bytes, SHA256
+`d95edfcac563ce3c3add58bcf76b83fb94d12e3efeb65ec455578dc8a9c34f3d`,
+durable file `libfile_d1b3403d25388191828dd53d11a64a73`. The included manifest records
+artifact IDs and original archive digests. These are test reports, not a release.
+
+Fresh original-request actual 9B complex run 42123898744 is running on that exact
+5e3e396 commit. The model loaded and began reviewing the original request. Native
+TaskLedger completion and later items remain unverified until actual results exist.
+The active run is not cancelled, duplicated or altered by these documentation notes.
+
+## Actual 5e3e396 outcome and local-inference timeout recovery
+
+Fresh original-request actual 9B complex run 42123898744 on
+`5e3e39613e445e2005bc969fdb419755e21b69fe` failed before its first
+implementation decision. The model reviewed all eight saved requirement sections,
+created the Android scaffold at step 9, and survived the planned normal backend
+restart with unchanged requirements and source hashes. The next structured action
+never completed: dsGPT's local HTTP client disconnected after its fixed 180-second
+read timeout while Ollama was still evaluating the 2,500-token prompt on four CPU
+threads. Ollama recorded the POST ending with status 500 at exactly three minutes.
+The task was then blocked as `runtime_unavailable`. No invalid model action or
+repeated-read loop caused this run, and the generated-app Windows/Android jobs were
+skipped rather than passed.
+
+Original evidence artifact 13461467005 was downloaded and its digest verified:
+94877 bytes, SHA256
+`6faa77d7bc16004284e0ce0ad124f4b3ac221ab473e56844773562098095e632`.
+It is preserved durably as `libfile_9b620c106d448191be284c5439f25af7`.
+The report records 1113.406 seconds overall. The exact model, digest, 16384 context,
+4096 output budget, original request, scaffold action and runtime logs are retained.
+No model action or application implementation was substituted.
+
+The correction increases only the loopback local-inference HTTP read timeout from
+180 to a bounded 900 seconds, below Work's task timeout. Connect, write and pool
+timeouts remain 10, 30 and 10 seconds. This permits slow CPU prompt evaluation to
+emit its first stream byte without removing cancellation, task deadlines, context
+checks or output limits. A regression asserts all four configured timeout bounds.
+The focused inference and Work recovery suites passed 37 tests. Ruff and whitespace
+checks passed. The pinned tracked-source Gitleaks scan found no leaks in about
+3.71 MB; this limited scan is not a security certification.
+
+Before the next run, public storage contained 67 unexpired artifacts totaling
+94666388 bytes, and no workflow run was active. No artifact deletion was required.
+
+Final combined-tree regression result: 1110 tests plus 6 subtests passed in
+105.24 seconds. Manual publication review covered the two code/test changes and
+new validation evidence. Owner hardware remains unverified, and actual 9B recovery
+on this new timeout requires a fresh original-request run.

@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from dsgpt.config import Model
-from dsgpt.inference import InferenceError, LocalInference
+from dsgpt.inference import LOCAL_INFERENCE_READ_TIMEOUT, InferenceError, LocalInference
 
 
 def ollama_handler(request):
@@ -26,6 +26,15 @@ def ollama_handler(request):
 
 def ollama_model():
     return Model("local", "Test", "ollama", "http://127.0.0.1:11434", "test:9b")
+
+
+async def test_local_cpu_generation_has_bounded_long_prompt_read_timeout():
+    adapter = LocalInference(httpx.MockTransport(ollama_handler))
+    async with adapter.client(ollama_model()) as client:
+        assert client.timeout.connect == 10
+        assert client.timeout.read == LOCAL_INFERENCE_READ_TIMEOUT == 900
+        assert client.timeout.write == 30
+        assert client.timeout.pool == 10
 
 
 async def test_ollama_real_protocol_contract():
