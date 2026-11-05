@@ -145,3 +145,29 @@ def test_gpu_check_samples_active_model_before_unload_and_keeps_failure_evidence
         assert record["completed_through_dsgpt"]
     finally:
         runner.http.close()
+
+
+@pytest.mark.parametrize("success", [False, True])
+def test_model_pull_retries_same_model_and_requires_terminal_success(
+    tmp_path, monkeypatch, success
+):
+    runner = make_runner(tmp_path)
+    calls = []
+
+    def serve(req):
+        calls.append(json.loads(req.content)["model"])
+        return httpx.Response(
+            200,
+            json={"status": "success"}
+            if success and len(calls) == 2
+            else {"error": "interrupted transfer"},
+        )
+
+    monkeypatch.setattr(main.time, "sleep", lambda _: None)
+    with httpx.Client(transport=httpx.MockTransport(serve)) as runner.http:
+        if success:
+            runner.pull_local_model()
+        else:
+            with pytest.raises(RuntimeError, match="three attempts"):
+                runner.pull_local_model()
+    assert calls == ["qwen3:1.7b"] * (2 if success else 3)

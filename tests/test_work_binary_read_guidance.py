@@ -178,3 +178,34 @@ def test_consecutive_source_reads_keep_current_companion_not_stale_bytes(tmp_pat
             ("changed", hashlib.sha256(b"changed").hexdigest(), tid, "caller.py"),
         )
     assert not companions()
+
+
+def test_source_read_grammar_retains_edits_and_partial_or_changed_rereads():
+    from dsgpt.project_tools import action_schema
+    from dsgpt.work import visible_source_read
+
+    body = "π = 3\n"
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    page = dict(path="a.py", sha256=digest, offset=0, content=body, has_more=False)
+
+    def grammar(result, revisions):
+        msgs = [
+            {"role": "assistant", "content": json.dumps(dict(tool="read_file", path="a.py"))},
+            {"role": "user", "content": "Recorded tool result: " + json.dumps(result)},
+        ]
+        schema = action_schema(
+            file_paths=list(revisions), already_visible_read=visible_source_read(msgs, revisions)
+        )
+        return {v["properties"]["tool"]["const"]: v["properties"] for v in schema["oneOf"]}
+
+    revisions = {"a.py": digest, "b.py": digest}
+    live = grammar(page, revisions)
+    assert live["read_file"]["path"]["enum"] == ["b.py"]
+    assert live["edit_file"]["path"]["enum"] == ["a.py", "b.py"]
+    assert "read_file" not in grammar(page, {"a.py": digest})
+    for modified, rev in [
+        ({**page, "content": body[:1]}, revisions),
+        ({**page, "has_more": True}, revisions),
+        (page, {"a.py": "changed"}),
+    ]:
+        assert "a.py" in grammar(modified, rev)["read_file"]["path"]["enum"]

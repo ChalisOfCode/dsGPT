@@ -467,6 +467,25 @@ class Runner:
             "This is an acceptance model, not a quality recommendation. No cloud inference.",
             flush=True,
         )
+        for attempt in range(3):
+            try:
+                self._pull_once(name)
+                return
+            except (httpx.TransportError, InterruptedError, httpx.HTTPStatusError) as exc:
+                if (
+                    isinstance(exc, httpx.HTTPStatusError)
+                    and exc.response.status_code < 500
+                    and exc.response.status_code not in {408, 429}
+                ):
+                    raise
+                if attempt == 2:
+                    raise RuntimeError(
+                        "Local model download did not complete after three attempts"
+                    ) from None
+                print("Local model transfer interrupted; resuming the same download.", flush=True)
+                time.sleep(2 ** (attempt + 1))
+
+    def _pull_once(self, name):
         completed, last = False, 0
         with self.http.stream(
             "POST",
@@ -479,7 +498,8 @@ class Runner:
                 if not line:
                     continue
                 event = json.loads(line)
-                require(not event.get("error"), "Local model download failed; rerun to resume it")
+                if event.get("error"):
+                    raise InterruptedError("Ollama reported a model transfer error")
                 completed = event.get("status") == "success"
                 if time.monotonic() - last > 5 or completed:
                     total, done = event.get("total", 0), event.get("completed", 0)
@@ -489,7 +509,8 @@ class Runner:
                         flush=True,
                     )
                     last = time.monotonic()
-        require(completed, "Local model download ended before verification; rerun to resume")
+        if not completed:
+            raise InterruptedError("Local model download ended before verification")
 
     def verified_models(self, entries):
         models = []
@@ -1020,9 +1041,7 @@ class Runner:
             require(cdp.evaluate("document.body.innerText.length") > 50, "Client UI did not render")
             stage("submit_chat_through_ui")
             wait_ui("!!document.querySelector('textarea[aria-label=Message]')")
-            cdp.evaluate(
-                "document.querySelector('button[aria-label=\"New chat\"]').click()"
-            )
+            cdp.evaluate("document.querySelector('button[aria-label=\"New chat\"]').click()")
             cdp.evaluate(
                 "(() => { const s=document.querySelector('select[aria-label=Model]'); "
                 "Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value')"
@@ -1035,9 +1054,7 @@ class Runner:
                 ".set.call(t,'Synthetic Windows UI acceptance'); "
                 "t.dispatchEvent(new Event('input',{bubbles:true})); })()"
             )
-            wait_ui(
-                "!!document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)')"
-            )
+            wait_ui("!!document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)')")
             cdp.evaluate(
                 "document.querySelector('button[aria-label=\"Send ↑\"]:not(:disabled)').click()"
             )

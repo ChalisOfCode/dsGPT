@@ -190,6 +190,7 @@ def action_schema(
     download_urls=None,
     asset_paths=None,
     completion_only=False,
+    already_visible_read=None,
 ):
     """Make tool-specific required arguments visible to the runtime's JSON grammar."""
     base = ProjectAction.model_json_schema()["properties"]
@@ -268,6 +269,11 @@ def action_schema(
             properties["expected_sha256"] = {"type": "null"}
         if tool in {"read_file", "edit_file", "browser"} and file_paths is not None:
             properties["path"] = {"enum": file_paths}
+        if tool == "read_file" and file_paths is not None and already_visible_read is not None:
+            remaining = [p for p in file_paths if p != already_visible_read]
+            if not remaining:
+                continue
+            properties["path"] = {"enum": remaining}
         if tool == "download_file" and download_urls:
             properties["url"] = {"enum": download_urls}
         if tool == "download_file":

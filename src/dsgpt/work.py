@@ -41,6 +41,40 @@ No cookies, accounts, paywalls or access controls are bypassed.
 """
 
 
+def visible_source_read(messages, revisions):
+    """Suppress an immediate redundant read only while its exact bytes are in the prompt."""
+    prefix = "Recorded tool result: "
+    if (
+        len(messages) < 2
+        or messages[-2]["role"] != "assistant"
+        or messages[-1]["role"] != "user"
+        or not messages[-1]["content"].startswith(prefix)
+    ):
+        return None
+    try:
+        action = json.loads(messages[-2]["content"])
+        page = json.loads(messages[-1]["content"][len(prefix) :])
+    except (ValueError, TypeError):
+        return None
+    if (
+        not isinstance(action, dict)
+        or not isinstance(page, dict)
+        or action.get("tool") != "read_file"
+    ):
+        return None
+    path = page.get("path")
+    if (
+        not isinstance(path, str)
+        or action.get("path") != path
+        or page.get("offset") != 0
+        or page.get("has_more") is not False
+        or not isinstance(page.get("content"), str)
+    ):
+        return None
+    digest = hashlib.sha256(page["content"].encode()).hexdigest()
+    return path if digest == page.get("sha256") == revisions.get(path) else None
+
+
 def research_page(result, cap):
     """Bound the model-facing view, retaining exact offsets and the full stored receipt."""
     clipped = dict(result)
@@ -1783,18 +1817,14 @@ class WorkRegistry:
                 model = generation.for_request(
                     self.store, "work", task_id, self.models[session["model_id"]]
                 )
-                hashes = [
-                    f["sha256"]
+                revisions = {
+                    f["path"]: f["sha256"]
                     for f in self.store.all(
-                        "SELECT sha256 FROM work_files WHERE task_id=?", (task_id,)
+                        "SELECT path,sha256 FROM work_files WHERE task_id=? ORDER BY path",
+                        (task_id,),
                     )
-                ]
-                paths = [
-                    f["path"]
-                    for f in self.store.all(
-                        "SELECT path FROM work_files WHERE task_id=? ORDER BY path", (task_id,)
-                    )
-                ]
+                }
+                hashes, paths = list(revisions.values()), list(revisions)
                 with self.store.connect() as db:
                     assets = work_assets.catalog(db, task_id)
                 # A first-page enum would make older saved outputs impossible to select.
@@ -1830,6 +1860,9 @@ class WorkRegistry:
                         specification=bool(self.specs.enabled(task_id)),
                         web_research=self.web.enabled(task_id),
                         file_paths=paths,
+                        already_visible_read=visible_source_read(messages, revisions)
+                        if spec
+                        else None,
                         download_urls=self.web.media.urls(task_id) if build else None,
                         asset_paths=asset_paths,
                         completion_only=self._completion_ready(task_id),
