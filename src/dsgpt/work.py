@@ -172,7 +172,7 @@ def visible_source_reads(messages, revisions):
     return visible
 
 
-def visible_requirement_read(messages, original):
+def _visible_requirement_read(messages, original):
     """Only exclude the exact current requirement page already shown to this decision."""
     try:
         action = json.loads(messages[-2]["content"])
@@ -194,6 +194,34 @@ def visible_requirement_read(messages, original):
                 return None
     except (ValueError, TypeError, KeyError, IndexError):
         return None
+    return None
+
+
+RETAINED_REQUIREMENT_PREFIX = "Previously inspected requirement page (exact saved text): "
+
+
+def visible_requirement_read(messages, original):
+    visible = _visible_requirement_read(messages, original)
+    if visible:
+        return visible
+    for message in messages[:-2]:
+        if (message["role"] != "user"
+                or not message["content"].startswith(RETAINED_REQUIREMENT_PREFIX)):
+            continue
+        try:
+            page = json.loads(message["content"][len(RETAINED_REQUIREMENT_PREFIX):])
+            if not isinstance(page, dict):
+                continue
+            pair = [
+                {"role": "assistant", "content": canonical({"tool": "read_requirements",
+                    "requirement_id": page.get("requirement_id"), "offset": page.get("offset")})},
+                {"role": "user", "content": "Recorded tool result: " + canonical(page)},
+            ]
+            visible = _visible_requirement_read(pair, original)
+            if visible:
+                return visible
+        except (ValueError, TypeError):
+            continue
     return None
 
 
@@ -1777,6 +1805,28 @@ class WorkRegistry:
                                     + model.output_tokens <= model.context
                                 ):
                                     messages.append(other)
+                            break
+                    if action.get("tool") == "read_requirements" and not result.get("content"):
+                        # Empty EOF/error responses must not erase the last exact section page.
+                        for saved in prior[1:]:
+                            previous = json.loads(saved["action"])
+                            page = json.loads(saved["result"])
+                            observed = [
+                                {"role": "assistant", "content": canonical(previous)},
+                                {"role": "user", "content":
+                                    "Recorded tool result: " + canonical(page)},
+                            ]
+                            if (page.get("requirement_id") != action.get("requirement_id", 1)
+                                    or not _visible_requirement_read(
+                                        observed, row["requirements"])):
+                                continue
+                            page.pop("notes", None)
+                            other = {"role": "user", "content":
+                                RETAINED_REQUIREMENT_PREFIX + canonical(page)}
+                            fitted = fit_asset_context(messages, context, [other] + pair, model)
+                            if fitted:
+                                context, candidate = fitted
+                                messages = candidate[:-len(pair)]
                             break
                     messages.extend(pair)
                     break

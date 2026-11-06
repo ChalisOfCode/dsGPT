@@ -839,3 +839,78 @@ security certification. Before dispatch all active/queued/waiting/pending counts
 were zero; 157 artifacts totaled 227818265 bytes, none expired. No deletion was
 needed. Earlier account usage-blocking and private archive disablement checks
 remain the administrative evidence; historical private storage stays unverified.
+
+## 192e6f1 routine platform verification
+
+Routine CI 42257120120 passed all nine jobs on exact commit
+`192e6f12f069ff1a760ff71a657b14e088cf8a4f`, tree
+`a6383f959867cda2cc2b0fc116bc7f1d0e8d65b6`. Five report archives were
+GitHub-digest-verified and preserved as `dsGPT-ci-test-evidence-192e6f1.zip`,
+45060 bytes, SHA256
+`fa51d6c373fee019accd5f30c4f5fa6a01384b990155ed7cd099dbbbe97450d5`,
+durable file `libfile_fde3_f-028ae7ea305481918f98f30598b46541_0e1c3d7a1ce08191b900cc9270ea7257`.
+The installed Windows report verifies native UI/local reply, Credential Manager,
+scheduled backend restart, model persistence, owner/chat preservation through
+reinstall and data-preserving uninstall. This uses separate qwen3:1.7b fixture
+inference, not the actual 9B complex-app acceptance. The staged report still
+labels inference setup BLOCKED and production/physical usability REVIEW; those
+labels are not converted into passes by the independent installed-app result.
+Android lifecycle/diagnostics instrumentation reports OK (one test).
+Complete item 5, production signing and owner hardware remain unverified.
+
+On 2026-11-06, original-request actual 9B run 42257120073, job 128027141540,
+remains in progress on this exact commit. Pinned model loading and production
+Docker toolchain setup passed; the unchanged-request model decision step is
+active. No completed complex-app/follow-up/generated-native result is available.
+No duplicate acceptance, cancellation or product source change was performed.
+
+At 2026-11-06 19:13 UTC the live browser log for job 128027141540 showed
+initial step 31 (`write_file`, `recorded`), with the job still running. Step 17
+was a validation-rejected response (17107 characters); step 20 recorded an edit.
+These are bounded action categories, not proof of feature correctness or a
+specific underlying tool error. No completed/follow-up/native result exists yet.
+The active run was not cancelled, duplicated or altered.
+
+## 192e6f1 completed complex-run failure and empty-page recovery
+
+Original-request actual 9B run 42257120073 on exact
+`192e6f12f069ff1a760ff71a657b14e088cf8a4f` failed at initial step 61,
+`no_progress`. This supersedes the preceding live observations. The model made
+source changes, including an edit at step 51, but did not complete the app.
+Steps 57 and 59 read requirement section 3 at offset 0; step 58 read its exact
+EOF (1506) and got a valid empty page, then step 60 requested offset 3000 and
+received the explicit out-of-range error. Step 61 repeated offset 0 and stopped.
+Generated Windows/Android and follow-up jobs were skipped. This is not an
+acceptance pass or evidence that the generated implementation is correct.
+
+Original evidence artifact 13541152353 is 178288 bytes, SHA256
+`ae827774d70b74525586b42c0ea72d70b91a1ae69274dc2b83d125338818f9b1`.
+Its GitHub digest was verified and the unchanged ZIP preserved as
+`dsGPT-complex-evidence-42257120073.zip`, durable file
+`libfile_fde3_f-dbf03e489b9c819193be05b98d0a729b_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The controller now retains the most recent observed nonempty page of the same
+requirement section after an empty EOF/error result, only when it matches the
+saved original and fits the unchanged budget. The latest empty/error response
+remains visible. The existing identical-page grammar guard recognizes this
+explicitly displayed, provenance-validated page; other sections/offsets remain
+available. Missing, stale, corrupt or omitted pages do not suppress reading.
+Exact EOF behavior and original action logs remain unchanged.
+
+Two synthetic regressions cover exact EOF and invalid-offset recovery, including
+stale/corrupt provenance and an omitted page under a tight budget. The combined
+focused suites passed 33 tests. A diagnostic replay of saved evidence through
+step 60 retains section 3 offset 0 at estimated 15917/16384 total budget,
+including the original 4096 output reserve. Replay is not fresh model acceptance.
+Before dispatch, active/queued/waiting/pending counts were all zero; 156 public
+artifacts totaled 227738859 bytes, none expired. No deletion was needed.
+
+Full local suite passed 1150 tests plus 6 subtests in 78.31 seconds. The final
+focused run additionally verifies omitted-page behavior under a tight budget.
+Ruff, whitespace, CI-policy and pinned tracked-source Gitleaks checks passed.
+Manual publication review covered the four changed files, including preserved
+platform notes and the dispatch request; no private diagnostics, conversations,
+device addresses, credentials, signing material or generated-app implementation
+were added. The tracked-source scan and limited manual review are not a security
+certification. A new actual-model run is still required on the published source;
+none of these local checks establishes complex-app completion.

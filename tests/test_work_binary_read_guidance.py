@@ -353,6 +353,36 @@ def test_noop_edit_retains_observed_companion_page_and_rejection(tmp_path):
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
 
 
+@pytest.mark.parametrize("beyond", [False, True])
+def test_empty_requirement_recovery_keeps_exact_previous_page(tmp_path, beyond):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import RETAINED_REQUIREMENT_PREFIX, visible_requirement_read
+
+    store, work, tid, _ = setup(tmp_path)
+    original = "Implement the module and test every requested behavior."
+    with store.transaction() as db:
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, ProjectAction(tool="read_requirements", summary="Read"))
+    commit(work, tid, ProjectAction(tool="read_requirements", offset=len(original) + int(beyond),
+                                   summary="Continue"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert visible_requirement_read(messages, original) == (1, 0)
+    result = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
+    assert bool(result.get("error")) == beyond
+    assert result["content"] == ""
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert visible_requirement_read(messages, original.replace("module", "changed")) is None
+    tight = prompt(store, work, tid, replace(model, context=512, output_tokens=128))
+    assert visible_requirement_read(tight, original) is None
+    for message in messages:
+        if message["content"].startswith(RETAINED_REQUIREMENT_PREFIX):
+            message["content"] += "corrupt"
+    assert visible_requirement_read(messages, original) is None
+
+
 @pytest.mark.parametrize("companion", ["complete", "partial", "stale", "corrupt"])
 def test_both_visible_files_exclude_only_redundant_reads(tmp_path, companion):
     from dsgpt.project_tools import ProjectAction, action_schema
