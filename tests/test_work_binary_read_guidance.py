@@ -388,3 +388,41 @@ def test_both_visible_files_exclude_only_redundant_reads(tmp_path, companion):
         assert "read_file" not in choices
     else:
         assert choices["read_file"]["path"]["enum"] == ["a.py"]
+
+
+@pytest.mark.parametrize("changed", [False, True])
+@pytest.mark.parametrize("long_spec", [False, True])
+def test_requirement_comparison_retains_only_current_source_pages(tmp_path, changed, long_spec):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        requirements = "Implement persistence with strict validation. " * (180 if long_spec else 1)
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (requirements, tid))
+        work.specs.initialize(db, tid, requirements)
+        db.execute("UPDATE work_spec_sections SET notes=? WHERE task_id=?",
+                   ("Reviewed " * (120 if long_spec else 1), tid))
+    body = "value = 1\n" * 410
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    for a in [
+        ProjectAction(tool="write_file", path="ledger.py", content=body, summary="Create"),
+        ProjectAction(tool="read_file", path="ledger.py", offset=0, summary="Read first"),
+        ProjectAction(tool="read_file", path="ledger.py", offset=3000, summary="Read final"),
+    ]:
+        commit(work, tid, a)
+    if changed:
+        with store.transaction() as db:
+            db.execute("UPDATE work_files SET sha256=? WHERE task_id=?", ("changed", tid))
+    commit(work, tid, ProjectAction(tool="read_requirements", requirement_id=1, summary="Compare"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    visible = visible_source_reads(messages, {"ledger.py": digest})
+    if changed or long_spec:
+        # The larger comparison exceeds this budget: partial pages must stay readable.
+        assert visible == set()
+    else:
+        assert visible == {"ledger.py"}
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert json.loads(messages[-2]["content"])["tool"] == "read_requirements"
+    assert json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))["content"]

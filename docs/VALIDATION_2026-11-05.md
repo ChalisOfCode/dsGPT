@@ -650,3 +650,72 @@ diagnostics, conversations, signing material, device addresses or fixture
 implementation were added. This bounded review is not a security certification.
 Before dispatch, in_progress/queued/waiting/pending counts were all zero;
 124 public artifacts totaled 179053146 bytes, none expired. No deletion was needed.
+
+## 00cc809 routine platform verification
+
+Routine CI 42200997504 passed all nine jobs on exact commit
+`00cc8096cbf0a6fce6708350128a19bded3302a0`, tree
+`769135156be33c364df341d1d119fd8785deff4c`. Five report ZIPs were
+digest-verified and preserved as `dsGPT-ci-test-evidence-00cc809.zip`,
+44109 bytes, SHA256
+`a4dbc491943e93fec14de8c6c1a8898e4e87128b1f5101b7d17bb718fb9b53d9`,
+durable file `libfile_fde3_f-703b365446948191a18285de132d50fd_0e1c3d7a1ce08191b900cc9270ea7257`.
+Windows reports verify native UI/local reply, Credential Manager, scheduled
+backend restart, model persistence, owner/chat preservation through reinstall,
+and data-preserving uninstall. Its qwen3:1.7b fixture remains separate from
+actual 9B complex-app acceptance. Android instrumentation reports OK (one
+lifecycle/diagnostics test). These checks do not establish complete item 5,
+production signing continuity or physical owner hardware behavior.
+
+On 2026-11-06, actual original-request run 42200997722, job 127835965060,
+remained in progress on the same commit. Pinned exact-model preparation and
+production Docker toolchain steps passed; actual model decisions were active.
+No completion/follow-up/native generated-app result was available. The run was
+not duplicated, cancelled or modified. These notes preserve new evidence
+without creating another build or changing the source under test.
+
+## 00cc809 actual requirement/source comparison failure
+
+Original-request actual 9B run 42200997722 on
+`00cc8096cbf0a6fce6708350128a19bded3302a0` failed initial step 25
+with `no_progress`; generated native jobs were skipped. The model created a
+4165-character TaskLedger.kt module, inspected its pages, reread a requirement,
+and then repeated the first source-page read. Steps 22 and 23 read offsets 0 and
+3000; step 24 read requirement 1, displacing both observed source pages from
+the next prompt. Step 25 repeated the unchanged source read. No generated
+application completion or follow-up/native acceptance is claimed.
+
+Original artifact 13500436160 is 125874 bytes, SHA256
+`47dc2e50579fc4fcb1afdc891c8d32b83d612893412fbef5b54cd3fa830463d0`,
+digest-verified and preserved as `dsGPT-complex-evidence-42200997722.zip`,
+durable file `libfile_fde3_f-419371bd00e08191a03a75448bb258f8_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The controller now retains up to two distinct recently observed source pages
+across requirement comparisons, only when their hashes match current files and
+the prompt fits. It compacts navigable metadata if needed, keeps the actual
+requirement result, and validates combined displayed pages before suppressing
+redundant complete-file reads. Partial, stale or corrupt bytes do not count as
+a complete visible file. Four regression cases exercise multi-page retention, stale-source exclusion,
+and leaving partial pages readable when a larger comparison cannot fit. The
+focused source-guidance suite passed 20 tests.
+No model action, original request, generated implementation, acceptance check,
+context/output budget or repeated-failure limit was changed. These controller
+checks do not establish actual-model completion.
+
+An isolated replay using the failed run's original requirements, section notes,
+observed source and step history confirms both TaskLedger source pages remain
+visible after step 24. Estimated input plus reserved output is 15799 within the
+unchanged 16384 limit. Generated notes/overview and duplicate section previews
+are deferred with explicit navigation pointers when necessary; the exact latest
+requirement text remains. This replay uses saved observations, not a new model
+response, and is not actual-model acceptance. A larger synthetic comparison still
+cannot retain the whole file; its partial source remains readable rather than
+being falsely classified as complete. The original acceptance remains unchanged.
+
+Final full suite passed 1137 tests plus 6 subtests in 86.31 seconds. Ruff,
+whitespace, CI-policy and pinned tracked-source Gitleaks passed. Manual review
+covered all four changed files and preserved earlier platform evidence notes;
+no private diagnostics, signing material, personal conversations or fixture
+implementation were added. This limited review is not a security certification.
+Fresh pre-dispatch checks found zero active/queued/waiting/pending runs.
+Inventory contained 135 artifacts totaling 195314876 bytes; no deletion needed.

@@ -1,5 +1,6 @@
-Request: requirement-section-offset-recovery-2026-11-06
-Base source: 047b852b35d9d436014f9b3fe6e5c69abe9cd6c3
-Prior run 42184430301 ended no_progress after out-of-range requirement reads.
-Run the unchanged original request with the same actual 9B model, context,
-output budget, loop limits and independent native acceptance checks.
+Request: requirement-source-comparison-retention-2026-11-06
+Base source: 00cc8096cbf0a6fce6708350128a19bded3302a0
+Prior actual run 42200997722 failed no_progress at initial step 25.
+Retain inspected current source pages across requirement comparisons.
+Run the unchanged original request with the exact 9B model and unchanged
+context/output budgets, loop limits and native acceptance checks.

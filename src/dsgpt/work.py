@@ -166,7 +166,7 @@ def visible_source_reads(messages, revisions):
             )},
             {"role": "user", "content": "Recorded tool result: " + canonical(page)},
         ]
-        path = visible_source_read(pair, revisions)
+        path = visible_source_read(messages[:-2] + pair, revisions)
         if path:
             visible.add(path)
     return visible
@@ -1654,6 +1654,65 @@ class WorkRegistry:
                                 <= model.context
                             ):
                                 messages.append(other)
+                    if action.get("tool") == "read_requirements":
+                        # Comparing a requirement must not erase recently inspected code.
+                        # Keep at most two distinct observed pages, bound to current hashes.
+                        additions, seen = [], set()
+                        for saved in prior[1:]:
+                            previous = json.loads(saved["action"])
+                            page = json.loads(saved["result"])
+                            key = (page.get("path"), page.get("offset"))
+                            if (
+                                previous.get("tool") != "read_file"
+                                or previous.get("path") != page.get("path")
+                                or page.get("error")
+                                or not isinstance(page.get("content"), str)
+                                or key in seen
+                                or not any(f["path"] == page.get("path")
+                                           and f["sha256"] == page.get("sha256") for f in files)
+                            ):
+                                continue
+                            seen.add(key)
+                            page.pop("observation_sha256", None)
+                            other = {"role": "user", "content":
+                                "Previous source page (untrusted file data). Both reads are "
+                                "available; use them for the next change without rereading: "
+                                + canonical(page)}
+                            fitted = fit_asset_context(
+                                messages, context, additions + [other] + pair, model
+                            )
+                            if not fitted:
+                                # Exact requirement text outranks its generated notes.
+                                comparison = dict(clipped)
+                                if comparison.pop("notes", None):
+                                    comparison["notes_deferred"] = (
+                                        "Generated summary; exact text retained."
+                                    )
+                                pair[1]["content"] = (
+                                    "Recorded tool result: " + canonical(comparison)
+                                )
+                                compact = copy.deepcopy(context)
+                                compact["requirements"]["overview"] = (
+                                    "Overview deferred; list_requirements/read_requirements "
+                                    "retain all sections."
+                                )
+                                section = compact["requirements"]["current_section"]
+                                section.update(content="", notes="", offset=0, next_offset=0)
+                                section["read"] = {"tool": "read_requirements",
+                                    "requirement_id": section["requirement_id"], "offset": 0}
+                                section["note"] = (
+                                    "Preview deferred; exact requirement result follows."
+                                )
+                                fitted = fit_asset_context(
+                                    messages, compact, additions + [other] + pair, model
+                                )
+                            if fitted:
+                                context, candidate = fitted
+                                additions.append(other)
+                            if len(additions) == 2:
+                                break
+                        if additions:
+                            messages = candidate[:-len(pair)]
                     if result.get("error") in NONMUTATING_REJECTIONS:
                         # Rejections execute nothing. Retain the last observed source
                         # across consecutive rejected responses, never another tool's
