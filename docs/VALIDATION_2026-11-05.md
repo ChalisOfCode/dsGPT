@@ -537,3 +537,52 @@ were added. This limited review is not a security certification. Before retry,
 all active/queued/waiting/pending counts were zero; public inventory held 102
 artifacts totaling 146571222 bytes. No deletion was needed. Fresh actual-model
 acceptance is still required. Owner hardware remains unverified.
+
+## 5160533 routine platform verification
+
+Routine CI 42170959002 passed all nine jobs on exact commit
+`5160533850966c91edf0105d4f1024533b39d254`, tree
+`9ff9f7f42152214be9745281306283a71e645127`. Five report ZIPs were
+digest-verified and preserved as `dsGPT-ci-test-evidence-5160533.zip`,
+43745 bytes, SHA256
+`f711c2e5e8fb39bf8ed3ed2ab3319ba524af93b881a45eff3e870417f1f3d7e7`,
+durable file `libfile_fde3_f-4eeceff1b6b48191ac34280d76865fb7_0e1c3d7a1ce08191b900cc9270ea7257`.
+Windows installed-app reports verify actual native UI/reply, Credential Manager,
+restart, reinstall owner/chat/model preservation and data-preserving uninstall.
+That routine fixture uses qwen3:1.7b, not a substitute for actual 9B complex-app
+acceptance. Android instrumentation reports OK (one lifecycle/diagnostics test).
+These results do not establish complete item 5 or owner-hardware behavior.
+
+At 2026-11-06 06:25 UTC, actual 9B run 42170958913, job 127738398541,
+remained in progress on the same source. Pinned model/runtime preparation and
+production Docker toolchain passed; unchanged-request model decisions were
+still in progress. No completion/follow-up/generated-native result was available.
+No duplicate, cancellation, acceptance relaxation or product source edit was made.
+
+## Actual 5160533 outcome: alternating complete visible files
+
+Run 42170958913 failed at initial step 17 no_progress. After an edit at step
+12, the model alternated complete MainActivity and manifest reads. The read
+summaries incorrectly described finding domain/UI code in the manifest. No
+generated-app native jobs ran. Artifact 13483292494, 104774 bytes, was
+digest-verified SHA256
+`5c3f2595e7d4dba2f0dee055fbb3884470e715b64de4a5efdb7da470454929ad`
+and preserved as `libfile_fde3_f-55b1224e85f881918f7ddecaef7be83a_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The grammar suppressed only the last complete visible file, even when a
+second complete current file was retained in the same prompt. The correction
+collects both fully displayed hash-verified files for read suppression.
+Partial, stale and corrupted observations remain readable; edits stay available.
+The model still chooses its own implementation and tools. No loop limit,
+original request, acceptance check or model was changed. Four focused cases
+cover complete/partial/stale/corrupt companion data; focused suite passed 35.
+This is controller validation, not actual-model completion evidence.
+Before retry active/queued/waiting/pending counts were all zero; inventory
+was 113 artifacts totaling 162811118 bytes. No deletion was necessary.
+
+Full suite passed 1129 tests plus 6 subtests in 84.39 seconds. Ruff,
+whitespace and CI-policy checks passed. Pinned tracked-source Gitleaks
+reported no leaks. Manual publication review covered all five changed files
+including preserved platform evidence notes; no private diagnostics, signing
+data or fixture implementation was added. This limited audit is not a
+security certification. Actual-model acceptance of the fix remains required.

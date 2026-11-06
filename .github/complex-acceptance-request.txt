@@ -1,3 +1,3 @@
-Request: unchanged-edit-source-recovery-2026-11-06
-Base source: f837816d835b5ed8e8e4cdde4cdf5033e7c5fb8b
-Prior run 42156601199 ended no_progress. Run the unchanged original request.
+Request: all-visible-source-read-recovery-2026-11-06
+Base source: 5160533850966c91edf0105d4f1024533b39d254
+Prior run 42170958913 ended no_progress. Run the unchanged original request.

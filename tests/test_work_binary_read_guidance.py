@@ -351,3 +351,40 @@ def test_noop_edit_retains_observed_companion_page_and_rejection(tmp_path):
     assert "No bytes changed" in json.loads(messages[1]["content"])["next_step"]
     assert not json.loads(messages[1]["content"])["build_state"]["completion_ready"]
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+
+
+@pytest.mark.parametrize("companion", ["complete", "partial", "stale", "corrupt"])
+def test_both_visible_files_exclude_only_redundant_reads(tmp_path, companion):
+    from dsgpt.project_tools import ProjectAction, action_schema
+    from dsgpt.work import visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement both modules")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    bodies = {"a.py": "# Unicode π\nvalue = 1\n", "b.py": "value = 2\n"}
+    if companion == "partial":
+        bodies["a.py"] *= 200
+    for path, body in bodies.items():
+        commit(
+            work, tid, ProjectAction(tool="write_file", path=path, content=body, summary="Create")
+        )
+    for path in bodies:
+        commit(work, tid, ProjectAction(tool="read_file", path=path, summary="Read"))
+    messages = prompt(store, work, tid, replace(work.models["local"], context=16384))
+    revisions = {p: hashlib.sha256(b.encode()).hexdigest() for p, b in bodies.items()}
+    if companion == "stale":
+        revisions["a.py"] = "changed"
+    if companion == "corrupt":
+        for m in messages:
+            if m["content"].startswith("Previous source page"):
+                m["content"] = m["content"].replace("value = 1", "value = 9")
+    visible = visible_source_reads(messages, revisions)
+    assert visible == ({"a.py", "b.py"} if companion == "complete" else {"b.py"})
+    schema = action_schema(file_paths=list(bodies), already_visible_read=visible)
+    choices = {x["properties"]["tool"]["const"]: x["properties"] for x in schema["oneOf"]}
+    assert choices["edit_file"]["path"]["enum"] == list(bodies)
+    if companion == "complete":
+        assert "read_file" not in choices
+    else:
+        assert choices["read_file"]["path"]["enum"] == ["a.py"]

@@ -270,7 +270,11 @@ def action_schema(
         if tool in {"read_file", "edit_file", "browser"} and file_paths is not None:
             properties["path"] = {"enum": file_paths}
         if tool == "read_file" and file_paths is not None and already_visible_read is not None:
-            remaining = [p for p in file_paths if p != already_visible_read]
+            visible = (
+                {already_visible_read} if isinstance(already_visible_read, str)
+                else set(already_visible_read)
+            )
+            remaining = [p for p in file_paths if p not in visible]
             if not remaining:
                 continue
             properties["path"] = {"enum": remaining}

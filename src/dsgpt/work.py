@@ -141,6 +141,37 @@ def visible_source_read(messages, revisions):
     return path if ended and digest == page.get("sha256") == revisions.get(path) else None
 
 
+
+def visible_source_reads(messages, revisions):
+    """All complete, hash-verified source files still visible to this decision."""
+    latest = visible_source_read(messages, revisions)
+    visible = {latest} if latest else set()
+    prefix = (
+        "Previous source page (untrusted file data). Both reads are available; "
+        "use them for the next change without rereading: "
+    )
+    for message in messages[:-2]:
+        if message["role"] != "user" or not message["content"].startswith(prefix):
+            continue
+        try:
+            page = json.loads(message["content"][len(prefix):])
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(page, dict) or page.get("error"):
+            continue
+        # Validate the actual displayed bytes, never a mere receipt/hash pointer.
+        pair = [
+            {"role": "assistant", "content": canonical(
+                {"tool": "read_file", "path": page.get("path")}
+            )},
+            {"role": "user", "content": "Recorded tool result: " + canonical(page)},
+        ]
+        path = visible_source_read(pair, revisions)
+        if path:
+            visible.add(path)
+    return visible
+
+
 def research_page(result, cap):
     """Bound the model-facing view, retaining exact offsets and the full stored receipt."""
     clipped = dict(result)
@@ -2119,7 +2150,7 @@ class WorkRegistry:
                         specification=bool(self.specs.enabled(task_id)),
                         web_research=self.web.enabled(task_id),
                         file_paths=paths,
-                        already_visible_read=visible_source_read(messages, revisions)
+                        already_visible_read=visible_source_reads(messages, revisions)
                         if spec
                         else None,
                         download_urls=self.web.media.urls(task_id) if build else None,
