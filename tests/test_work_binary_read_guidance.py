@@ -285,3 +285,39 @@ def test_consecutive_source_pages_remain_visible_without_stale_or_gapped_suppres
             last["content"] = "X" + last["content"][1:]
         damaged[-1]["content"] = "Recorded tool result: " + json.dumps(last)
         assert visible_source_read(damaged, {"large.py": digest}) is None
+
+
+def test_source_pair_has_priority_over_requirement_preview_and_inventory(tmp_path):
+    """Large inventory must not evict the first page and induce alternating reads."""
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import visible_source_read
+
+    store, work, tid, _ = setup(tmp_path, target="apps")
+    request = "Implement the saved requirements. " * 160
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, request)
+        db.execute("UPDATE work_spec_sections SET notes=? WHERE task_id=?", ("Review " * 80, tid))
+    for index in range(8):
+        commit(work, tid, ProjectAction(
+            tool="write_file", path=f"module_{index}.py", content="value = 1\n", summary="Fixture",
+        ))
+    body = "# source π\n" + "value = 1\n" * 460
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    commit(work, tid, ProjectAction(
+        tool="write_file", path="large.py", content=body, summary="Fixture source",
+    ))
+    for offset in (0, 2999):
+        commit(work, tid, ProjectAction(
+            tool="read_file", path="large.py", offset=offset, summary="Inspect source page",
+        ))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert visible_source_read(messages, {"large.py": digest}) == "large.py"
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    context = json.loads(messages[1]["content"])
+    assert context["project_files"]["next_offset"] == 1
+    section = context["requirements"]["current_section"]
+    assert section["read"]["tool"] == "read_requirements"
+    assert "Preview deferred" in section["note"]
+    saved = store.one("SELECT requirements_sha256 FROM work_specs WHERE task_id=?", (tid,))
+    assert saved["requirements_sha256"] == hashlib.sha256(request.encode()).hexdigest()

@@ -1571,6 +1571,34 @@ class WorkRegistry:
                             }
                             if (
                                 ollama_input_estimate(messages + [other] + pair)
+                                + model.output_tokens > model.context
+                            ):
+                                # Prefer inspected source to redundant inventory/preview data.
+                                # Keep authoritative requirements saved and explicitly pageable.
+                                compact = json.loads(canonical(context))
+                                compact["project_files"]["files"] = files[:1]
+                                compact["project_files"]["next_offset"] = (
+                                    1 if len(files) > 1 else None
+                                )
+                                section = compact["requirements"]["current_section"]
+                                section.update(content="", notes="", offset=0, next_offset=0)
+                                section["read"] = {
+                                    "tool": "read_requirements",
+                                    "requirement_id": section["requirement_id"], "offset": 0,
+                                }
+                                section["note"] = (
+                                    "Preview deferred to retain inspected source; full requirement "
+                                    "is unchanged and available through read_requirements."
+                                )
+                                candidate = [dict(m) for m in messages]
+                                candidate[1]["content"] = canonical(compact)
+                                if (
+                                    ollama_input_estimate(candidate + [other] + pair)
+                                    + model.output_tokens <= model.context
+                                ):
+                                    context, messages = compact, candidate
+                            if (
+                                ollama_input_estimate(messages + [other] + pair)
                                 + model.output_tokens
                                 <= model.context
                             ):

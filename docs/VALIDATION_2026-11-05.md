@@ -414,3 +414,56 @@ fixture implementations were added. This limited audit is not a security
 certification. Before dispatch, public inventory was 80 artifacts totaling
 114078920 bytes, with no active run among the latest workflow results. No storage
 deletion was needed. Fresh actual-model acceptance remains required.
+
+## 05551b7 routine platform verification
+
+Routine CI 42151902310 passed all nine jobs on exact commit
+`05551b713414e9ea06b906f27e6cf5b9f119cbba`, tree
+`e699fceb6436c114f048e7fddfb266b61095badf`. Five report archives were
+digest-verified and preserved as `dsGPT-ci-test-evidence-05551b7.zip`:
+44157 bytes, SHA256
+`fbb0f2d89f8f2942ecac751ad79a2d60ff37eb0e760ed9050a6eb529efa1aa9b`,
+durable file `libfile_dc9cf9e6e7988191b772a99e073abf05`.
+The installed Windows app passed native UI/local-reply, Credential Manager,
+startup/restart, reinstall owner/chat/model preservation and data-preserving
+uninstall checks. This routine installation fixture used its existing 1.7B
+model, not as a substitute for the separate actual 9B complex-app test.
+Android instrumentation reported OK for its native lifecycle/diagnostic test.
+Neither routine job establishes complete item-5 acceptance or owner hardware
+behavior.
+
+Fresh original-request 9B run 42151902349, model job 127676866076, is active on
+this same exact commit. Pinned runtime/model load and production Docker toolchain
+steps passed; the actual model-decision step is in progress. Its completion,
+follow-up and generated-app native results remain unverified. Do not duplicate
+or cancel this run, and do not attribute later code changes to it.
+
+## Actual 05551b7 outcome: alternating source pages
+
+Original-request actual 9B run 42151902349 ended with `no_progress` at initial
+step 17. The model wrote a new 4647-character module, then alternated its first
+and final source pages without editing. The module was incomplete; no generated
+native application jobs ran. Original evidence artifact 13474466721 is 106831
+bytes, SHA256 `c2c2b7bc986e68433517198484236dd8735960b2bb319110ae3679c63e152aeb`,
+preserved as `libfile_45f952e6a9048191b56f9087d36f923f`.
+
+Local replay of the recorded actions reproduced the missing preceding source
+page: the current result fit, but the companion did not. Spare space was later
+filled with requirement navigation, leaving the source incomplete in the prompt.
+The correction tries compacting inventory and requirement previews before
+omitting inspected source. It retains an explicit requirement reader pointer,
+original requirement hash and real inventory continuation. No saved requirements
+or source are changed. The same replay now contains both full observed pages
+within the original 16384-context/4096-output configuration (12164 estimated
+input tokens). This is a controller replay, not new model acceptance.
+The added synthetic regression covers the large-inventory case with Unicode
+page offsets and checks that the original requirement digest remains unchanged.
+
+Validation: 1124 tests plus 6 subtests passed in 83.76 seconds; the focused
+source/rejection suite passed 30 tests. Ruff, whitespace, CI-policy and pinned
+tracked-source Gitleaks passed. Manual review covered all four changed files,
+including the previously uncommitted platform evidence notes. No private archive
+content, signing material or generated app implementation was published. The
+limited source scan is not a security certification. Before dispatch there were
+91 public artifacts totaling 130320546 bytes; all in-progress, queued, waiting
+and pending run counts were zero. No artifact deletion was necessary.
