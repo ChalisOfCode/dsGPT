@@ -295,3 +295,42 @@ Final combined-tree regression result: 1110 tests plus 6 subtests passed in
 105.24 seconds. Manual publication review covered the two code/test changes and
 new validation evidence. Owner hardware remains unverified, and actual 9B recovery
 on this new timeout requires a fresh original-request run.
+
+## Actual 9c994ca outcome and acceptance-client timeout recovery
+
+Fresh original-request actual 9B run 42131332005 on
+`9c994cabafd35060b51f9db934242799c108c956` again reviewed all eight saved
+requirement sections and created the Android scaffold at step 9. Its next action
+call still stopped as `runtime_unavailable`. The new production 900-second read
+timeout was present, but the acceptance-only CPU-control client independently
+replaced it with its old hard-coded 180-second read timeout. Ollama processed the
+2,484-token retry normally through 2,420 prompt tokens, then recorded status 500
+at exactly three minutes when that client disconnected. No model action was
+rejected and no repeated-read limit caused this failure. Generated-app Windows,
+Android and native-join jobs were skipped rather than passed.
+
+Original evidence artifact 13463789468 was downloaded and its digest verified:
+95010 bytes, SHA256
+`a85592013f39909cefc3ce1551ed59ce838b192429c7e45b3808ea6ff7bd73d7`.
+It is preserved durably as `libfile_1ba3f4b20aec81919af38c47b80ebdf9`.
+The routine CI evidence for this same commit is preserved as
+`dsGPT-ci-test-evidence-9c994ca.zip`, 43250 bytes, SHA256
+`099937c712bb143e5c8bcfdc620790d6e1c8f686552997c151ee10b4adb18a49`,
+durable file `libfile_90e272fa71bc819183001f5ee963198c`. All nine routine
+jobs passed, including disposable Windows installation and Android lifecycle.
+
+The correction makes the acceptance client reuse the production
+`LOCAL_INFERENCE_READ_TIMEOUT` constant while preserving its explicit CPU-thread,
+memory-mapping and batch controls. Connect, write and pool bounds remain unchanged.
+Regression coverage now checks both the generic local-inference client and the
+actual measured acceptance client so a test-only override cannot silently restore
+the obsolete three-minute limit. This change does not alter prompts, model actions,
+context, output limits, task deadlines or acceptance criteria.
+
+The focused inference, complex-harness and acceptance-oracle suites passed 65
+tests. The complete tree passed 1111 tests plus 6 subtests in 89.75 seconds.
+Ruff and whitespace checks passed. Manual publication review covered the three
+changed files, and the pinned tracked-source Gitleaks scan reported no leaks in
+approximately 3.71 MB. This limited scan is not a security certification. A fresh
+original-request actual 9B run is still required on the corrected acceptance
+client; neither this failed run nor the fixture regressions establish completion.

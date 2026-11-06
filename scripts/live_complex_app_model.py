@@ -22,7 +22,7 @@ from dsgpt.api import create_app
 from dsgpt.app_builder import project_files
 from dsgpt.builds import snapshot_hash
 from dsgpt.config import Model, Settings
-from dsgpt.inference import LocalInference
+from dsgpt.inference import LOCAL_INFERENCE_READ_TIMEOUT, LocalInference
 from dsgpt.project_tools import ProjectAction, ProjectTools, safe_path
 from dsgpt.storage import uid
 
@@ -114,7 +114,9 @@ class MeasuredInference(LocalInference):
             return super().client(model)
         return AcceptanceCPUClient(
             base_url=model.endpoint.rstrip("/"), trust_env=False, follow_redirects=False,
-            timeout=httpx.Timeout(connect=10, read=180, write=30, pool=10),
+            timeout=httpx.Timeout(
+                connect=10, read=LOCAL_INFERENCE_READ_TIMEOUT, write=30, pool=10
+            ),
             cpu_threads=self.cpu_threads, batch_size=self.batch_size,
             runtime_requests=self.runtime_requests,
         )

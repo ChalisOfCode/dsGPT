@@ -82,7 +82,14 @@ def test_explicit_cpu_controls_preserve_prompt_schema_and_inference_settings():
     client = acceptance.AcceptanceCPUClient(
         base_url="http://127.0.0.1:11435", cpu_threads=2, batch_size=64,
         runtime_requests=requests, trust_env=False,
+        timeout=acceptance.httpx.Timeout(
+            connect=10, read=acceptance.LOCAL_INFERENCE_READ_TIMEOUT, write=30, pool=10
+        ),
     )
+    assert client.timeout.connect == 10
+    assert client.timeout.read == acceptance.LOCAL_INFERENCE_READ_TIMEOUT == 900
+    assert client.timeout.write == 30
+    assert client.timeout.pool == 10
     messages = [{"role": "user", "content": "Original long request. " * 500}]
     schema = {"type": "object", "properties": {"tool": {"type": "string"}}}
     request = client.build_request(
@@ -104,6 +111,18 @@ def test_explicit_cpu_controls_preserve_prompt_schema_and_inference_settings():
         "options": payload["options"], "think": False, "keep_alive": "5m",
         "structured_output": True,
     }]
+
+
+def test_measured_inference_does_not_restore_the_obsolete_three_minute_timeout():
+    inference = acceptance.MeasuredInference(
+        False, [], cpu_threads=4, batch_size=64, runtime_requests=[]
+    )
+    model = acceptance.Model(
+        "model", "Model", "ollama", "http://127.0.0.1:11435", "exact-model:9b"
+    )
+    client = inference.client(model)
+    assert isinstance(client, acceptance.AcceptanceCPUClient)
+    assert client.timeout.read == acceptance.LOCAL_INFERENCE_READ_TIMEOUT == 900
 
 
 @pytest.mark.parametrize("failure", [RuntimeError("shutdown"), KeyboardInterrupt(), SystemExit(2)])
