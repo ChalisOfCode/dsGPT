@@ -321,3 +321,33 @@ def test_source_pair_has_priority_over_requirement_preview_and_inventory(tmp_pat
     assert "Preview deferred" in section["note"]
     saved = store.one("SELECT requirements_sha256 FROM work_specs WHERE task_id=?", (tid,))
     assert saved["requirements_sha256"] == hashlib.sha256(request.encode()).hexdigest()
+
+
+def test_noop_edit_retains_observed_companion_page_and_rejection(tmp_path):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import visible_source_read
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement the requested behavior")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "# unique anchor\n" + "value = 1\n" * 500 + "# final page\n"
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    for a in [
+        ProjectAction(tool="write_file", path="large.py", content=body, summary="Create"),
+        ProjectAction(tool="read_file", path="large.py", offset=0, summary="First page"),
+        ProjectAction(tool="read_file", path="large.py", offset=3000, summary="Last page"),
+        ProjectAction(tool="edit_file", path="large.py", old_text="# unique anchor",
+                      new_text="# unique anchor", expected_sha256=digest, summary="Change"),
+    ]:
+        commit(work, tid, a)
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    result = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
+    assert result["error"] == "edit_has_no_change"
+    assert visible_source_read(messages, {"large.py": digest}) == "large.py"
+    assert visible_source_read(messages, {"large.py": "stale"}) is None
+    assert "no source was saved" in messages[-2]["content"]
+    assert "No bytes changed" in json.loads(messages[1]["content"])["next_step"]
+    assert not json.loads(messages[1]["content"])["build_state"]["completion_ready"]
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context

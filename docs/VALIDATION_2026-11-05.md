@@ -467,3 +467,73 @@ content, signing material or generated app implementation was published. The
 limited source scan is not a security certification. Before dispatch there were
 91 public artifacts totaling 130320546 bytes; all in-progress, queued, waiting
 and pending run counts were zero. No artifact deletion was necessary.
+
+## f837816 routine CI and live acceptance observation
+
+Routine CI 42156601269 passed all nine jobs on exact commit
+`f837816d835b5ed8e8e4cdde4cdf5033e7c5fb8b`, tree
+`beadb76a59f24f17d2e91254a0c7434908d95aeb`. Five report archives were
+digest-verified and preserved as `dsGPT-ci-test-evidence-f837816.zip`:
+43922 bytes, SHA256
+`73310989eeab903eddcdfb28a56fa80c0071a77362d8f868ca45f3a94d672272`,
+durable file `libfile_af93ff667d808191a17d965c514d7dbc`.
+Windows installed-app reports confirm native UI/reply, Credential Manager,
+restart, reinstall data preservation and data-preserving uninstall. Android
+lifecycle instrumentation reports OK (one test). The Windows installation's
+separate 1.7B fixture is not a substitute for the actual 9B complex-app test;
+these routine jobs do not complete item 5 or verify owner hardware.
+
+At 2026-11-06 04:17 UTC, actual-model run 42156601199, job 127692123377,
+remained active. The recovered browser could read the live decision log: initial
+step 14, last action read_file, recorded result. Step 12 had a write_file tool
+error, followed by recorded reads at steps 13 and 14. The log does not identify
+the error's underlying payload; no diagnosis or success claim is inferred from
+these action categories. Completed job logs still returned BlobNotFound during
+this active run. No duplicate run, cancellation, source change or acceptance
+relaxation was made. Browser access also freshly confirmed the archive remains
+private with repository-wide Disable actions selected. No archive settings or
+content were changed, and historical storage inventory remains unverified.
+
+At 2026-11-06 04:24 UTC, the same actual-model run had advanced to
+initial step 16: step 15 edit_file was recorded, followed by read_requirements.
+No completed-app or native acceptance result was available. Both local and
+remote main remained f837816; only these evidence notes were modified.
+The account budget UI showed $0.00 limits and Usage blocked for Actions,
+Packages, Codespaces, Git LFS and all AI Credit SKUs. The archive's Actions
+settings still selected Disable actions; its artifact retention setting was
+90 days (no change made). Fresh public inventory contained 101 artifacts,
+146455387 bytes, none expired; no deletion was needed.
+
+The live log at 04:30 UTC had advanced to initial step 17 (read_file,
+recorded) after the step-15 edit. It remained in progress; no completed build
+or follow-up/native result was available. The existing continuation automation
+remains enabled with the updated checkpoint.
+
+## Actual f837816 outcome: unchanged edit recovery
+
+Run 42156601199 failed at initial step 23 with no_progress. The actual model
+made an initial edit, reread requirements/source, then submitted identical
+old_text/new_text at step 22. No bytes changed. The next repeated source read
+stopped the task; no generated-app native jobs ran. Original artifact
+13478083990 (115835 bytes) was SHA256-verified:
+`ce4c642edfeed0f40aaccfae2bcf3cb898a4fa2b8441cb4a645cd3eacc182f5d`,
+preserved as `libfile_113ce81b4ce48191bf392526c846f70b`.
+
+The recovery prompt attached the first page after an unchanged edit but did
+not retain the previously inspected second page. The correction permits the
+existing hash-checked companion-page retention for this nonmutating result,
+compacts duplicate guidance, and describes the rejected edit as unchanged
+instead of repeating the model's implementation claim. Original actions stay
+in the step log; source bytes, context/output limits and acceptance are unchanged.
+A synthetic two-page regression now verifies full visible source, stale-hash
+rejection, unchanged-edit feedback and no false completion. Focused checks: 31
+passed. This is controller validation, not actual-model acceptance.
+
+Full suite: 1125 tests plus 6 subtests passed in 77.14 seconds. Ruff, whitespace
+and CI-policy checks passed. Pinned tracked-source Gitleaks found no leaks in
+approximately 3.74 MB. Manual review covered the four changed files, including
+preserved platform notes; no private data or generated fixture implementations
+were added. This limited review is not a security certification. Before retry,
+all active/queued/waiting/pending counts were zero; public inventory held 102
+artifacts totaling 146571222 bytes. No deletion was needed. Fresh actual-model
+acceptance is still required. Owner hardware remains unverified.

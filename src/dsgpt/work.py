@@ -1336,7 +1336,7 @@ class WorkRegistry:
                 if key in action:
                     action[key] = (
                         "[Rejected proposal, NOT saved as source; recorded only in the step log.]"
-                        if result.get("error") in NONMUTATING_REJECTIONS
+                        if result.get("error") in NONMUTATING_REJECTIONS | {"edit_has_no_change"}
                         else "[Saved in the project or step log; use read_file to inspect.]"
                     )
             if action.get("tool") in {"read_source", "find_source"}:
@@ -1350,6 +1350,12 @@ class WorkRegistry:
                     or source["generation"] != result.get("generation", 1)
                 ):
                     result = {"error": "source_snapshot_no_longer_current"}
+            if result.get("error") == "edit_has_no_change":
+                # The proposal is durably logged, but its summary may falsely claim
+                # implementation. Keep the verified outcome and prioritize source bytes.
+                action.pop("old_text", None)
+                action.pop("new_text", None)
+                action["summary"] = "Rejected unchanged replacement; no source was saved."
             pair = [
                 {
                     "role": "assistant",
@@ -1495,7 +1501,10 @@ class WorkRegistry:
                     and clipped.get("error") == "edit_has_no_change"
                     and not completion_ready
                 ):
-                    context["next_step"] = clipped["help"]
+                    context["next_step"] = (
+                        "No bytes changed. Implement or test missing behavior "
+                        "using retained source."
+                    )
                     messages[1]["content"] = canonical(context)
                 if clipped.get("error") == "invalid_action" and not completion_ready:
                     context["next_step"] = (
@@ -1544,8 +1553,11 @@ class WorkRegistry:
                     # Keep the other file visible when an edit spans two source files.
                     # Only reuse an observed page whose file still has the same bytes.
                     if (
-                        action.get("tool") == "read_file"
-                        and not result.get("error")
+                        (
+                            (action.get("tool") == "read_file" and not result.get("error"))
+                            or (action.get("tool") == "edit_file"
+                                and result.get("error") == "edit_has_no_change")
+                        )
                         and len(prior) >= 2
                     ):
                         previous = json.loads(prior[1]["action"])
@@ -1563,6 +1575,9 @@ class WorkRegistry:
                                 for f in files
                             )
                         ):
+                            # The file hash binds these bytes; the project-wide observation
+                            # hash is redundant here and remains in the durable step log.
+                            page.pop("observation_sha256", None)
                             other = {
                                 "role": "user",
                                 "content": "Previous source page (untrusted file data). Both reads "
