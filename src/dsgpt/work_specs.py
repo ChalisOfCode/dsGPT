@@ -270,7 +270,7 @@ class WorkSpecs:
         body = excerpt(original[offset:], limit)
         next_offset = offset + len(body)
         has_more = next_offset < len(original)
-        return {
+        result = {
             "requirement_id": ordinal,
             "content": body,
             "notes": row["notes"],
@@ -280,7 +280,21 @@ class WorkSpecs:
             "total_characters": len(original),
             "original_start": row["start"],
             "original_end": row["end"],
+            "offset_unit": "section_characters",
         }
+        if offset < 0 or offset > len(original):
+            result.update(
+                error="requirement_offset_out_of_range",
+                content="",
+                has_more=False,
+                next_offset=None,
+                read={"tool": "read_requirements", "requirement_id": ordinal, "offset": 0},
+                help="Offset is relative to this section, not the whole document. "
+                "No requirement text was read. Retry the same requirement_id at offset 0, "
+                "then use its returned next_offset. original_start/original_end are "
+                "provenance positions, not read offsets.",
+            )
+        return result
 
     @staticmethod
     def listing(db, task_id, offset=0):

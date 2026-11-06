@@ -1,3 +1,5 @@
-Request: all-visible-source-read-recovery-2026-11-06
-Base source: 5160533850966c91edf0105d4f1024533b39d254
-Prior run 42170958913 ended no_progress. Run the unchanged original request.
+Request: requirement-section-offset-recovery-2026-11-06
+Base source: 047b852b35d9d436014f9b3fe6e5c69abe9cd6c3
+Prior run 42184430301 ended no_progress after out-of-range requirement reads.
+Run the unchanged original request with the same actual 9B model, context,
+output budget, loop limits and independent native acceptance checks.

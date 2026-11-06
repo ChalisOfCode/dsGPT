@@ -586,3 +586,67 @@ reported no leaks. Manual publication review covered all five changed files
 including preserved platform evidence notes; no private diagnostics, signing
 data or fixture implementation was added. This limited audit is not a
 security certification. Actual-model acceptance of the fix remains required.
+
+## 047b852 routine platform verification
+
+Routine CI 42184430342 passed all nine jobs on exact commit
+`047b852b35d9d436014f9b3fe6e5c69abe9cd6c3`, tree
+`9e4ffd514aa1f17fa54ea6aa8b1bfcc125870efc`. Five report ZIPs were
+digest-verified and preserved as `dsGPT-ci-test-evidence-047b852.zip`,
+44263 bytes, SHA256
+`f556199d12eb424524f30a48cb53561feb88c64922607ede7063694e940eb8d2`,
+durable file `libfile_fde3_f-7c2de57ad210819195a479cad58c0ce6_0e1c3d7a1ce08191b900cc9270ea7257`.
+Windows reports verify native UI/local reply, Credential Manager, restart,
+reinstall owner/chat/model preservation and data-preserving uninstall. Its
+qwen3:1.7b fixture is separate from the actual 9B complex-app acceptance.
+Android instrumentation reports OK (one lifecycle/diagnostics test). These
+routine results do not establish complete item 5 or owner hardware behavior.
+
+At 2026-11-06 08:23 UTC, actual 9B run 42184430301, job 127781305042,
+remained in progress on the same source. Pinned model/runtime and production
+Docker toolchain steps passed; original-request model decisions were active.
+No completion/follow-up/generated-native result was available. No source
+change, duplicate run, cancellation or acceptance relaxation was made.
+
+## 047b852 actual-model requirement-offset failure and recovery
+
+Actual original-request 9B run 42184430301 on
+`047b852b35d9d436014f9b3fe6e5c69abe9cd6c3` failed initial step 19
+with `no_progress`. Model/runtime and production toolchain setup passed.
+Generated Windows/Android native jobs were skipped; complex completion and
+follow-up acceptance remain unverified. Original artifact 13490296556 is
+106128 bytes, SHA256
+`946f592c8247ec1cdd20fcaa99dfdf9b48ac3771f82626de33a8c069435c413b`,
+digest-verified and preserved as `dsGPT-complex-evidence-42184430301.zip`,
+durable file `libfile_fde3_f-a2cc9b531a1c81919e3e5368ed72449d_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Observed step 12 changed MainActivity; step 14 proposed an identical-text edit
+and was rejected. Steps 15–18 then requested requirement section 2 at offset
+900 and section 3 at offsets 2229/3735, beyond their section lengths (869 and
+1506 characters). The reader returned empty successful pages and the controller
+called them completed. Step 19 repeated the empty section read and stopped.
+This is distinct from the prior alternating source-file read failure.
+
+The reader now labels section-relative character offsets and rejects offsets
+outside the selected section with explicit recovery at offset 0 of that same
+requirement_id. Exact end-of-section reads remain valid EOF. Guidance preserves
+the distinction between whole-document provenance and section-local navigation,
+including when the full history pair cannot fit. Original requirements and model
+actions are preserved; no implementation, acceptance threshold, model, output
+budget, context size or loop limit was substituted or relaxed.
+
+Four new cases cover invalid offsets, exact original preservation, prompt feedback,
+a later Unicode section with nonzero provenance, and valid EOF. The combined
+requirement/source-recovery suites passed 49 tests. A trial addition to the global
+system prompt displaced a companion source page in an existing regression;
+that addition was removed. Guidance is now localized to requirement reads and
+all focused source-retention checks pass. These are controller tests, not actual
+9B completion evidence; a fresh original-request acceptance is still required.
+
+Full suite passed 1133 tests plus 6 subtests in 82.29 seconds. Ruff, whitespace,
+static CI-policy and pinned tracked-source Gitleaks checks passed. Manual review
+covered all five changed files, including the preserved platform notes. No private
+diagnostics, conversations, signing material, device addresses or fixture
+implementation were added. This bounded review is not a security certification.
+Before dispatch, in_progress/queued/waiting/pending counts were all zero;
+124 public artifacts totaled 179053146 bytes, none expired. No deletion was needed.

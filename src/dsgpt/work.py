@@ -1560,11 +1560,16 @@ class WorkRegistry:
                         "with targeted edits. No feature was implemented by the rejected proposal."
                     )
                     messages[1]["content"] = canonical(context)
+                if clipped.get("error") == "requirement_offset_out_of_range":
+                    context["next_step"] = clipped["help"]
+                    messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_requirements" and not clipped.get("error"):
                     context["next_step"] = (
-                        "Continue reading this requirement at next_offset before implementing it."
+                        "Continue this requirement_id at its section-relative next_offset. "
+                        "Start a different requirement_id at offset 0."
                         if clipped.get("has_more")
                         else "This requirement page reached its end. Do not repeat the same read. "
+                        "Start any other requirement_id at offset 0, not original_start/end. "
                         "Use the visible project inventory to choose a relevant read_file path; "
                         "list_files is needed only for missing inventory pages. Implement missing "
                         "behavior and test it. A scaffold or generated review is not evidence "
@@ -1685,7 +1690,9 @@ class WorkRegistry:
                 # A bounded pointer, not a silent partial source file.
                 # A rejected action has no source/build log to reread. Keep its
                 # recovery instruction even when the separate history pair cannot fit.
-                if result.get("error") not in NONMUTATING_REJECTIONS:
+                if result.get("error") not in NONMUTATING_REJECTIONS | {
+                    "requirement_offset_out_of_range"
+                }:
                     context["next_step"] = next_step
                 context["previous_result"] = {
                     "tool": action.get("tool"),

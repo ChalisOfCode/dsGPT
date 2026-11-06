@@ -450,3 +450,64 @@ def test_file_finish_requires_current_sources_and_latest_success(project):
         )
         no_output_execution(db, task_id, 3)
         assert WorkBuilds.finish_evidence(db, task_id, "files") is None
+
+
+@pytest.mark.parametrize("offset", [-1, 2229, 3735])
+def test_requirement_invalid_offset_returns_exact_recovery_not_completion(project, offset):
+    store, work, task, _ = project
+    tid = task["id"]
+    with store.transaction() as db:
+        before = db.execute("SELECT requirements FROM work_tasks WHERE id=?", (tid,)).fetchone()[0]
+        result = WorkSpecs.read(db, tid, 1, offset)
+        assert result["error"] == "requirement_offset_out_of_range"
+        assert result["content"] == "" and result["has_more"] is False
+        assert result["offset_unit"] == "section_characters"
+        recovery = result["read"]
+        page = WorkSpecs.read(db, tid, recovery["requirement_id"], recovery["offset"])
+        assert page["content"] == before
+        assert "error" not in page
+        assert (
+            db.execute("SELECT requirements FROM work_tasks WHERE id=?", (tid,)).fetchone()[0]
+            == before
+        )
+    if offset >= 0:
+        from test_work_completion_phase import commit
+
+        commit(
+            work,
+            tid,
+            ProjectAction(
+                tool="read_requirements",
+                requirement_id=1,
+                offset=offset,
+                summary="Read specification",
+            ),
+        )
+        messages = work._guided_prompt(
+            store.one("SELECT * FROM work_tasks WHERE id=?", (tid,)),
+            store.one("SELECT * FROM work_sessions WHERE task_id=?", (tid,)),
+            work.models["local"],
+            [],
+        )
+        context = json.loads(messages[1]["content"])
+        assert "No requirement text was read" in context["next_step"]
+        assert "offset 0" in context["next_step"]
+
+
+def test_requirement_recovery_uses_selected_section_not_global_position(project):
+    store, _, task, _ = project
+    text = "a" * 1600 + "b" * 1600 + "Last section 🏁."
+    with store.transaction() as db:
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (text, task["id"]))
+        WorkSpecs.initialize(db, task["id"], text)
+        invalid = WorkSpecs.read(db, task["id"], 3, 3200)
+        assert invalid["error"] == "requirement_offset_out_of_range"
+        recovery = invalid["read"]
+        assert recovery["requirement_id"] == 3
+        page = WorkSpecs.read(db, task["id"], 3, recovery["offset"])
+        assert page["original_start"] == 3200
+        assert page["content"] == "Last section 🏁."
+        assert page["next_offset"] is None
+        assert "error" not in page
+        end = WorkSpecs.read(db, task["id"], 3, len(page["content"]))
+        assert end["content"] == "" and "error" not in end
