@@ -1,6 +1,7 @@
-Request: requirement-source-comparison-retention-2026-11-06
-Base source: 00cc8096cbf0a6fce6708350128a19bded3302a0
-Prior actual run 42200997722 failed no_progress at initial step 25.
-Retain inspected current source pages across requirement comparisons.
-Run the unchanged original request with the exact 9B model and unchanged
-context/output budgets, loop limits and native acceptance checks.
+Request: visible-requirement-page-guard-2026-11-06
+Base source: 56dfed168838ee4a3dddd5ba106a019022c90bf1
+Prior actual run 42220803700 failed at initial step 15 after repeated visible
+requirement 3 offset 900 reads. Exclude only an exact already-visible page;
+keep other sections/offsets and unverified pages available.
+Run the unchanged original request with the exact 9B model and all original
+context/output budgets, loop limits and independent native acceptance checks.

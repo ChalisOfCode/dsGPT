@@ -719,3 +719,61 @@ no private diagnostics, signing material, personal conversations or fixture
 implementation were added. This limited review is not a security certification.
 Fresh pre-dispatch checks found zero active/queued/waiting/pending runs.
 Inventory contained 135 artifacts totaling 195314876 bytes; no deletion needed.
+
+## 56dfed1 routine platform verification
+
+Routine CI 42220803883 passed all nine jobs on exact commit
+`56dfed168838ee4a3dddd5ba106a019022c90bf1`, tree
+`e8d4bb88a2adac3149a168e62268abc2cf7cb5be`. Five report ZIPs were
+digest-verified and preserved as `dsGPT-ci-test-evidence-56dfed1.zip`,
+45111 bytes, SHA256
+`d2ad498258df84b8daf03f54a7e721047b9269ebb03962ab87ff696d4e93637e`,
+durable file `libfile_fde3_f-7df79e0bbcd88191b1fcde55e0263d24_0e1c3d7a1ce08191b900cc9270ea7257`.
+Windows reports confirm native UI/local reply, Credential Manager, scheduled
+backend restart, persisted models, owner/chat preservation through reinstall,
+and data-preserving uninstall. Its separate qwen3:1.7b fixture does not establish
+actual 9B complex-app acceptance. Android instrumentation reports OK (one
+lifecycle/diagnostics test). Complete item 5, production signing continuity and
+owner hardware behavior remain unverified by these routine checks.
+
+On 2026-11-06, actual 9B run 42220803700, job 127902062686, remains active
+on the same source in the unchanged-request model-decision step. No completed
+complex-app, follow-up or generated native result is available. The run was
+left undisturbed; no source change or duplicate acceptance was dispatched.
+
+## 56dfed1 repeated visible requirement-page failure
+
+Actual original-request run 42220803700 on
+`56dfed168838ee4a3dddd5ba106a019022c90bf1` failed initial step 15 with
+`no_progress`. After scaffolding and reading source, step 12 wrote Task.kt.
+Steps 13 and 14 read requirement 3 at section-relative offset 900; step 15
+requested that identical page again. The exact page was already displayed,
+but requirement navigation had no equivalent of the visible-source read guard.
+No generated-app native or follow-up checks ran.
+
+Original artifact 13504974572 is 101644 bytes, SHA256
+`94a24ab7bf379ce0f9b6c8b91e33f88066007114ab957775e37c3f2178534b40`,
+digest-verified and preserved as `dsGPT-complex-evidence-42220803700.zip`,
+durable file `libfile_fde3_f-39de502106d081919ef3129feba5fa7e_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The action schema now excludes the single identical requirement-ID/offset pair
+only when its nonempty displayed text matches the saved original section and
+its provenance/offset match the last read. Other sections and explicit offsets
+remain selectable. Missing, corrupt, stale or empty observations leave the
+normal reader available. The model still chooses all implementation actions;
+no code is substituted and the original request, model, context/output limits,
+repeated-failure guard and independent acceptance remain unchanged. Seven new
+cases cover exact-page exclusion and invalid-observation recovery; 60 focused
+requirement/source tests passed. This validates controller behavior, not a
+successful actual 9B complex-app run.
+
+Final suite passed 1144 tests plus 6 subtests in 94.30 seconds. Omitted offset
+retains its default-zero semantics unless zero is the already-visible offset.
+A saved-result replay identifies the observed requirement 3/offset 900 pair;
+this is not fresh inference. Ruff, whitespace, CI policy and pinned tracked-source
+Gitleaks passed. Manual review covered all five changed files, including newly
+tracked tests and earlier platform notes. No private diagnostics, signing data,
+personal conversations or generated-app implementation were added. This bounded
+review is not a security certification. Before dispatch all active/queued/waiting/
+pending counts were zero. Inventory was 146 artifacts totaling 211553836 bytes;
+no deletion was necessary.

@@ -4,6 +4,7 @@ This capability tier can draft and inspect source files. Executing those files n
 a separately validated isolated runner; there is deliberately no host-shell fallback.
 """
 
+import copy
 import hashlib
 import io
 import json
@@ -191,6 +192,7 @@ def action_schema(
     asset_paths=None,
     completion_only=False,
     already_visible_read=None,
+    visible_requirement_page=None,
 ):
     """Make tool-specific required arguments visible to the runtime's JSON grammar."""
     base = ProjectAction.model_json_schema()["properties"]
@@ -287,6 +289,28 @@ def action_schema(
                 "maxLength": 167,
                 "pattern": r"^(inputs/)?[^/\\]+$",
             }
+        if tool == "read_requirements" and visible_requirement_page is not None:
+            ordinal, offset = visible_requirement_page
+            # Disjoint alternatives exclude only one (section, offset) pair.
+            ranges = [
+                ("requirement_id", 1, ordinal - 1),
+                ("requirement_id", ordinal + 1, 10000),
+                ("offset", 0, offset - 1),
+                ("offset", offset + 1, MAX_FILE_BYTES),
+            ]
+            for field, low, high in ranges:
+                if low > high:
+                    continue
+                choice = copy.deepcopy(properties)
+                choice[field] = {"type": "integer", "minimum": low, "maximum": high}
+                needed = ["tool", "summary", *required]
+                if field == "offset":
+                    choice["requirement_id"] = {"const": ordinal}
+                    if low > 0:
+                        needed.append("offset")
+                variants.append({"type": "object", "properties": choice,
+                                 "required": needed, "additionalProperties": False})
+            continue
         variants.append(
             {
                 "type": "object",

@@ -19,7 +19,7 @@ from .submissions import accepted, remember
 from .work_asset_tools import asset_comparison_hint, asset_read_hint, related_asset_read
 from .work_references import WorkReferences
 from .work_research import WorkResearch
-from .work_specs import SpecReview, WorkSpecs, excerpt, infer_target
+from .work_specs import SpecReview, WorkSpecs, excerpt, infer_target, sections
 from .work_transcripts import explicit_whole_recording
 from .work_web import WorkWeb
 
@@ -170,6 +170,31 @@ def visible_source_reads(messages, revisions):
         if path:
             visible.add(path)
     return visible
+
+
+def visible_requirement_read(messages, original):
+    """Only exclude the exact current requirement page already shown to this decision."""
+    try:
+        action = json.loads(messages[-2]["content"])
+        prefix = "Recorded tool result: "
+        if not messages[-1]["content"].startswith(prefix):
+            return None
+        page = json.loads(messages[-1]["content"][len(prefix):])
+        ordinal, offset = page["requirement_id"], page["offset"]
+        if (action.get("tool") != "read_requirements" or page.get("error")
+                or ordinal != action.get("requirement_id", 1)
+                or offset != action.get("offset", 0) or not isinstance(offset, int)
+                or offset < 0 or not page.get("content")):
+            return None
+        for number, (start, end, body) in enumerate(sections(original), 1):
+            if number == ordinal:
+                if (start == page.get("original_start") and end == page.get("original_end")
+                        and body[offset:offset + len(page["content"])] == page["content"]):
+                    return ordinal, offset
+                return None
+    except (ValueError, TypeError, KeyError, IndexError):
+        return None
+    return None
 
 
 def research_page(result, cap):
@@ -2219,6 +2244,9 @@ class WorkRegistry:
                         already_visible_read=visible_source_reads(messages, revisions)
                         if spec
                         else None,
+                        visible_requirement_page=visible_requirement_read(
+                            messages, row["requirements"]
+                        ) if spec else None,
                         download_urls=self.web.media.urls(task_id) if build else None,
                         asset_paths=asset_paths,
                         completion_only=self._completion_ready(task_id),
