@@ -1421,9 +1421,31 @@ class WorkRegistry:
                     if isinstance(clipped.get("files"), list):
                         clipped["total_files_in_result"] = len(clipped["files"])
                         clipped["files"] = clipped["files"][:4]
-                        clipped["read_more"] = (
-                            "Use list_files with offset for the remaining inventory."
-                        )
+                        if len(result["files"]) > len(clipped["files"]):
+                            clipped["next_offset"] = action.get("offset", 0) + len(
+                                clipped["files"]
+                            )
+                        if clipped.get("next_offset") is not None:
+                            clipped["read_more"] = (
+                                "For omitted inventory only, use list_files at next_offset. "
+                                "Visible paths can already be read or edited."
+                            )
+                if (
+                    action.get("tool") in {"list_files", "scaffold_app"}
+                    and not clipped.get("error")
+                    and files
+                    and not completion_ready
+                ):
+                    context["next_step"] = (
+                        "The project already contains the listed files; it is not empty. "
+                        "Listing paths is not reading source or implementing features. Choose "
+                        "a relevant visible source path and call read_file, then implement "
+                        "missing behavior with edit_file or a small NEW module using write_file. "
+                        "Do not alternate unchanged list_files and read_requirements calls. "
+                        "Read another requirement only for missing details; test real changes "
+                        "before marking coverage."
+                    )
+                    messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_asset" and not completion_ready:
                     hint = asset_read_hint(
                         clipped,
@@ -1485,7 +1507,8 @@ class WorkRegistry:
                         "Continue reading this requirement at next_offset before implementing it."
                         if clipped.get("has_more")
                         else "This requirement page reached its end. Do not repeat the same read. "
-                        "Inspect the actual project with list_files/read_file, implement missing "
+                        "Use the visible project inventory to choose a relevant read_file path; "
+                        "list_files is needed only for missing inventory pages. Implement missing "
                         "behavior and test it. A scaffold or generated review is not evidence "
                         "that the requested features exist. Use only observed evidence paths."
                     )

@@ -334,3 +334,36 @@ changed files, and the pinned tracked-source Gitleaks scan reported no leaks in
 approximately 3.71 MB. This limited scan is not a security certification. A fresh
 original-request actual 9B run is still required on the corrected acceptance
 client; neither this failed run nor the fixture regressions establish completion.
+
+## Actual 951f8fb outcome: inventory/requirements loop
+
+Original-request 9B run 42135202651 completed with failure on exact source
+`951f8fba3d6b4243c7b5a24e6d34678319b45d10`. All eight requirement reviews and
+Android scaffolding succeeded; inference continued past the former client timeout.
+Steps 10–15 alternated requirement reads and unchanged inventory listings. The
+third identical listing correctly stopped with `no_progress`; no generated-app
+Windows/Android native jobs ran. This does not establish complex-app completion.
+
+Original artifact 13467606070 is 102622 bytes, verified SHA256
+`34c949428fc03b7c6cb13d163b423541befdf716c67b8b437ee31f971af407a8`,
+preserved as `libfile_533d4ce7ea9081919c6580bf544de606`.
+Routine CI 42135038622 passed all nine jobs, including disposable Windows
+installation and Android lifecycle. Its report bundle is 42722 bytes, SHA256
+`1b2210edff41f2fd4148bca0cf36a8c880b27ff22403b2e0d8091eaec0fd3a3a`,
+preserved as `libfile_4021e1809e38819185267c766793873c`.
+
+Source review found that clipped listings always suggested another listing but
+could leave `next_offset` null, while listing results had no source-implementation
+guidance. Requirement EOF guidance also explicitly suggested listing again.
+The correction gives clipped inventory its actual continuation offset, omits
+continuation advice at EOF, and directs existing-file inspection/implementation
+after listings/scaffolds. It does not execute any model action, create feature
+code, mark coverage or change no-progress thresholds. Three new regression cases
+cover complete, clipped and final inventory pages. Owner hardware is unverified.
+
+Validation of the inventory correction: 1114 tests plus 6 subtests passed in
+90.95 seconds; Ruff, whitespace and CI-policy checks passed. The pinned Gitleaks
+scan of the tracked candidate source found no leaks in approximately 3.72 MB.
+Manual review covered the code, synthetic tests and validation notes. This limited
+scan is not a security certification; actual-model acceptance of the correction
+remains required.
