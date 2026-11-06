@@ -1,3 +1,3 @@
-Request: inventory-guidance-2026-11-06
-Product source: d8092673ab03bce525bb2faf1d6b89249eb97353
-Prior run 42135202651 ended with no_progress. Run the unchanged original request.
+Request: rejected-overwrite-recovery-2026-11-06
+Base source: c9e34a991f87340520343247aea2e5f500a49650
+Prior run 42143897057 ended with no_progress. Run the unchanged original request.

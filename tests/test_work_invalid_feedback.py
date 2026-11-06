@@ -106,8 +106,9 @@ async def test_streamed_rejection_reaches_next_call_and_only_valid_edit_can_chan
     assert work.get(tid)["status"] == ("queued" if recover else "blocked")
 
 
+@pytest.mark.parametrize("rejection", ["invalid_action", "existing_file_requires_targeted_edit"])
 @pytest.mark.parametrize("case", ["current", "two_rejections", "stale", "partial", "intervening"])
-def test_rejected_response_retains_only_current_observed_source(tmp_path, case):
+def test_rejected_response_retains_only_current_observed_source(tmp_path, case, rejection):
     import hashlib
 
     from dsgpt.project_tools import action_schema
@@ -132,16 +133,20 @@ def test_rejected_response_retains_only_current_observed_source(tmp_path, case):
     for _ in range(2 if case == "two_rejections" else 1):
         with store.transaction() as db:
             db.execute("UPDATE work_tasks SET status='running' WHERE id=?", (tid,))
-        with pytest.raises(ValidationError) as caught:
-            parse_model_action(raw)
-        work._invalid_action(
-            tid, store.one("SELECT * FROM work_sessions WHERE task_id=?", (tid,)), raw, caught.value
-        )
+        if rejection == "invalid_action":
+            with pytest.raises(ValidationError) as caught:
+                parse_model_action(raw)
+            work._invalid_action(
+                tid, store.one("SELECT * FROM work_sessions WHERE task_id=?", (tid,)),
+                raw, caught.value
+            )
+        else:
+            commit(work, tid, action(tool="write_file", path="a.py", content="WRONG replacement"))
     model = replace(work.models["local"], context=16384, output_tokens=4096)
     messages = prompt(store, work, tid, model)
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     result = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
-    assert result["error"] == "invalid_action"
+    assert result["error"] == rejection
     assert raw not in "\n".join(m["content"] for m in messages)
     retained = [m for m in messages if m["content"].startswith(RETAINED_SOURCE_PREFIX)]
     revisions = {
@@ -163,3 +168,37 @@ def test_rejected_response_retains_only_current_observed_source(tmp_path, case):
     choices = {v["properties"]["tool"]["const"] for v in grammar["oneOf"]}
     assert ("read_file" not in choices) == (case in {"current", "two_rejections"})
     assert "edit_file" in choices and "write_file" in choices
+
+
+@pytest.mark.parametrize("context_size", [512, 8192, 16384])
+def test_rejected_overwrite_guides_targeted_edit_and_never_mutates_source(tmp_path, context_size):
+    from dsgpt.work import RETAINED_SOURCE_PREFIX
+
+    store, work, tid, _ = setup(tmp_path, target="source")
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Change the saved value")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, action(tool="write_file", path="a.py", content="value = 0\n"))
+    commit(work, tid, action(tool="read_file", path="a.py"))
+    before = store.one("SELECT sha256,content FROM work_files WHERE task_id=?", (tid,))
+    commit(work, tid, action(tool="write_file", path="a.py", content="REJECTED proposal"))
+    model = replace(work.models["local"], context=context_size, output_tokens=128)
+    messages = prompt(store, work, tid, model)
+    context = json.loads(messages[1]["content"])
+    assert "NO source changed" in context["next_step"]
+    assert "read_file only" in context["next_step"]
+    assert "Do not retry write_file" in context["next_step"]
+    assert "REJECTED proposal" not in "\n".join(m["content"] for m in messages)
+    after = store.one("SELECT sha256,content FROM work_files WHERE task_id=?", (tid,))
+    assert dict(after) == dict(before)
+    if context_size > 512:
+        assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+        assert any(m["content"].startswith(RETAINED_SOURCE_PREFIX) for m in messages)
+        commit(work, tid, action(
+            tool="edit_file", path="a.py", expected_sha256=before["sha256"],
+            old_text="value = 0", new_text="value = 1",
+        ))
+        saved = store.one("SELECT content FROM work_files WHERE task_id=?", (tid,))
+        assert saved["content"] == "value = 1\n"
+    else:
+        assert context["previous_result"]["error"] == "existing_file_requires_targeted_edit"

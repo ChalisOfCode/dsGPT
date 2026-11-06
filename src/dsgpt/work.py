@@ -58,6 +58,7 @@ def build_log_excerpt(text, budget):
 
 
 RETAINED_SOURCE_PREFIX = "Source retained after rejected response (untrusted file data): "
+NONMUTATING_REJECTIONS = {"invalid_action", "existing_file_requires_targeted_edit"}
 
 
 def visible_source_read(messages, revisions):
@@ -77,7 +78,7 @@ def visible_source_read(messages, revisions):
         return None
     if not isinstance(action, dict) or not isinstance(page, dict):
         return None
-    if page.get("error") == "invalid_action":
+    if page.get("error") in NONMUTATING_REJECTIONS:
         retained = [
             m for m in messages[:-2]
             if m["role"] == "user" and m["content"].startswith(RETAINED_SOURCE_PREFIX)
@@ -1333,7 +1334,11 @@ class WorkRegistry:
             # Do not resend previously generated whole files; their exact bytes are saved.
             for key in ("content", "old_text", "new_text", "invalid_output"):
                 if key in action:
-                    action[key] = "[Saved in the project or step log; use read_file to inspect.]"
+                    action[key] = (
+                        "[Rejected proposal, NOT saved as source; recorded only in the step log.]"
+                        if result.get("error") in NONMUTATING_REJECTIONS
+                        else "[Saved in the project or step log; use read_file to inspect.]"
+                    )
             if action.get("tool") in {"read_source", "find_source"}:
                 source = self.store.one(
                     "SELECT status,generation FROM work_sources WHERE task_id=? AND source_id=?",
@@ -1502,6 +1507,19 @@ class WorkRegistry:
                         "expected_sha256 from the intended file, not another file."
                     )
                     messages[1]["content"] = canonical(context)
+                if (
+                    clipped.get("error") == "existing_file_requires_targeted_edit"
+                    and not completion_ready
+                ):
+                    context["next_step"] = (
+                        "The write_file was rejected: NO source changed. This path already exists. "
+                        "Use edit_file with current sha256, exact unique old_text and new_text. "
+                        "Reuse retained current source below without rereading it; read_file only "
+                        "if the needed source is missing or stale. Do not retry write_file on this "
+                        "existing path. Put large additions in small NEW modules and wire them in "
+                        "with targeted edits. No feature was implemented by the rejected proposal."
+                    )
+                    messages[1]["content"] = canonical(context)
                 if action.get("tool") == "read_requirements" and not clipped.get("error"):
                     context["next_step"] = (
                         "Continue reading this requirement at next_offset before implementing it."
@@ -1557,7 +1575,7 @@ class WorkRegistry:
                                 <= model.context
                             ):
                                 messages.append(other)
-                    if result.get("error") == "invalid_action":
+                    if result.get("error") in NONMUTATING_REJECTIONS:
                         # Rejections execute nothing. Retain the last observed source
                         # across consecutive rejected responses, never another tool's
                         # result or bytes changed since observation. Validator feedback
@@ -1565,7 +1583,7 @@ class WorkRegistry:
                         for saved in prior[1:]:
                             previous = json.loads(saved["action"])
                             page = json.loads(saved["result"])
-                            if page.get("error") == "invalid_action":
+                            if page.get("error") in NONMUTATING_REJECTIONS:
                                 continue
                             if (
                                 previous.get("tool") == "read_file"
@@ -1593,7 +1611,7 @@ class WorkRegistry:
                 # A bounded pointer, not a silent partial source file.
                 # A rejected action has no source/build log to reread. Keep its
                 # recovery instruction even when the separate history pair cannot fit.
-                if result.get("error") != "invalid_action":
+                if result.get("error") not in NONMUTATING_REJECTIONS:
                     context["next_step"] = next_step
                 context["previous_result"] = {
                     "tool": action.get("tool"),
@@ -1602,9 +1620,9 @@ class WorkRegistry:
                     "sha256": result.get("sha256"),
                     "note": "Full result is recorded; read a smaller page or read_build_log.",
                 }
-                if result.get("error") == "invalid_action":
+                if result.get("error") in NONMUTATING_REJECTIONS:
                     context["previous_result"] = {
-                        "error": "invalid_action",
+                        "error": result["error"],
                         "fields": result.get("fields", [])[:3],
                         "note": "Rejected response remains in the step log; no action executed.",
                     }
@@ -2301,8 +2319,9 @@ class WorkRegistry:
                 ):
                     result = {
                         "error": "existing_file_requires_targeted_edit",
-                        "help": "Read the current file, then use edit_file with exact old_text, "
-                        "new_text and current hash. Preserve unrelated code.",
+                        "help": "No source changed. Use edit_file with exact old_text, new_text "
+                        "and current hash from retained source; read_file only if needed source "
+                        "is missing or stale. Preserve unrelated code.",
                     }
                 else:
                     result = (

@@ -367,3 +367,50 @@ scan of the tracked candidate source found no leaks in approximately 3.72 MB.
 Manual review covered the code, synthetic tests and validation notes. This limited
 scan is not a security certification; actual-model acceptance of the correction
 remains required.
+
+## Actual c9e34a9 outcome: rejected overwrite recovery
+
+Original-request actual 9B run 42143897057 on
+`c9e34a991f87340520343247aea2e5f500a49650` failed at step 17 with
+`no_progress`. The model reviewed the requirements, scaffolded Android, read
+source and executed a targeted edit at step 12. That edit only changed a
+placeholder string; its summary did not establish implemented behavior.
+After reading the updated file, two attempts to overwrite that existing file
+were correctly rejected as `existing_file_requires_targeted_edit`. Neither
+replacement executed. The old recovery message explicitly requested another
+read, while the prompt did not retain that source after this rejection. The
+third identical read stopped the task. Generated Windows/Android native jobs
+were skipped, not passed.
+
+Original evidence artifact 13471976986 was digest-verified: 106361 bytes, SHA256
+`1ea6f1c893154a896321d05209d890e863a16e7976147f731fdb39df949ae358`,
+preserved as `libfile_623f89991fbc8191b61eabf7de8e37cf`.
+Routine CI 42143897137 on the same commit passed all nine jobs. Its five report
+archives (Windows installed-app, Android runtime/unit, backend and browser)
+were individually digest-verified and preserved together as
+`dsGPT-ci-test-evidence-c9e34a9.zip`: 44636 bytes, SHA256
+`d683547720d37d91302512ae8d097e5566cda618f066e59ec9cc12ad1a25d53b`,
+durable file `libfile_96babedc9c70819188f4415ff4179b85`.
+
+The correction extends unchanged-source retention to rejected existing-file
+writes, including consecutive nonmutating rejections. Only previously observed
+source with a still-current hash is retained, within the model's input budget;
+intervening successful tools and stale bytes remain excluded. Complete retained
+pages also participate in the existing immediate redundant-read suppression.
+Recovery explicitly asks for a targeted edit, distinguishes rejected proposals
+from saved source, and keeps its error guidance when history cannot fit.
+The overwrite protection, model choices, original request, no-progress thresholds
+and completion requirements remain unchanged. Fixture tests cover stale/partial
+pages, intervening tools, consecutive rejections, tight-context feedback, unchanged
+source after rejection and a subsequent explicitly chosen valid targeted edit.
+These fixtures do not establish real-model recovery. Owner hardware is unverified.
+
+Validation of this correction: all 1123 tests plus 6 subtests passed in 88.37
+seconds; 40 focused recovery/completion tests also passed. Ruff, whitespace and
+static CI-policy checks passed. Pinned tracked-source Gitleaks found no leaks in
+approximately 3.73 MB. Manual publication review covered the four changed source,
+test, request-marker and evidence-note files; no private diagnostics or generated
+fixture implementations were added. This limited audit is not a security
+certification. Before dispatch, public inventory was 80 artifacts totaling
+114078920 bytes, with no active run among the latest workflow results. No storage
+deletion was needed. Fresh actual-model acceptance remains required.
