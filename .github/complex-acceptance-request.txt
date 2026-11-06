@@ -1,0 +1,3 @@
+Request: inventory-guidance-2026-11-06
+Product source: d8092673ab03bce525bb2faf1d6b89249eb97353
+Prior run 42135202651 ended with no_progress. Run the unchanged original request.

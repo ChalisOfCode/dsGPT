@@ -2,6 +2,9 @@ name: Fresh complex APK and EXE acceptance
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/complex-acceptance-request.txt]
 permissions:
   contents: read
   actions: read
@@ -14,7 +17,7 @@ defaults:
 
 concurrency:
   group: complex-app-acceptance-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   model:

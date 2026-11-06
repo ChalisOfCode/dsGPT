@@ -155,3 +155,21 @@ def test_shutdown_failure_or_interruption_clears_all_completion_claims(
     assert report["single_backend_source_version"] is False
     assert report["native_runtime_verified"] is False
     assert report["overall_application_acceptance"] == "not_completed"
+
+
+def test_explicit_acceptance_request_trigger_is_main_only_and_preserves_active_run():
+    from pathlib import Path
+
+    from yaml import BaseLoader, load
+
+    workflow = load(
+        Path(".github/workflows/complex-app-acceptance.yml").read_text(), Loader=BaseLoader
+    )
+    assert workflow["on"]["push"] == {
+        "branches": ["main"],
+        "paths": [".github/complex-acceptance-request.txt"],
+    }
+    assert "workflow_dispatch" in workflow["on"]
+    assert workflow["concurrency"]["cancel-in-progress"] == "false"
+    assert set(workflow["permissions"]) == {"contents", "actions"}
+    assert set(workflow["permissions"].values()) == {"read"}

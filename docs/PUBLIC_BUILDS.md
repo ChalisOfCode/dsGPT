@@ -98,3 +98,13 @@ Official policy references, consulted 2026-11-03:
 - https://docs.github.com/en/billing/concepts/product-billing/github-actions
 - https://docs.github.com/en/billing/how-tos/set-up-budgets
 - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository
+
+### Explicit complex-acceptance request
+
+Complex acceptance also supports an audited change to
+`.github/complex-acceptance-request.txt` on `main`. This is an explicit dispatch
+alternative when the browser is unavailable, not an automatic run on product
+source changes. Record a unique request and prior terminal run; check active runs
+and storage before publishing. The workflow tests the exact triggering commit,
+retains the existing public/$0 gate and read-only permissions, and never cancels
+an active acceptance run. Do not submit another request while acceptance is active.
