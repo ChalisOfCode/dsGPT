@@ -1647,6 +1647,8 @@ class WorkRegistry:
                             (action.get("tool") == "read_file" and not result.get("error"))
                             or (action.get("tool") == "edit_file"
                                 and result.get("error") == "edit_has_no_change")
+                            or (action.get("tool") == "build_project"
+                                and result.get("error") == "command_failed")
                         )
                         and len(prior) >= 2
                     ):

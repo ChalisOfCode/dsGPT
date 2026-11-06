@@ -499,3 +499,43 @@ def test_three_file_cycle_retains_current_observations_within_budget(
         assert "read_file" not in choices
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     assert not json.loads(messages[1]["content"])["build_state"]["completion_ready"]
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_failed_build_retains_current_inspected_source_and_compiler_error(tmp_path, changed):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.storage import canonical, utcnow
+    from dsgpt.work import visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement the requested app and compile it.")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "value = missing_name\n"
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    commit(work, tid, ProjectAction(tool="write_file", path="main.py", content=body,
+                                   summary="Create"))
+    commit(work, tid, ProjectAction(tool="read_file", path="main.py", summary="Inspect"))
+    if changed:
+        commit(work, tid, ProjectAction(tool="edit_file", path="main.py",
+            old_text="missing_name", new_text="another_name", expected_sha256=digest,
+            summary="Change"))
+        digest = hashlib.sha256(body.replace("missing_name", "another_name").encode()).hexdigest()
+    result = {"error": "command_failed", "stderr": "Unresolved reference missing_name",
+              "exit_code": 1, "execution_id": "fixture-build"}
+    with store.transaction() as db:
+        db.execute("INSERT INTO work_steps VALUES(?,?,?,?,?)", (
+            tid, 4, canonical({"tool": "build_project", "target": "apps"}),
+            canonical(result), utcnow(),
+        ))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert visible_source_reads(messages, {"main.py": digest}) == (
+        set() if changed else {"main.py"}
+    )
+    assert json.loads(messages[-2]["content"])["tool"] == "build_project"
+    latest = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
+    assert latest["error"] == "command_failed"
+    assert latest["stderr"] == result["stderr"]
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert not json.loads(messages[1]["content"])["build_state"]["completion_ready"]

@@ -914,3 +914,62 @@ device addresses, credentials, signing material or generated-app implementation
 were added. The tracked-source scan and limited manual review are not a security
 certification. A new actual-model run is still required on the published source;
 none of these local checks establishes complex-app completion.
+
+## c58a223 routine platform verification
+
+Routine CI 42298079219 passed all nine jobs on exact commit
+`c58a223fff96d18e8343c622af6f125c23aaf58c`, tree
+`6cf364d93699a93100eef9e1deba02730f6d4265`. Five report ZIPs were
+GitHub-digest-verified and preserved as `dsGPT-ci-test-evidence-c58a223.zip`,
+44084 bytes, SHA256
+`9403fbf395c35031aae6ea8c825f2bd795e1ba46677097d9d5dcd1a46d0bd15c`,
+durable file `libfile_fde3_f-7d9787a6aef881918f44eb41911bb498_0e1c3d7a1ce08191b900cc9270ea7257`.
+The installed Windows report verifies native UI/local reply, Credential Manager,
+scheduled backend restart, model persistence, reinstall owner/chat preservation
+and data-preserving uninstall. It uses separate qwen3:1.7b fixture inference,
+not actual 9B complex-app acceptance. The staged report retains inference BLOCKED
+and production/physical usability REVIEW labels. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Complete item 5, production signing and
+owner hardware remain unverified.
+
+On 2026-11-06, original-request actual 9B run 42298079310, job 128168402828,
+remains in progress on this exact commit. Exact model loading and production
+Docker setup passed; the unchanged-request model-decision step is active.
+No completed complex-app, follow-up or generated-native result is available.
+The run was left undisturbed; no duplicate run or source change was made.
+
+## c58a223 completed complex failure and compiler/source handoff
+
+Original-request actual 9B run 42298079310 on exact
+`c58a223fff96d18e8343c622af6f125c23aaf58c` failed initial step 22,
+`no_progress`. This supersedes the preceding active observation. Step 21 ran the
+production build and received Android compiler errors, including unresolved
+`remember` and `title` references. Step 22 requested its third unchanged
+MainActivity source read and stopped. Generated native/follow-up jobs skipped.
+Neither compilation nor complex-app completion passed.
+
+Original artifact 13547052678, 123345 bytes, was GitHub-digest-verified:
+SHA256 `ca5e4570157c4292ffc3cb283272d62503e99dc8ed7c77947d125dfab26582f1`.
+The unchanged `dsGPT-complex-evidence-42298079310.zip` is preserved as durable
+file `libfile_fde3_f-85ed1aa0f5648191a3b9f31a7432f90d_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The prompt previously retained observed source across reads/rejections but not
+failed builds. It now applies the same bounded current-hash source retention
+after `build_project` returns `command_failed`, alongside the exact latest
+compiler response. No model code/action was substituted. Changed or omitted
+source remains readable; the existing no-progress limit, budgets and acceptance
+criteria remain unchanged. Two synthetic tests verify current versus stale source
+and preservation of compiler diagnostics; focused suite passed 28 tests.
+A replay of saved evidence through step 21 retains MainActivity and Task source
+with the compiler response at estimated 15379/16384 budget including the unchanged
+4096 output reserve. This is diagnostic replay, not fresh actual-model acceptance.
+
+Full suite passed 1152 tests plus 6 subtests in 84.17 seconds. Ruff, whitespace,
+CI-policy and pinned tracked-source Gitleaks passed. Manual publication review
+covered all four changed files and preserved prior platform notes; no private
+conversations, diagnostics, device addresses, credentials, signing material or
+generated-app implementation were added. This limited review is not a security
+certification. Before dispatch all active/queued/waiting/pending counts were zero;
+124 public artifacts totaled 179170610 bytes, none expired. No deletion needed.
+Historical private storage remains unverified, archive Actions disabled and
+account usage blocking unchanged from the recorded administrative checks.
