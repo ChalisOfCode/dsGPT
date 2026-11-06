@@ -777,3 +777,65 @@ personal conversations or generated-app implementation were added. This bounded
 review is not a security certification. Before dispatch all active/queued/waiting/
 pending counts were zero. Inventory was 146 artifacts totaling 211553836 bytes;
 no deletion was necessary.
+
+## 25f5b67 routine platform verification
+
+Routine CI 42235222953 passed all nine jobs on exact commit
+`25f5b678dcb2e8f9cf001491b13a9ae68e4215c3`, tree
+`c829de3a6437e25907aa5a6b9af0d08db3443a07`. Five report ZIPs were
+digest-verified and preserved as `dsGPT-ci-test-evidence-25f5b67.zip`,
+45137 bytes, SHA256
+`d73330bc42c629b24ae2a68fada31ddff43dcd43a907576a53fc0ff550cbfffe`,
+durable file `libfile_fde3_f-6e9a295d23f08191965e99b8b9979f6b_0e1c3d7a1ce08191b900cc9270ea7257`.
+Windows reports verify native UI/local reply, Credential Manager, scheduled
+backend restart, model persistence, owner/chat preservation through reinstall,
+and data-preserving uninstall. Its separate qwen3:1.7b fixture does not establish
+actual 9B complex-app acceptance. Android instrumentation reports OK (one
+lifecycle/diagnostics test). Complete item 5, production signing continuity and
+owner hardware behavior remain unverified by these routine checks.
+
+On 2026-11-06, original-request actual 9B run 42235222902, job 127950958616,
+remains active on this source in the unchanged-request model-decision step.
+No completed complex-app, follow-up or generated native result is available.
+No source mutation, duplicate acceptance or cancellation was performed.
+
+## 25f5b67 actual-model failure and multi-file source retention
+
+Original-request actual 9B run 42235222902 completed with failure on exact
+`25f5b678dcb2e8f9cf001491b13a9ae68e4215c3`. Model loading and the production
+Docker toolchain passed. Initial step 28 stopped with `no_progress`: after an
+unchanged edit rejection and requirement comparison, steps 24–27 cycled through
+the manifest, Task.kt and MainActivity.kt; step 28 requested Task.kt again.
+Generated Windows/Android native checks and follow-up did not run.
+
+Original artifact 13519913547 was downloaded and its GitHub digest verified:
+126571 bytes, SHA256
+`c75b5e73d6d720ea2bbec49ac97a2353086b96f56bafad360d01acec6c84d579`.
+It is preserved as `dsGPT-complex-evidence-42235222902.zip`, durable file
+`libfile_fde3_f-c3627f5768a88191b9352c528d910ff8_0e1c3d7a1ce08191b900cc9270ea7257`.
+This supersedes the preceding active-run observation, not the passing routine CI.
+
+The controller retained only the immediately preceding source read after each
+new source read. Thus a three-file cycle evicted an observed page even when all
+three could fit. It now considers distinct pages from the existing eight-step
+history, requires matching current file hashes and action/result paths, and adds
+only pages that fit the unchanged budget. Stale, partial or omitted source stays
+readable; edit actions remain available. Original requirements and step logs are
+unchanged. The existing bounded repeated-action stop is unchanged.
+
+Four synthetic regressions cover three-file retention, interleaved requirement
+reads and genuine edits invalidating old observations. The focused suites passed
+31 tests. A diagnostic replay using the failed run's saved source, requirements,
+notes and history through step 27 retains all three complete source files at an
+estimated 16080/16384 total budget, including the unchanged 4096 output reserve.
+This replay is not fresh model inference, app implementation or acceptance.
+
+Full local suite passed 1148 tests plus 6 subtests in 86.43 seconds. Ruff,
+whitespace, CI-policy and pinned tracked-source Gitleaks checks passed. Manual
+publication review covered the four changed files, preserving earlier platform
+notes and excluding original private diagnostics, conversations, credentials,
+signing material and generated-app implementation. This limited review is not a
+security certification. Before dispatch all active/queued/waiting/pending counts
+were zero; 157 artifacts totaled 227818265 bytes, none expired. No deletion was
+needed. Earlier account usage-blocking and private archive disablement checks
+remain the administrative evidence; historical private storage stays unverified.

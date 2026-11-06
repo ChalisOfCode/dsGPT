@@ -426,3 +426,46 @@ def test_requirement_comparison_retains_only_current_source_pages(tmp_path, chan
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     assert json.loads(messages[-2]["content"])["tool"] == "read_requirements"
     assert json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))["content"]
+
+
+@pytest.mark.parametrize("interleaved", [False, True])
+@pytest.mark.parametrize("changed", [False, True])
+def test_three_file_cycle_retains_current_observations_within_budget(
+    tmp_path, interleaved, changed,
+):
+    from dsgpt.project_tools import ProjectAction, action_schema
+    from dsgpt.work import visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement all three modules, then test them.")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    bodies = {"a.py": "# Unicode π\nvalue = 1\n", "b.py": "value = 2\n", "c.py": "value = 3\n"}
+    for path, body in bodies.items():
+        commit(work, tid, ProjectAction(
+            tool="write_file", path=path, content=body, summary="Create",
+        ))
+    for path in bodies:
+        commit(work, tid, ProjectAction(tool="read_file", path=path, summary="Inspect"))
+        if interleaved and path == "a.py":
+            commit(work, tid, ProjectAction(tool="read_requirements", summary="Compare"))
+    if changed:
+        commit(work, tid, ProjectAction(tool="edit_file", path="a.py", old_text="value = 1",
+                                       new_text="value = 4", summary="Change",
+                                       expected_sha256=hashlib.sha256(bodies["a.py"].encode()).hexdigest()))
+        bodies["a.py"] = bodies["a.py"].replace("value = 1", "value = 4")
+        commit(work, tid, ProjectAction(tool="read_file", path="c.py", summary="Inspect"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    revisions = {p: hashlib.sha256(b.encode()).hexdigest() for p, b in bodies.items()}
+    visible = visible_source_reads(messages, revisions)
+    assert visible == ({"b.py", "c.py"} if changed else set(bodies))
+    schema = action_schema(file_paths=list(bodies), already_visible_read=visible)
+    choices = {v["properties"]["tool"]["const"]: v["properties"] for v in schema["oneOf"]}
+    assert choices["edit_file"]["path"]["enum"] == list(bodies)
+    if changed:
+        assert choices["read_file"]["path"]["enum"] == ["a.py"]
+    else:
+        assert "read_file" not in choices
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert not json.loads(messages[1]["content"])["build_state"]["completion_ready"]

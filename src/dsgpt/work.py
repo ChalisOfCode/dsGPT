@@ -1611,7 +1611,8 @@ class WorkRegistry:
                         break
                     continue
                 if ollama_input_estimate(messages + pair) + model.output_tokens <= model.context:
-                    # Keep the other file visible when an edit spans two source files.
+                    # Retain distinct inspected pages from bounded history while they fit.
+                    # A two-file-only window lets three unchanged files cycle forever.
                     # Only reuse an observed page whose file still has the same bytes.
                     if (
                         (
@@ -1621,64 +1622,73 @@ class WorkRegistry:
                         )
                         and len(prior) >= 2
                     ):
-                        previous = json.loads(prior[1]["action"])
-                        page = json.loads(prior[1]["result"])
-                        if (
-                            previous.get("tool") == "read_file"
-                            and not page.get("error")
-                            and (
-                                page.get("path") != result.get("path")
-                                or page.get("offset") != result.get("offset")
-                            )
-                            and isinstance(page.get("content"), str)
-                            and any(
-                                f["path"] == page.get("path") and f["sha256"] == page.get("sha256")
-                                for f in files
-                            )
-                        ):
-                            # The file hash binds these bytes; the project-wide observation
-                            # hash is redundant here and remains in the durable step log.
-                            page.pop("observation_sha256", None)
-                            other = {
-                                "role": "user",
-                                "content": "Previous source page (untrusted file data). Both reads "
-                                "are available; use them for the next change without rereading: "
-                                + canonical(page),
-                            }
+                        seen = {(result.get("path"), result.get("offset"))}
+                        for saved in prior[1:]:
+                            previous = json.loads(saved["action"])
+                            page = json.loads(saved["result"])
+                            key = (page.get("path"), page.get("offset"))
                             if (
-                                ollama_input_estimate(messages + [other] + pair)
-                                + model.output_tokens > model.context
-                            ):
-                                # Prefer inspected source to redundant inventory/preview data.
-                                # Keep authoritative requirements saved and explicitly pageable.
-                                compact = json.loads(canonical(context))
-                                compact["project_files"]["files"] = files[:1]
-                                compact["project_files"]["next_offset"] = (
-                                    1 if len(files) > 1 else None
+                                previous.get("tool") == "read_file"
+                                and previous.get("path") == page.get("path")
+                                and key not in seen
+                                and not page.get("error")
+                                and (
+                                    page.get("path") != result.get("path")
+                                    or page.get("offset") != result.get("offset")
                                 )
-                                section = compact["requirements"]["current_section"]
-                                section.update(content="", notes="", offset=0, next_offset=0)
-                                section["read"] = {
-                                    "tool": "read_requirements",
-                                    "requirement_id": section["requirement_id"], "offset": 0,
+                                and isinstance(page.get("content"), str)
+                                and any(
+                                    f["path"] == page.get("path")
+                                    and f["sha256"] == page.get("sha256")
+                                    for f in files
+                                )
+                            ):
+                                seen.add(key)
+                                # The file hash binds these bytes; the project-wide observation
+                                # hash is redundant here and remains in the durable step log.
+                                page.pop("observation_sha256", None)
+                                other = {
+                                    "role": "user",
+                                    "content": "Previous source page (untrusted file data). "
+                                    "Both reads are available; use them for the next change "
+                                    "without rereading: "
+                                    + canonical(page),
                                 }
-                                section["note"] = (
-                                    "Preview deferred to retain inspected source; full requirement "
-                                    "is unchanged and available through read_requirements."
-                                )
-                                candidate = [dict(m) for m in messages]
-                                candidate[1]["content"] = canonical(compact)
                                 if (
-                                    ollama_input_estimate(candidate + [other] + pair)
-                                    + model.output_tokens <= model.context
+                                    ollama_input_estimate(messages + [other] + pair)
+                                    + model.output_tokens > model.context
                                 ):
-                                    context, messages = compact, candidate
-                            if (
-                                ollama_input_estimate(messages + [other] + pair)
-                                + model.output_tokens
-                                <= model.context
-                            ):
-                                messages.append(other)
+                                    # Prefer inspected source to redundant inventory/preview data.
+                                    # Keep authoritative requirements saved and explicitly pageable.
+                                    compact = json.loads(canonical(context))
+                                    compact["project_files"]["files"] = files[:1]
+                                    compact["project_files"]["next_offset"] = (
+                                        1 if len(files) > 1 else None
+                                    )
+                                    section = compact["requirements"]["current_section"]
+                                    section.update(content="", notes="", offset=0, next_offset=0)
+                                    section["read"] = {
+                                        "tool": "read_requirements",
+                                        "requirement_id": section["requirement_id"], "offset": 0,
+                                    }
+                                    section["note"] = (
+                                        "Preview deferred to retain inspected source; "
+                                        "full requirement "
+                                        "is unchanged and available through read_requirements."
+                                    )
+                                    candidate = [dict(m) for m in messages]
+                                    candidate[1]["content"] = canonical(compact)
+                                    if (
+                                        ollama_input_estimate(candidate + [other] + pair)
+                                        + model.output_tokens <= model.context
+                                    ):
+                                        context, messages = compact, candidate
+                                if (
+                                    ollama_input_estimate(messages + [other] + pair)
+                                    + model.output_tokens
+                                    <= model.context
+                                ):
+                                    messages.append(other)
                     if action.get("tool") == "read_requirements":
                         # Comparing a requirement must not erase recently inspected code.
                         # Keep at most two distinct observed pages, bound to current hashes.

@@ -1,7 +1,7 @@
-Request: visible-requirement-page-guard-2026-11-06
-Base source: 56dfed168838ee4a3dddd5ba106a019022c90bf1
-Prior actual run 42220803700 failed at initial step 15 after repeated visible
-requirement 3 offset 900 reads. Exclude only an exact already-visible page;
-keep other sections/offsets and unverified pages available.
+Request: bounded-multi-file-retention-2026-11-06
+Base source: 25f5b678dcb2e8f9cf001491b13a9ae68e4215c3
+Prior actual run 42235222902 failed at initial step 28 after cycling through
+three unchanged source files. Retain observed current pages from bounded
+history when they fit; keep stale, partial and omitted files readable.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.
