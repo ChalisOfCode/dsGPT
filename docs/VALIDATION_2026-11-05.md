@@ -1243,3 +1243,66 @@ Publication excludes private conversations, credentials, signing material,
 device addresses, private diagnostics and generated-app implementation. This
 limited scan/review is not a security certification. Item 1 remains open;
 items 2–5 and final delivery remain gated by their unchanged acceptance criteria.
+
+## Platform evidence on the visible-suffix checkpoint (2026-11-07 UTC)
+
+Routine CI 42347937506 passed all nine jobs on exact
+`5eb1402951d1e2748ebe03f43910cddac9d61754`. Five original report ZIPs were
+individually verified against GitHub SHA256 digests and preserved in
+`dsGPT-ci-test-evidence-5eb1402.zip`, 43897 bytes, SHA256
+`826873b8a1165f6da3a20f3a506612ea019562a19d0474f23ee4360e0b47105d`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall/data preservation passed. Android lifecycle/diagnostics instrumentation
+reported OK (1 test). The separate qwen3:1.7b Windows fixture is not actual 9B
+complex acceptance or complete item 5. Staged inference BLOCKED and production
+REVIEW labels remain; owner hardware remains unverified.
+
+Actual original-request 9B run 42347937357, job 128329642596, remains active in
+unchanged-request model decisions after successful pinned model loading and
+production Docker toolchain setup. No final model/native result is claimed.
+No duplicate run was dispatched and the active run was not altered or cancelled.
+Durable platform evidence:
+`libfile_fde3_f-08471624ea048191bb72fc8824de8e63_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+## Observed requirement EOF recovery (2026-11-07 UTC)
+
+Actual original-request 9B run 42347937357 on exact
+`5eb1402951d1e2748ebe03f43910cddac9d61754` failed initial step 45,
+no_progress, superseding the active observation above. Step 38 rejected a wrong-hash
+source edit. Requirement 3 reads then moved through offsets 900, 90, 9 and 0.
+Steps 43/44 read exact EOF 1506 and returned empty successful pages; step 45
+repeated that EOF and stopped. Generated native/follow-up jobs skipped.
+Original artifact 13567976308, 144731 bytes, SHA256
+`5a22ad9734a4886897e829e7313d2a5ea75bca8d65e61e61188e50d0c13a04f2`,
+was verified against GitHub's digest and preserved unchanged as
+`dsGPT-complex-evidence-42347937357.zip`, durable file
+`libfile_fde3_f-c9fac9be08e48191a6f717015a97df88_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The grammar guard now recognizes an explicitly observed empty EOF only when its
+section provenance, offset, total length and terminal paging fields match the
+saved original. It excludes repeating that already-observed EOF. If the matching
+verified suffix is also retained in the actual prompt, both are excluded together.
+The first EOF read remains available, as do unseen prefixes and other sections.
+Corrupt/nonterminal empty observations do not qualify. No actions are rewritten;
+runtime validation, request, context/output budgets, loop limits and acceptance
+criteria remain unchanged.
+
+Saved-result replay through step 44 retains section 3 and excludes its observed
+0..1506 range within estimated 15798/16384 including the unchanged 4096 output
+reserve. This is a controller replay, not fresh model acceptance. Focused suites
+passed 46 tests, covering standalone EOF, retained suffix plus EOF, incorrect
+length and empty non-EOF cases. Prior platform evidence above remains preserved;
+its separate 1.7B Windows fixture does not establish actual 9B acceptance or
+complete item 5. Owner hardware remains unverified.
+
+Before dispatch active/queued/waiting/pending counts were zero; 121 public
+artifacts totaled 178888797 bytes, none expired. No deletion was needed. Prior
+archive Private/Actions-disabled and $0 usage-blocking observations remain the
+administrative evidence; historical archive storage remains unverified.
+
+Full suite passed 1174 tests plus 6 subtests in 78.01 seconds. Ruff, whitespace,
+CI-policy, pinned tracked-source Gitleaks and manual four-file review passed.
+Prior uncommitted platform evidence notes are preserved. Publication excludes
+private conversations, diagnostics, device addresses, credentials, signing
+material and generated application source. This limited scan/review is not a
+security certification. Actual-model item 1 and later release gates remain open.

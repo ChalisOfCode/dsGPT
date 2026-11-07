@@ -133,3 +133,33 @@ def test_visible_suffix_guard_preserves_unseen_prefix_and_eof(mode):
                 blocked = section == 1 and (offset == 9 if mode == "partial" else
                                             9 <= offset < len(text) if mode != "corrupt" else False)
                 assert allowed == (not blocked)
+
+
+@pytest.mark.parametrize("mode", ["eof", "retained", "wrong_length", "not_eof"])
+def test_observed_eof_excludes_only_verified_visible_text_and_eof(mode):
+    from dsgpt.work import RETAINED_REQUIREMENT_PREFIX
+
+    text, original = messages(9)
+    page = json.loads(original[-1]["content"].removeprefix("Recorded tool result: "))
+    eof = dict(page, offset=len(text), content="", total_characters=len(text),
+               has_more=False, next_offset=None)
+    if mode == "wrong_length":
+        eof["total_characters"] += 1
+    if mode == "not_eof":
+        eof["offset"] -= 1
+    prompt = ([{"role": "user", "content": RETAINED_REQUIREMENT_PREFIX + canonical(page)}]
+              if mode == "retained" else [])
+    prompt += [{"role": "assistant", "content": canonical({"tool": "read_requirements",
+                 "requirement_id": 1, "offset": eof["offset"]})},
+               {"role": "user", "content": "Recorded tool result: " + canonical(eof)}]
+    visible = visible_requirement_read(prompt, text, include_suffix=True)
+    assert visible == ((1, 9, len(text)) if mode == "retained" else
+                       (1, len(text), len(text)) if mode == "eof" else None)
+    schema = action_schema(specification=True, requirement_lengths=[len(text)],
+                           visible_requirement_page=visible)
+    reads = [v for v in schema["oneOf"]
+             if v["properties"]["tool"]["const"] == "read_requirements"]
+    for offset in range(len(text) + 1):
+        allowed = any(v["properties"]["offset"]["minimum"] <= offset
+                      <= v["properties"]["offset"]["maximum"] for v in reads)
+        assert allowed == (visible is None or offset < visible[1])

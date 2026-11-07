@@ -1,7 +1,7 @@
-Request: visible-requirement-suffix-2026-11-07
-Base source: 56e6b570da44d06fc892f0eedd51bf5f3026decd
-Prior actual run 42345187823 failed at initial step 19 after alternating
-requirement offsets 900/901 inside already-visible end-of-section text.
-Exclude redundant visible suffix reads while preserving unseen text and EOF.
+Request: observed-requirement-eof-2026-11-07
+Base source: 5eb1402951d1e2748ebe03f43910cddac9d61754
+Prior actual run 42347937357 failed at initial step 45 after repeated
+successful empty EOF reads. Exclude a verified already-observed EOF together
+with matching retained suffix text while preserving first EOF and unseen text.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

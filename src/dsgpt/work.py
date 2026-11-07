@@ -184,10 +184,19 @@ def _visible_requirement_read(messages, original, include_suffix=False):
         if (action.get("tool") != "read_requirements" or page.get("error")
                 or ordinal != action.get("requirement_id", 1)
                 or offset != action.get("offset", 0) or not isinstance(offset, int)
-                or offset < 0 or not page.get("content")):
+                or offset < 0 or not isinstance(page.get("content"), str)):
             return None
         for number, (start, end, body) in enumerate(sections(original), 1):
             if number == ordinal:
+                if not page["content"]:
+                    if (include_suffix and offset == len(body)
+                            and start == page.get("original_start")
+                            and end == page.get("original_end")
+                            and page.get("total_characters") == len(body)
+                            and page.get("has_more") is False
+                            and page.get("next_offset") is None):
+                        return ordinal, offset, offset
+                    return None
                 if (start == page.get("original_start") and end == page.get("original_end")
                         and body[offset:offset + len(page["content"])] == page["content"]):
                     if include_suffix and offset + len(page["content"]) == len(body):
@@ -204,7 +213,10 @@ RETAINED_REQUIREMENT_PREFIX = "Previously inspected requirement page (exact save
 
 def visible_requirement_read(messages, original, include_suffix=False):
     visible = _visible_requirement_read(messages, original, include_suffix)
-    if visible:
+    eof = visible if include_suffix and visible and len(visible) == 3 and (
+        visible[1] == visible[2]
+    ) else None
+    if visible and not eof:
         return visible
     for message in messages[:-2]:
         if (message["role"] != "user"
@@ -221,10 +233,14 @@ def visible_requirement_read(messages, original, include_suffix=False):
             ]
             visible = _visible_requirement_read(pair, original, include_suffix)
             if visible:
-                return visible
+                if not eof:
+                    return visible
+                if (len(visible) == 3 and visible[0] == eof[0]
+                        and visible[2] + 1 == eof[1]):
+                    return eof[0], visible[1], eof[2]
         except (ValueError, TypeError):
             continue
-    return None
+    return eof
 
 
 def research_page(result, cap):
