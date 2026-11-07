@@ -212,3 +212,37 @@ def test_rejected_overwrite_guides_targeted_edit_and_never_mutates_source(tmp_pa
         assert saved["content"] == "value = 1\n"
     else:
         assert context["previous_result"]["error"] == "existing_file_requires_targeted_edit"
+
+
+@pytest.mark.parametrize("case", ["current", "stale", "partial"])
+def test_rejected_overwrite_retains_target_not_newer_unrelated_read(tmp_path, case):
+    import hashlib
+
+    from dsgpt.work import RETAINED_SOURCE_PREFIX, visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path, target="source")
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, "Implement the requested change")
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "value = 0\n" * (500 if case == "partial" else 1)
+    commit(work, tid, action(tool="write_file", path="a.py", content=body))
+    commit(work, tid, action(tool="write_file", path="build.txt", content="configuration\n"))
+    commit(work, tid, action(tool="read_file", path="a.py"))
+    commit(work, tid, action(tool="read_file", path="build.txt"))
+    if case == "stale":
+        with store.transaction() as db:
+            db.execute("UPDATE work_files SET content=?,sha256=? WHERE task_id=? AND path='a.py'",
+                       ("changed", hashlib.sha256(b"changed").hexdigest(), tid))
+    commit(work, tid, action(tool="write_file", path="a.py", content="Rejected proposal"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    revisions = {r["path"]: r["sha256"] for r in store.all(
+        "SELECT path,sha256 FROM work_files WHERE task_id=?", (tid,))}
+    retained = [json.loads(m["content"][len(RETAINED_SOURCE_PREFIX):]) for m in messages
+                if m["content"].startswith(RETAINED_SOURCE_PREFIX)]
+    assert all(p["path"] == "a.py" for p in retained)
+    assert visible_source_reads(messages, revisions) == ({"a.py"} if case == "current" else set())
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert "existing_file_requires_targeted_edit" in messages[-1]["content"]
+    assert store.one("SELECT content FROM work_files WHERE task_id=? AND path='a.py'", (tid,))[
+        "content"] == ("changed" if case == "stale" else body)

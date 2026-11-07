@@ -1,7 +1,7 @@
-Request: overwrite-after-requirement-comparison-2026-11-07
-Base source: 43b855c73716e02200f236ec2469849c636ccdc9
-Prior actual run 42334618633 failed at initial step 24 after a rejected
-whole-file overwrite and an unchanged source reread. Retain the last current
-observed source across intervening requirement comparisons after rejection.
+Request: rejected-overwrite-target-source-2026-11-07
+Base source: b357c6b01139614296930c9feca5448ce9b15936
+Prior actual run 42338395466 failed at initial step 17 after rejected
+MainActivity overwrite recovery retained a newer unrelated Gradle read.
+Retain observed current target source when it fits after an overwrite rejection.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

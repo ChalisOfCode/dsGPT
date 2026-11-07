@@ -1145,3 +1145,53 @@ counts were zero; 110 public artifacts totaled 162594396 bytes, none expired.
 No deletion was necessary. Historical private storage remains unverified; prior
 archive disablement and $0 usage-blocking observations remain the administrative
 evidence. Item 1 remains open; items 2–5 and the upgrade release remain gated.
+
+## Rejected overwrite target selection (2026-11-07 UTC)
+
+Routine CI 42338395352 passed all nine jobs on exact
+`b357c6b01139614296930c9feca5448ce9b15936`. Five original report ZIPs were
+verified against GitHub SHA256 digests and preserved in
+`dsGPT-ci-test-evidence-b357c6b.zip`, 43869 bytes, SHA256
+`f63d28b1154158eb72a28abc27eb5e2fb02de01d90a0e9a73eb6706bd5c409b0`,
+durable file
+`libfile_fde3_f-3a568548e240819197ca6deacf968d56_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Actual original-request 9B run 42338395466 failed initial step 17, no_progress.
+Whole-file MainActivity writes at steps 11, 13 and 16 were rejected. Read 14
+showed MainActivity, read 15 showed build.gradle despite the model summary naming
+MainActivity. After rejection 16, recovery retained the newer unrelated Gradle
+read, not the target source. Step 17 repeated unchanged MainActivity and stopped.
+Generated native and follow-up jobs skipped. No rejected write executed.
+Original artifact 13560733606, 108515 bytes, SHA256
+`82351d2a060f3242c2a4e5f5ad135fecfe0e2065da86842e5bb3781cde4c3c87`
+was digest-verified and preserved as `dsGPT-complex-evidence-42338395466.zip`,
+durable file
+`libfile_fde3_f-9ccb5925cb78819188dc4f3ccd70e211_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Recovery from an existing-file overwrite rejection now selects an observed read
+of that exact target path from the existing bounded history, subject to the same
+current-hash and prompt-budget checks. Generic invalid JSON recovery is unchanged.
+Synthetic tests cover a newer unrelated read, stale target and partial target;
+changed or incompletely displayed files remain readable. Saved-result replay
+through step 16 retains complete MainActivity at estimated 14294/16384 including
+the unchanged 4096 output reserve. This is not actual-model acceptance. No model
+actions, generated implementation, request, budgets, loop limits or acceptance
+criteria were substituted.
+
+The platform reports confirm installed Windows native UI/local reply, Credential
+Manager, restart and reinstall/data preservation; Android instrumentation OK
+(1 lifecycle/diagnostics test). The separate qwen3:1.7b Windows fixture does not
+establish actual 9B acceptance or complete item 5. Staged inference BLOCKED and
+production REVIEW labels remain, and owner hardware is unverified. Before the
+next dispatch, active/queued/waiting/pending counts were zero; 110 public artifacts
+totaled 162601160 bytes, none expired. No deletion was needed. Prior archive
+Private/Actions-disabled and $0 usage-blocking observations remain the recorded
+administrative evidence; historical archive storage remains unverified.
+
+Full suite passed 1166 tests plus 6 subtests in 75.74 seconds; focused rejection
+suite passed 28 tests. Ruff, whitespace, CI-policy and pinned tracked-source
+Gitleaks passed. Manual four-file publication review excluded credentials,
+signing material, private conversations/diagnostics/device addresses and generated
+application source. This limited scan/review is not a security certification.
+Item 1 still requires fresh actual-model completion; later items and release
+remain gated by their unchanged acceptance criteria.

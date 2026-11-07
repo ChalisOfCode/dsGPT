@@ -1784,10 +1784,17 @@ class WorkRegistry:
                         # Only a read_file observation with a current file hash qualifies.
                         # Never substitute another tool's result or changed bytes. Feedback
                         # has priority: add this only if the entire prompt still fits.
+                        rejected_path = (
+                            action.get("path")
+                            if result.get("error") == "existing_file_requires_targeted_edit"
+                            else None
+                        )
                         for saved in prior[1:]:
                             previous = json.loads(saved["action"])
                             page = json.loads(saved["result"])
                             if page.get("error") in NONMUTATING_REJECTIONS:
+                                continue
+                            if rejected_path and page.get("path") != rejected_path:
                                 continue
                             if (
                                 previous.get("tool") == "read_file"
