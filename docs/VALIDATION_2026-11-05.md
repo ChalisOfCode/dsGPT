@@ -1033,3 +1033,61 @@ dispatch active/queued/waiting/pending counts were zero; 110 public artifacts
 totaled 162572824 bytes, none expired. No deletion needed. Earlier archive
 privacy/Actions-disablement and $0 usage-blocking checks remain the recorded
 administrative evidence; historical private storage remains unverified.
+
+## 61895e0 routine platform verification
+
+Routine CI 42325936463 passed all nine jobs on exact commit
+`61895e0e1cff9637e5afd1d5807ea394c9ac111f`, tree
+`38c6cb40f8596fc1b72ec3fec5ec2dbc47d98534`. Five report ZIPs were
+GitHub-digest-verified and preserved as `dsGPT-ci-test-evidence-61895e0.zip`,
+44347 bytes, SHA256
+`71cb3b99bcfc93dcf21df34545be60b22e52ee0167562f7b59a02b357b0d6e98`,
+durable file `libfile_fde3_f-dcfdf1cc038c81918d6ef38c6269da21_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall owner/chat/model preservation and data-preserving uninstall passed.
+Separate qwen3:1.7b fixture inference is not actual 9B complex acceptance.
+The staged report retains inference BLOCKED and production/physical usability
+REVIEW labels. Android lifecycle/diagnostics instrumentation reports OK (one test).
+Complete item 5, production signing and owner hardware remain unverified.
+
+At the 2026-11-07 02:17 UTC check, original-request actual 9B run 42325936995,
+job 128261113950, remains in progress on this exact commit, in the unchanged
+request's model-decision step. No completed complex-app/follow-up/generated-native
+result is available. No source change, duplicate run or cancellation was made.
+
+## 61895e0 completed complex failure and bounded requirement navigation
+
+Original-request actual 9B run 42325936995 on exact
+`61895e0e1cff9637e5afd1d5807ea394c9ac111f` failed initial step 23,
+`no_progress`. This supersedes the preceding active observation. The model made
+MainActivity edits and wrote a new 12435-byte TaskLedger module at step 20.
+Steps 21/22 requested section 2 offset 900 despite its length being 869 and
+received explicit out-of-range errors. Step 23 proposed another write_file to the
+existing module, was rejected, and the bounded failure stop fired. Generated
+native/follow-up jobs skipped. Source writes do not establish feature correctness.
+
+Original artifact 13558190302 is 120439 bytes, SHA256
+`f953f27731a500e83131b194ecc232f7c4f2eef9bceb37f85ff40fb57705e898`.
+Its GitHub digest was verified; unchanged `dsGPT-complex-evidence-42325936995.zip`
+is preserved as durable file
+`libfile_fde3_f-e444fb8ef2e081919850669dd8b5e60a_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The action schema now uses the saved original's section lengths to constrain
+requirement IDs and section-relative offsets. Every valid offset, including exact
+EOF and omitted offset=0, remains available except an exact already-visible page.
+Other sections and edit tools remain available. Runtime validation remains in
+place. No model action, generated implementation, budget, loop limit or acceptance
+criterion changed. Three synthetic cases cover no visible page, visible offset0,
+and visible EOF; focused suites passed 40 tests. A saved-request schema check
+confirms section2 allows 0..869 and excludes the observed invalid offset900.
+This is a schema check, not a fresh actual-model acceptance result.
+
+Full suite passed 1157 tests plus 6 subtests in 74.43 seconds. Ruff, whitespace,
+CI-policy and pinned tracked-source Gitleaks passed. Manual five-file publication
+review preserved prior platform notes and excluded private conversations,
+diagnostics, device addresses, credentials, signing material and generated-app
+implementation. This limited review is not a security certification. Before
+dispatch active/queued/waiting/pending counts were zero; 99 public artifacts
+totaled 146339336 bytes, none expired. No deletion needed. Historical private
+storage remains unverified; earlier archive disablement and $0 usage-blocking
+observations remain the recorded administrative evidence.

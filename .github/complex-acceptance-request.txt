@@ -1,7 +1,7 @@
-Request: rejected-response-requirement-retention-2026-11-07
-Base source: 114db758553784d7f5a66ffa685e2b4eb11cac0a
-Prior actual run 42314308022 failed at initial step 19 after incomplete JSON
-responses displaced the inspected requirement page. Retain verified observed
-requirement text with validation feedback within the unchanged bounded prompt.
+Request: saved-section-offset-bounds-2026-11-07
+Base source: 61895e0e1cff9637e5afd1d5807ea394c9ac111f
+Prior actual run 42325936995 failed at initial step 23 after repeated invalid
+requirement offsets and an existing-file write rejection. Bound requirement
+navigation to actual saved section lengths while preserving valid EOF/paging.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

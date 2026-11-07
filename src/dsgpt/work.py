@@ -2313,6 +2313,9 @@ class WorkRegistry:
                         visible_requirement_page=visible_requirement_read(
                             messages, row["requirements"]
                         ) if spec else None,
+                        requirement_lengths=[len(body) for _, _, body in sections(
+                            row["requirements"]
+                        )] if spec else None,
                         download_urls=self.web.media.urls(task_id) if build else None,
                         asset_paths=asset_paths,
                         completion_only=self._completion_ready(task_id),

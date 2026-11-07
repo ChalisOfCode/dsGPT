@@ -73,3 +73,29 @@ def test_unverified_requirement_pages_are_still_readable(damage):
     schema = action_schema(specification=True, visible_requirement_page=None)
     reads = [v for v in schema["oneOf"] if v["properties"]["tool"]["const"] == "read_requirements"]
     assert len(reads) == 1 and "offset" not in reads[0]["required"]
+
+
+@pytest.mark.parametrize("visible", [None, (1, 0), (2, 3)])
+def test_saved_section_lengths_bound_offsets_without_removing_valid_navigation(visible):
+    schema = action_schema(specification=True, requirement_lengths=[2, 3],
+                           visible_requirement_page=visible)
+    reads = [v for v in schema["oneOf"]
+             if v["properties"]["tool"]["const"] == "read_requirements"]
+
+    def allows(section, offset=None):
+        return any(
+            v["properties"]["requirement_id"]["const"] == section
+            and (offset is not None or "offset" not in v["required"])
+            and v["properties"]["offset"]["minimum"] <= (offset or 0)
+            <= v["properties"]["offset"]["maximum"]
+            for v in reads
+        )
+
+    for section, length in enumerate([2, 3], 1):
+        for offset in range(-1, length + 2):
+            assert allows(section, offset) == (
+                0 <= offset <= length and (section, offset) != visible
+            )
+        assert allows(section) == ((section, 0) != visible)
+    assert not allows(3, 0) and not allows(0, 0)
+    assert any(v["properties"]["tool"]["const"] == "edit_file" for v in schema["oneOf"])

@@ -193,6 +193,7 @@ def action_schema(
     completion_only=False,
     already_visible_read=None,
     visible_requirement_page=None,
+    requirement_lengths=None,
 ):
     """Make tool-specific required arguments visible to the runtime's JSON grammar."""
     base = ProjectAction.model_json_schema()["properties"]
@@ -289,6 +290,24 @@ def action_schema(
                 "maxLength": 167,
                 "pattern": r"^(inputs/)?[^/\\]+$",
             }
+        if tool == "read_requirements" and requirement_lengths is not None:
+            for ordinal, length in enumerate(requirement_lengths, 1):
+                ranges = [(0, length)]
+                if visible_requirement_page and visible_requirement_page[0] == ordinal:
+                    offset = visible_requirement_page[1]
+                    ranges = [(0, min(length, offset - 1)), (offset + 1, length)]
+                for low, high in ranges:
+                    if low > high:
+                        continue
+                    choice = copy.deepcopy(properties)
+                    choice["requirement_id"] = {"const": ordinal}
+                    choice["offset"] = {"type": "integer", "minimum": low, "maximum": high}
+                    needed = ["tool", "summary", *required]
+                    if low > 0:
+                        needed.append("offset")
+                    variants.append({"type": "object", "properties": choice,
+                                     "required": needed, "additionalProperties": False})
+            continue
         if tool == "read_requirements" and visible_requirement_page is not None:
             ordinal, offset = visible_requirement_page
             # Disjoint alternatives exclude only one (section, offset) pair.
