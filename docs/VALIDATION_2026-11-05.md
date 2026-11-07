@@ -1355,3 +1355,54 @@ counts were all zero; 121 public artifacts totaled 178883427 bytes, none expired
 No deletion needed. Archive/admin settings unchanged; historical private storage
 remains unverified. Publish with expected-head lease; fresh original acceptance
 must establish actual-model behavior independently of this replay and regressions.
+
+### Platform evidence for b4e34fc (2026-11-07)
+
+Routine CI 42363614217 passed all nine jobs on exact source
+`b4e34fc899c20a9d3b3e080a5b16bd68465a7686`. Five original report ZIPs
+(Windows, Android unit/runtime, backend, browser) were verified against GitHub's
+SHA256 digests and preserved in `dsGPT-ci-test-evidence-b4e34fc.zip`
+(45373 bytes; SHA256
+`c1c3d343869ad473f3ed1fb252eac76b7da404c849238101bab917b6fd8a118b`).
+Durable evidence: `libfile_fde3_f-c663a29c35d8819182aedb99ca106881_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall and data preservation passed using separate `qwen3:1.7b` fixture.
+Android lifecycle/diagnostics instrumentation reports OK (1 test).
+Staged inference BLOCKED and production REVIEW labels remain; installed-app
+checks do not erase them. Owner hardware remains unverified. These results are
+not actual 9B complex acceptance or full item 5 completion.
+Original-request run 42363614200, job 128376916580, remains in progress in the
+unchanged-request decision step. No duplicate dispatched or active run altered.
+
+### Actual wrong-hash rejection recovery (2026-11-07)
+
+Original-request run 42363614200 on exact
+`b4e34fc899c20a9d3b3e080a5b16bd68465a7686` failed initial step 46 with
+`no_progress`. The model reached compiler repair but did not complete the app.
+Step 44 read MainActivity, step 45 proposed an edit using the Gradle properties
+hash and received `file_changed_read_before_overwrite`; step 46 requested its
+third unchanged MainActivity read. The rejected edit did not execute. Generated
+native/follow-up jobs were skipped.
+
+Original artifact 13576537299 (160789 bytes) was verified against GitHub SHA256
+`683e36c979513fc702a30e30f20b6c9bff31fa910b9cc44e629bc4c7a7835ad4` and preserved as
+`dsGPT-complex-evidence-42363614200.zip`, durable evidence
+`libfile_fde3_f-f51511cd372c8191b81234fa5404c852_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Treat wrong-hash rejection as nonmutating for prompt recovery and seek an observed
+read of the exact target, not a newer unrelated file. Retain only current-hash
+observed bytes when they fit; stale/partial/omitted source stays readable.
+Runtime hash enforcement, model actions, original request and budgets unchanged.
+Three added cases cover current, stale and partial target observations after a
+newer unrelated source read. Saved-history replay through step 45 now retains
+complete MainActivity and suppresses its redundant read at estimated
+15866/16384 including the unchanged 4096 output reserve. Replay is diagnostic,
+not actual-model acceptance.
+
+Validation: 1179 tests plus 6 subtests passed in 84.23 seconds; focused suite
+31 passed. Ruff, whitespace, CI policy, pinned tracked-source Gitleaks and manual
+four-file publication review passed. Pre-dispatch active/queued/waiting/pending
+counts were zero; 121 public artifacts totaled 178944370 bytes, none expired.
+No deletion needed. Archive/admin settings unchanged; historical private storage
+remains unverified. Publish with an expected-head lease and require fresh actual
+model acceptance for this source.

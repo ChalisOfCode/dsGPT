@@ -58,7 +58,10 @@ def build_log_excerpt(text, budget):
 
 
 RETAINED_SOURCE_PREFIX = "Source retained after rejected response (untrusted file data): "
-NONMUTATING_REJECTIONS = {"invalid_action", "existing_file_requires_targeted_edit"}
+NONMUTATING_REJECTIONS = {
+    "invalid_action", "existing_file_requires_targeted_edit",
+    "file_changed_read_before_overwrite",
+}
 
 
 def visible_source_read(messages, revisions):
@@ -1804,7 +1807,8 @@ class WorkRegistry:
                         # has priority: add this only if the entire prompt still fits.
                         rejected_path = (
                             action.get("path")
-                            if result.get("error") == "existing_file_requires_targeted_edit"
+                            if result.get("error") in {"existing_file_requires_targeted_edit",
+                                                       "file_changed_read_before_overwrite"}
                             else None
                         )
                         for saved in prior[1:]:

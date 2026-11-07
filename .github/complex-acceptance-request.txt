@@ -1,7 +1,7 @@
-Request: idempotent-context-compaction-2026-11-07
-Base source: d5d85defb61fadc4cbe371f58659f1bfc6b52f2d
-Prior actual run 42356556204 failed after step 25 with work_step_failed.
-Saved-state replay reproduces KeyError inputs during repeated asset compaction.
-Preserve an already-compacted inventory and its provenance/navigation pointers.
+Request: rejected-hash-source-retention-2026-11-07
+Base source: b4e34fc899c20a9d3b3e080a5b16bd68465a7686
+Prior actual run 42363614200 failed initial step 46 after a wrong-hash edit
+rejection displaced unchanged observed target source. Retain that source only
+when its hash still matches and it fits within the existing prompt budget.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

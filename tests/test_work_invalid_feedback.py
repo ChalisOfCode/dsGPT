@@ -215,7 +215,8 @@ def test_rejected_overwrite_guides_targeted_edit_and_never_mutates_source(tmp_pa
 
 
 @pytest.mark.parametrize("case", ["current", "stale", "partial"])
-def test_rejected_overwrite_retains_target_not_newer_unrelated_read(tmp_path, case):
+@pytest.mark.parametrize("rejection", ["overwrite", "wrong_hash"])
+def test_rejected_overwrite_retains_target_not_newer_unrelated_read(tmp_path, case, rejection):
     import hashlib
 
     from dsgpt.work import RETAINED_SOURCE_PREFIX, visible_source_reads
@@ -233,7 +234,11 @@ def test_rejected_overwrite_retains_target_not_newer_unrelated_read(tmp_path, ca
         with store.transaction() as db:
             db.execute("UPDATE work_files SET content=?,sha256=? WHERE task_id=? AND path='a.py'",
                        ("changed", hashlib.sha256(b"changed").hexdigest(), tid))
-    commit(work, tid, action(tool="write_file", path="a.py", content="Rejected proposal"))
+    if rejection == "overwrite":
+        commit(work, tid, action(tool="write_file", path="a.py", content="Rejected proposal"))
+    else:
+        commit(work, tid, action(tool="edit_file", path="a.py", expected_sha256="0" * 64,
+                                old_text="value = 0", new_text="value = 1"))
     model = replace(work.models["local"], context=16384, output_tokens=4096)
     messages = prompt(store, work, tid, model)
     revisions = {r["path"]: r["sha256"] for r in store.all(
@@ -243,6 +248,7 @@ def test_rejected_overwrite_retains_target_not_newer_unrelated_read(tmp_path, ca
     assert all(p["path"] == "a.py" for p in retained)
     assert visible_source_reads(messages, revisions) == ({"a.py"} if case == "current" else set())
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
-    assert "existing_file_requires_targeted_edit" in messages[-1]["content"]
+    assert ("existing_file_requires_targeted_edit" if rejection == "overwrite" else
+            "file_changed_read_before_overwrite") in messages[-1]["content"]
     assert store.one("SELECT content FROM work_files WHERE task_id=? AND path='a.py'", (tid,))[
         "content"] == ("changed" if case == "stale" else body)
