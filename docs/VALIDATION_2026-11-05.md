@@ -1540,3 +1540,59 @@ new-file/recovery/completion suite passed 56 tests in 4.08 seconds. Ruff, whites
 static CI policy, pinned tracked-source Gitleaks and manual four-file publication
 review passed. Publish with expected-head lease from e697429. Fresh actual-model
 and platform CI results remain required; the old run did not test this fix.
+
+### Fresh platform CI on 23688cc (2026-11-07)
+
+Routine CI 42401331977 passed all nine jobs on exact
+`23688cc12eeed7651a752c6243f8af38f2678c5a`. Browser reports 26 expected,
+zero skipped, unexpected or flaky tests. Five original report ZIPs were
+individually digest-verified and preserved as `dsGPT-ci-test-evidence-23688cc.zip`,
+45457 bytes, SHA256
+`51e2e4d69ee6587af7e5d30ff1d1d71605d8bfda57ece86831fbc8819f3c4c0a`,
+durable evidence
+`libfile_fde3_f-44fc4cb2d5008191b5fd12b1f7a7e5ed_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall and data preservation passed. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Windows uses separate qwen3:1.7b; this is
+not actual 9B complex-app acceptance or complete item 5. Staged inference BLOCKED
+and production REVIEW labels remain. Owner hardware remains unverified.
+
+Original-request actual 9B run 42401331943, job 128489520609, is still active on
+this source. Pinned model loading and production Docker setup passed; unchanged
+request model decisions are in progress. No generated-app completion is claimed.
+
+### Actual-model runtime grammar failure on 23688cc (2026-11-07)
+
+Original-request run 42401331943 failed on exact
+`23688cc12eeed7651a752c6243f8af38f2678c5a` after initial step 9 scaffolded
+Android. The next inference request failed with `runtime_unavailable`; Ollama's
+log explicitly reports that repeated expanded grammar rules exceed its complexity
+bound. No subsequent model action ran; generated native/follow-up jobs skipped.
+Original artifact 13586197809 was digest-verified and preserved as
+`dsGPT-complex-evidence-42401331943.zip`, 99269 bytes, SHA256
+`eab278f7efd65039cc0569c742402eb52bf41b2e92fe575be8797b128fe2a312`,
+durable evidence
+`libfile_fde3_f-bbfb64527c3c819183e6b9f3f8db4fad_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The previous schema-conversion check was insufficient: conversion passed, but
+runtime grammar parsing failed. A local driver built against unchanged pinned
+llama.cpp b11963 (`39febd2adb947b70da35e95f9351b3bf58ad170a`, selected by
+Ollama v0.40.13) reproduced the same failure with the previous grammar. Optional
+subtree groups exceeded the parser's expansion guard. Flatten path alternatives
+so only individual characters repeat; keep exact existing-path exclusion, new
+names, prefixes, neighboring names, Unicode, 240-character bounds and targeted
+edits. Runtime validation and all model/request/context/output/loop/error limits
+remain unchanged.
+
+The corrected full scaffold schema and prior observed schema pass both conversion
+and runtime parsing without warnings, as do maximum-length and special-character
+cases. This is parser verification, not fresh actual-model acceptance. A regression
+covers scaffold prefix/extension semantics and forbids repeating expanded groups.
+Full suite: 1195 tests plus 6 subtests passed in 96.73 seconds. Eight focused
+new-file tests, Ruff, whitespace and static CI policy passed. Pinned tracked-source
+Gitleaks and manual four-file publication review passed. Publish with an expected-head
+lease from 23688cc; fresh actual-model and CI results remain required.
+Before dispatch: main remained 23688cc; in-progress/queued/waiting/pending counts
+were all zero. Public inventory: 132 artifacts, 195168518 bytes, none expired.
+No deletion was needed. Historical private storage remains unverified and untouched.

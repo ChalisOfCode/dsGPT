@@ -200,36 +200,29 @@ def new_file_path_pattern(paths):
     def class_escape(char):
         return f"\\x{ord(char):02x}" if char in "\\]-^" else char
 
-    def emit(node, depth=0):
-        choices = []
+    choices = []
 
-        def walk(current, consumed, prefix, levels):
-            remaining = 240 - consumed
-            children = sorted(c for c in current if c is not None)
-            if prefix and None not in current:
-                choices.append(prefix)
-            if not remaining:
-                return
-            if not children:
-                choices.append(prefix + ".{1," + str(remaining) + "}")
-                return
-            choices.append(prefix + "[^" + "".join(class_escape(c) for c in children)
-                           + "].{0," + str(remaining - 1) + "}")
-            for char in children:
-                if consumed + 1 == 240:
-                    continue
-                if levels < 3:
-                    walk(current[char], consumed + 1, prefix + escape(char), levels + 1)
-                else:
-                    choices.append(prefix + escape(char) + emit(current[char], consumed + 1))
+    def walk(node, prefix, depth):
+        remaining = 240 - depth
+        children = sorted(c for c in node if c is not None)
+        if prefix and None not in node:
+            choices.append(prefix)
+        if not remaining:
+            return
+        if not children:
+            choices.append(prefix + ".{1," + str(remaining) + "}")
+            return
+        choices.append(prefix + "[^" + "".join(class_escape(c) for c in children)
+                       + "].{0," + str(remaining - 1) + "}")
+        for char in children:
+            walk(node[char], prefix + escape(char), depth + 1)
 
-        # Flatten four characters per group to stay below the runtime parser's
-        # nesting bound even for a maximum-length (240 character) existing path.
-        walk(node, depth, "", 0)
-        group = "(" + "|".join(choices) + ")"
-        return group if None in node or depth == 0 else group + "?"
+    # Keep alternatives flat. An optional group around a large subtree expands
+    # into thousands of grammar rules and exceeds the runtime parser's repetition
+    # complexity bound, even when schema-to-grammar conversion succeeds.
+    walk(root, "", 0)
+    return "^(" + "|".join(choices) + ")$"
 
-    return "^" + emit(root) + "$"
 
 
 def action_schema(

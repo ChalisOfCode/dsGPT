@@ -46,6 +46,27 @@ def test_pattern_enforces_path_length_without_relying_on_schema_siblings():
         assert pattern.fullmatch(path)
 
 
+def test_scaffold_paths_do_not_repeat_expanded_grammar_subtrees():
+    package = "android/app/src/main/java/com/example/" + "p" + "a" * 32
+    existing = ["android/settings.gradle", "android/build.gradle",
+                "android/gradle.properties", "android/app/build.gradle",
+                "android/app/src/main/AndroidManifest.xml",
+                package + "/MainActivity.kt", "android/README.md"]
+    pattern = new_file_path_pattern(existing)
+    # The runtime expands a group's rules before applying its repetition. Even
+    # a single optional repetition can exceed its complexity guard after schema
+    # conversion. Repeat individual characters, never the expanded path subtree.
+    assert not re.search(r"\)[?*+{]", pattern)
+    compiled = re.compile(pattern)
+    for path in existing:
+        assert not compiled.fullmatch(path)
+        for length in range(1, len(path)):
+            prefix = path[:length]
+            assert bool(compiled.fullmatch(prefix)) == (prefix not in existing)
+        assert compiled.fullmatch(path + ".new")
+    assert compiled.fullmatch(package + "/TaskLedger.kt")
+
+
 @pytest.mark.parametrize("specification,paths", [(False, ["old.py"]), (True, []), (True, None)])
 def test_unguided_or_missing_inventory_does_not_gain_exclusions(specification, paths):
     prop = variant(action_schema(specification=specification, file_paths=paths), "write_file")
