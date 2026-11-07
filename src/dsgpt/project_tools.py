@@ -239,6 +239,7 @@ def action_schema(
     already_visible_read=None,
     visible_requirement_page=None,
     requirement_lengths=None,
+    file_revisions=None,
 ):
     """Make tool-specific required arguments visible to the runtime's JSON grammar."""
     base = ProjectAction.model_json_schema()["properties"]
@@ -340,6 +341,20 @@ def action_schema(
                 "maxLength": 167,
                 "pattern": r"^(inputs/)?[^/\\]+$",
             }
+        if tool == "edit_file" and file_revisions is not None:
+            # Bind each compare-and-swap token to its own path. Independent enums
+            # permit a valid hash from an unrelated file, which execution rejects.
+            # The transaction still checks the revision again before applying edits.
+            for path in file_paths if file_paths is not None else file_revisions:
+                if path not in file_revisions:
+                    continue
+                choice = copy.deepcopy(properties)
+                choice["path"] = {"const": path}
+                choice["expected_sha256"] = {"const": file_revisions[path]}
+                variants.append({"type": "object", "properties": choice,
+                                 "required": ["tool", "summary", *required],
+                                 "additionalProperties": False})
+            continue
         if tool == "read_requirements" and requirement_lengths is not None:
             for ordinal, length in enumerate(requirement_lengths, 1):
                 ranges = [(0, length)]

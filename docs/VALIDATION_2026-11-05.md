@@ -1596,3 +1596,42 @@ lease from 23688cc; fresh actual-model and CI results remain required.
 Before dispatch: main remained 23688cc; in-progress/queued/waiting/pending counts
 were all zero. Public inventory: 132 artifacts, 195168518 bytes, none expired.
 No deletion was needed. Historical private storage remains unverified and untouched.
+
+### Fresh platform CI on 329d140 (2026-11-07)
+
+Routine CI 42403711351 passed all nine jobs on exact
+`329d1409b955182d4b70f3b6c81d2adc62a9e8d3`. Browser reports 26 expected,
+zero skipped, unexpected or flaky tests. Five original report ZIPs were
+individually digest-verified and preserved as `dsGPT-ci-test-evidence-329d140.zip`,
+45158 bytes, SHA256
+`41b2309fbb17a61d1b9c012316e57704bcb66a4c8712666db68545c3c317020c`,
+durable evidence
+`libfile_fde3_f-cb7d6049d58c8191aa31047b6e8550ba_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall and data preservation passed. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Windows uses separate qwen3:1.7b; this is
+not actual 9B complex-app acceptance or complete item 5. Staged inference BLOCKED
+and production REVIEW labels remain. Owner hardware remains unverified.
+
+Original-request actual 9B run 42403711453, job 128496789437, is still active on
+this source after exact model load and production Docker setup passed. Unchanged
+request decisions are active; no generated-app completion is claimed.
+
+### Candidate: bind guided edit paths to their current revisions
+
+Prepared locally while actual-model run 42403711453 continues unchanged on
+`329d1409b955182d4b70f3b6c81d2adc62a9e8d3`. This candidate is not part of that run.
+The independent path/hash enums admitted the exact wrong-file hash from saved
+run 42363614200 step 45. Per-path edit variants now exclude that combination and
+retain the correct edit. Runtime compare-and-swap checks remain unchanged.
+
+Three regressions cover distinct/shared hashes, Unicode, restricted selectable
+paths, controller refresh, and a concurrent source change that must still reject
+an already-generated stale edit. Focused revision/new-file suite: 11 passed.
+Full backend suite: 1198 tests plus 6 subtests passed in 120.64 seconds.
+Pinned unchanged llama.cpp b11963 conversion and runtime parsing passed observed,
+maximum-length and special-character schemas with no warnings (50764, 62478 and
+10025 rules respectively). Saved-action/schema replay and parser checks are not
+actual-model acceptance. No model action, original request, budget, loop limit,
+runtime validation, or native acceptance check was substituted or weakened.

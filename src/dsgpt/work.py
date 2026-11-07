@@ -2374,6 +2374,7 @@ class WorkRegistry:
                         specification=bool(self.specs.enabled(task_id)),
                         web_research=self.web.enabled(task_id),
                         file_paths=paths,
+                        file_revisions=revisions if spec else None,
                         already_visible_read=visible_source_reads(messages, revisions)
                         if spec
                         else None,
