@@ -172,7 +172,7 @@ def visible_source_reads(messages, revisions):
     return visible
 
 
-def _visible_requirement_read(messages, original):
+def _visible_requirement_read(messages, original, include_suffix=False):
     """Only exclude the exact current requirement page already shown to this decision."""
     try:
         action = json.loads(messages[-2]["content"])
@@ -190,6 +190,8 @@ def _visible_requirement_read(messages, original):
             if number == ordinal:
                 if (start == page.get("original_start") and end == page.get("original_end")
                         and body[offset:offset + len(page["content"])] == page["content"]):
+                    if include_suffix and offset + len(page["content"]) == len(body):
+                        return ordinal, offset, len(body) - 1
                     return ordinal, offset
                 return None
     except (ValueError, TypeError, KeyError, IndexError):
@@ -200,8 +202,8 @@ def _visible_requirement_read(messages, original):
 RETAINED_REQUIREMENT_PREFIX = "Previously inspected requirement page (exact saved text): "
 
 
-def visible_requirement_read(messages, original):
-    visible = _visible_requirement_read(messages, original)
+def visible_requirement_read(messages, original, include_suffix=False):
+    visible = _visible_requirement_read(messages, original, include_suffix)
     if visible:
         return visible
     for message in messages[:-2]:
@@ -217,7 +219,7 @@ def visible_requirement_read(messages, original):
                     "requirement_id": page.get("requirement_id"), "offset": page.get("offset")})},
                 {"role": "user", "content": "Recorded tool result: " + canonical(page)},
             ]
-            visible = _visible_requirement_read(pair, original)
+            visible = _visible_requirement_read(pair, original, include_suffix)
             if visible:
                 return visible
         except (ValueError, TypeError):
@@ -2319,7 +2321,7 @@ class WorkRegistry:
                         if spec
                         else None,
                         visible_requirement_page=visible_requirement_read(
-                            messages, row["requirements"]
+                            messages, row["requirements"], include_suffix=True
                         ) if spec else None,
                         requirement_lengths=[len(body) for _, _, body in sections(
                             row["requirements"]

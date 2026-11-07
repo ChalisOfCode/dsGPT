@@ -1,7 +1,7 @@
-Request: rejected-overwrite-target-source-2026-11-07
-Base source: b357c6b01139614296930c9feca5448ce9b15936
-Prior actual run 42338395466 failed at initial step 17 after rejected
-MainActivity overwrite recovery retained a newer unrelated Gradle read.
-Retain observed current target source when it fits after an overwrite rejection.
+Request: visible-requirement-suffix-2026-11-07
+Base source: 56e6b570da44d06fc892f0eedd51bf5f3026decd
+Prior actual run 42345187823 failed at initial step 19 after alternating
+requirement offsets 900/901 inside already-visible end-of-section text.
+Exclude redundant visible suffix reads while preserving unseen text and EOF.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

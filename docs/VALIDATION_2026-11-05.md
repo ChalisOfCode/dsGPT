@@ -1195,3 +1195,51 @@ signing material, private conversations/diagnostics/device addresses and generat
 application source. This limited scan/review is not a security certification.
 Item 1 still requires fresh actual-model completion; later items and release
 remain gated by their unchanged acceptance criteria.
+
+## Visible requirement suffix guard (2026-11-07 UTC)
+
+Routine CI 42345187824 passed all nine jobs on exact
+`56e6b570da44d06fc892f0eedd51bf5f3026decd`. Five report ZIPs were individually
+verified against GitHub digests and bundled as `dsGPT-ci-test-evidence-56e6b57.zip`,
+44526 bytes, SHA256
+`a8e1d3f6a3e8db850596f4dc9a16283b949d39ab71e6f0143613306fb99d340b`,
+durable file
+`libfile_fde3_f-7ba0e7f17cd4819181de3c3bb9184c0f_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, restart/reinstall/data
+preservation passed; Android lifecycle instrumentation OK (1 test). Separate
+qwen3:1.7b fixture is not actual 9B acceptance or complete item 5. Staged inference
+BLOCKED/production REVIEW labels remain; owner hardware remains unverified.
+
+Original-request actual 9B run 42345187823 failed initial step 19, no_progress.
+Step 14 wrote a new Task module. Steps 15–18 alternated requirement 3 offsets
+900/901, reading virtually identical suffixes ending at character 1506; step 19
+requested offset 900 again and stopped. Generated native/follow-up jobs skipped.
+Original artifact 13563559930, 107822 bytes, SHA256
+`aff14140a7089233dc88441c136aab893347162573c7db4dfd6d3a7c1edf8193`,
+was digest-verified and preserved as `dsGPT-complex-evidence-42345187823.zip`,
+durable file
+`libfile_fde3_f-4ae43fda04d88191b11ade96d7b6b574_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+When exact displayed requirement text extends to the saved section's end, grammar
+now excludes offsets within that already-visible suffix. Unseen prefix, other
+sections and exact EOF remain available. Partial pages exclude only their exact
+start because later reads could reveal new text; missing/corrupt/stale observations
+remain readable. Retained verified suffixes receive the same treatment. Runtime
+validation and model actions remain unchanged. No request, generated code,
+context/output budget, loop limit or acceptance substitution.
+
+Saved-observation schema check identifies section 3's visible 900..1505 suffix,
+leaving ranges 0..899 and exact EOF 1506. This is not actual-model acceptance.
+Focused suites passed 42 tests, including suffix, partial, corrupt and retained
+observations with and without bounded section lengths. Before dispatch all active,
+queued, waiting and pending counts were zero; 121 public artifacts totaled
+178847815 bytes, none expired. No deletion needed. Prior archive disablement and
+$0 usage-blocking observations remain recorded; historical archive storage remains
+unverified.
+
+Full suite passed 1170 tests plus 6 subtests in 78.93 seconds. Ruff, whitespace,
+CI-policy, pinned tracked-source Gitleaks and manual five-file review passed.
+Publication excludes private conversations, credentials, signing material,
+device addresses, private diagnostics and generated-app implementation. This
+limited scan/review is not a security certification. Item 1 remains open;
+items 2–5 and final delivery remain gated by their unchanged acceptance criteria.

@@ -295,7 +295,8 @@ def action_schema(
                 ranges = [(0, length)]
                 if visible_requirement_page and visible_requirement_page[0] == ordinal:
                     offset = visible_requirement_page[1]
-                    ranges = [(0, min(length, offset - 1)), (offset + 1, length)]
+                    end = visible_requirement_page[-1]
+                    ranges = [(0, min(length, offset - 1)), (end + 1, length)]
                 for low, high in ranges:
                     if low > high:
                         continue
@@ -309,13 +310,14 @@ def action_schema(
                                      "required": needed, "additionalProperties": False})
             continue
         if tool == "read_requirements" and visible_requirement_page is not None:
-            ordinal, offset = visible_requirement_page
-            # Disjoint alternatives exclude only one (section, offset) pair.
+            ordinal, offset = visible_requirement_page[:2]
+            end = visible_requirement_page[-1]
+            # Exclude the verified displayed pair or end-of-section suffix.
             ranges = [
                 ("requirement_id", 1, ordinal - 1),
                 ("requirement_id", ordinal + 1, 10000),
                 ("offset", 0, offset - 1),
-                ("offset", offset + 1, MAX_FILE_BYTES),
+                ("offset", end + 1, MAX_FILE_BYTES),
             ]
             for field, low, high in ranges:
                 if low > high:

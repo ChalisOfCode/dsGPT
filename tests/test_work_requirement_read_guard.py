@@ -99,3 +99,37 @@ def test_saved_section_lengths_bound_offsets_without_removing_valid_navigation(v
         assert allows(section) == ((section, 0) != visible)
     assert not allows(3, 0) and not allows(0, 0)
     assert any(v["properties"]["tool"]["const"] == "edit_file" for v in schema["oneOf"])
+
+
+@pytest.mark.parametrize("mode", ["suffix", "partial", "corrupt", "retained"])
+def test_visible_suffix_guard_preserves_unseen_prefix_and_eof(mode):
+    from dsgpt.work import RETAINED_REQUIREMENT_PREFIX
+
+    text, prompt = messages(9)
+    page = json.loads(prompt[-1]["content"].removeprefix("Recorded tool result: "))
+    if mode == "partial":
+        page["content"] = page["content"][:4]
+    if mode == "corrupt":
+        page["content"] = "wrong"
+    prompt[-1]["content"] = "Recorded tool result: " + canonical(page)
+    if mode == "retained":
+        prompt = [{"role": "user", "content": RETAINED_REQUIREMENT_PREFIX + canonical(page)},
+                  {"role": "assistant", "content": '{}'},
+                  {"role": "user", "content": 'Recorded tool result: {"error":"invalid_action"}'}]
+    visible = visible_requirement_read(prompt, text, include_suffix=True)
+    assert visible == (None if mode == "corrupt" else
+                       (1, 9) if mode == "partial" else (1, 9, len(text) - 1))
+    for lengths in (None, [len(text), 7]):
+        schema = action_schema(specification=True, requirement_lengths=lengths,
+                               visible_requirement_page=visible)
+        reads = [v for v in schema["oneOf"]
+                 if v["properties"]["tool"]["const"] == "read_requirements"]
+        for section in (1, 2):
+            for offset in range(0, len(text) + 1 if section == 1 else 8):
+                allowed = any(all(d.get("const", n) == n
+                                  and d.get("minimum", 0) <= n <= d.get("maximum", 10**9)
+                                  for k, n in {"requirement_id": section, "offset": offset}.items()
+                                  for d in [v["properties"][k]]) for v in reads)
+                blocked = section == 1 and (offset == 9 if mode == "partial" else
+                                            9 <= offset < len(text) if mode != "corrupt" else False)
+                assert allowed == (not blocked)
