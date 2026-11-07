@@ -107,7 +107,10 @@ async def test_streamed_rejection_reaches_next_call_and_only_valid_edit_can_chan
 
 
 @pytest.mark.parametrize("rejection", ["invalid_action", "existing_file_requires_targeted_edit"])
-@pytest.mark.parametrize("case", ["current", "two_rejections", "stale", "partial", "intervening"])
+@pytest.mark.parametrize("case", [
+    "current", "two_rejections", "stale", "partial", "intervening",
+    "comparison", "noop_comparison", "stale_comparison",
+])
 def test_rejected_response_retains_only_current_observed_source(tmp_path, case, rejection):
     import hashlib
 
@@ -123,7 +126,13 @@ def test_rejected_response_retains_only_current_observed_source(tmp_path, case, 
     commit(work, tid, action(tool="read_file", path="a.py"))
     if case == "intervening":
         commit(work, tid, action(tool="list_files"))
-    if case == "stale":
+    if case == "noop_comparison":
+        digest = hashlib.sha256(body.encode()).hexdigest()
+        commit(work, tid, action(tool="edit_file", path="a.py", expected_sha256=digest,
+                                old_text="value = 0", new_text="value = 0"))
+    if case in {"comparison", "noop_comparison", "stale_comparison"}:
+        commit(work, tid, action(tool="read_requirements", requirement_id=1, offset=0))
+    if case in {"stale", "stale_comparison"}:
         with store.transaction() as db:
             db.execute(
                 "UPDATE work_files SET content=?,sha256=? WHERE task_id=? AND path='a.py'",
@@ -155,7 +164,8 @@ def test_rejected_response_retains_only_current_observed_source(tmp_path, case, 
         )
     }
     visible = visible_source_read(messages, revisions)
-    if case in {"current", "two_rejections"}:
+    complete = case in {"current", "two_rejections", "intervening", "comparison", "noop_comparison"}
+    if complete:
         assert len(retained) == 1
         assert json.loads(retained[0]["content"][len(RETAINED_SOURCE_PREFIX):])["content"] == body
         assert visible == "a.py"
@@ -166,7 +176,7 @@ def test_rejected_response_retains_only_current_observed_source(tmp_path, case, 
             assert not retained
     grammar = action_schema(file_paths=["a.py"], already_visible_read=visible)
     choices = {v["properties"]["tool"]["const"] for v in grammar["oneOf"]}
-    assert ("read_file" not in choices) == (case in {"current", "two_rejections"})
+    assert ("read_file" not in choices) == complete
     assert "edit_file" in choices and "write_file" in choices
 
 

@@ -1780,8 +1780,9 @@ class WorkRegistry:
                             messages = candidate[:-len(pair)]
                     if result.get("error") in NONMUTATING_REJECTIONS:
                         # Rejections execute nothing. Retain the last observed source
-                        # across consecutive rejected responses, never another tool's
-                        # result or bytes changed since observation. Validator feedback
+                        # across intervening requirement comparisons and rejections.
+                        # Only a read_file observation with a current file hash qualifies.
+                        # Never substitute another tool's result or changed bytes. Feedback
                         # has priority: add this only if the entire prompt still fits.
                         for saved in prior[1:]:
                             previous = json.loads(saved["action"])
@@ -1807,7 +1808,7 @@ class WorkRegistry:
                                     + model.output_tokens <= model.context
                                 ):
                                     messages.append(other)
-                            break
+                                break
                     if (
                         (action.get("tool") == "read_requirements" and not result.get("content"))
                         or result.get("error") == "invalid_action"

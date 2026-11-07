@@ -1091,3 +1091,57 @@ dispatch active/queued/waiting/pending counts were zero; 99 public artifacts
 totaled 146339336 bytes, none expired. No deletion needed. Historical private
 storage remains unverified; earlier archive disablement and $0 usage-blocking
 observations remain the recorded administrative evidence.
+
+## Rejected overwrite after a requirement comparison (2026-11-07 UTC)
+
+Routine CI 42334618636 passed all nine jobs on exact
+`43b855c73716e02200f236ec2469849c636ccdc9`. The five original report ZIPs
+were individually checked against GitHub's SHA256 digests and bundled as
+`dsGPT-ci-test-evidence-43b855c.zip`, 43623 bytes, SHA256
+`1f036f59f8dc473fb0f465a3f67f028918070d285cd8b9bbb58845047836716f`.
+Durable evidence:
+`libfile_fde3_f-7380949fc1948191b8157e71884a09b1_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall/data preservation passed. Android lifecycle/diagnostics instrumentation
+reported OK (1 test). Windows uses the separate qwen3:1.7b fixture, not actual 9B
+complex acceptance or complete item 5. The staged inference BLOCKED and production
+REVIEW labels remain in the original evidence. Owner hardware remains unverified.
+
+Original-request actual 9B run 42334618633 on that same commit failed initial
+step 24, no_progress. Step 19 proposed an edit with a wrong hash and was rejected;
+step 20 read unchanged MainActivity; step 21 proposed an identical-text edit and
+was rejected. Step 22 read requirement 3, step 23 attempted a whole-file overwrite
+and was rejected, and step 24 requested the third unchanged source read. No
+rejected edit executed. Generated native and follow-up jobs skipped.
+
+Original artifact 13559579232, 117196 bytes, SHA256
+`5b59f1bfba76e9c548ba58b1fce8fee6bbecff68cbd82f18d82a0c82f9a8ce2f`,
+was digest-verified and preserved unchanged as
+`dsGPT-complex-evidence-42334618633.zip`, durable file
+`libfile_fde3_f-5c613eebf2ec8191bf037ba167e8bbe1_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The rejection recovery search stopped at the intervening requirement result,
+even though the previously inspected file still matched its current hash. The
+fix searches the existing bounded history for the latest qualifying source read,
+retaining it only if it fits alongside the rejection feedback. Non-source results
+are not substituted for source. Partial/stale/omitted content stays readable;
+edit tools remain available. No model actions, generated source, loop limits,
+context/output budgets or acceptance criteria changed.
+
+Saved-result replay through step 23 previously omitted MainActivity and now
+retains its complete hash-verified text at estimated 15022/16384 including the
+unchanged 4096 output reserve. This is a controller replay, not fresh model
+acceptance. Synthetic cases cover intervening inventory, requirements, no-op edit
+plus comparison, and stale source after comparison for both rejected JSON and
+rejected overwrites.
+
+Full suite passed 1163 tests plus 6 subtests in 84.27 seconds; focused rejection
+and requirement suites passed 35 tests. Ruff, whitespace, CI-policy and pinned
+tracked-source Gitleaks passed. Manual review of the four changed files found no
+private conversations, credentials, signing material, device addresses, private
+diagnostics or generated-app implementation for publication. This limited review
+is not a security certification. Before dispatch active/queued/waiting/pending
+counts were zero; 110 public artifacts totaled 162594396 bytes, none expired.
+No deletion was necessary. Historical private storage remains unverified; prior
+archive disablement and $0 usage-blocking observations remain the administrative
+evidence. Item 1 remains open; items 2–5 and the upgrade release remain gated.

@@ -1,7 +1,7 @@
-Request: saved-section-offset-bounds-2026-11-07
-Base source: 61895e0e1cff9637e5afd1d5807ea394c9ac111f
-Prior actual run 42325936995 failed at initial step 23 after repeated invalid
-requirement offsets and an existing-file write rejection. Bound requirement
-navigation to actual saved section lengths while preserving valid EOF/paging.
+Request: overwrite-after-requirement-comparison-2026-11-07
+Base source: 43b855c73716e02200f236ec2469849c636ccdc9
+Prior actual run 42334618633 failed at initial step 24 after a rejected
+whole-file overwrite and an unchanged source reread. Retain the last current
+observed source across intervening requirement comparisons after rejection.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.
