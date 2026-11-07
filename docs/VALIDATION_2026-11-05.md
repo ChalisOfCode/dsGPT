@@ -1467,3 +1467,76 @@ Final full suite: 1187 tests plus 6 subtests passed in 213.99 seconds. Ruff,
 whitespace, static CI policy, pinned tracked-source Gitleaks and manual five-file
 publication review passed. Publish with an expected-head lease from ddaf261;
 fresh actual-model and platform CI evidence is still required for the new source.
+
+### Fresh platform CI on e697429 (2026-11-07)
+
+Routine CI 42387568748 passed all nine jobs on exact
+`e697429e17ee77edf7847a101ac017ecc6de60e1`. All 26 public-runner browser tests
+passed without retries or skips, including the previously failed DOCX search.
+Five original report ZIPs were digest-verified and preserved in
+`dsGPT-ci-test-evidence-e697429.zip`, 45096 bytes, SHA256
+`9684b26f580c79fecda7189c38821a4acb2da97a8ec92650b2cb32e813a5ebac`,
+durable evidence
+`libfile_fde3_f-b2465652f8e0819195e7fd7384aa2784_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall and data preservation passed. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Windows uses its separate qwen3:1.7b
+fixture, not the actual 9B complex-app acceptance or complete item 5. The staged
+inference BLOCKED / production REVIEW labels remain; owner hardware is unverified.
+
+Actual original-request run 42387568715, model job 128448098687, remains active
+on the same source after exact model loading and production Docker setup passed.
+Unchanged-request model decisions are in progress; no native generated-app
+acceptance or overall app completion is claimed. No duplicate run dispatched.
+
+Live browser observation at 2026-11-07 16:11 UTC reached initial step 12:
+step 11 write_file recorded, step 12 read_requirements recorded. These bounded
+action categories do not establish correct implementation or a completed build.
+
+### Actual 9B result on e697429 and new-file grammar recovery (2026-11-07)
+
+Original-request run 42387568715 failed at initial step 53 with `no_progress`.
+After the step-50 TaskLedger source read, step 51 proposed an existing-file
+write and was rejected; step 52 proposed identical old/new text and was rejected.
+Step 53 ran the production compiler, which reported undefined `TextLedger` and
+reassignment of a Kotlin `val`; this third consecutive error stopped the task.
+Neither rejected edit executed. The model's prose claimed successful compilation,
+but the recorded compiler failure is authoritative. Generated Android/Windows
+native and follow-up jobs were skipped. This is not completed item 1.
+
+Original artifact 13585042754 was downloaded and digest-verified: 167788 bytes,
+SHA256 `f57063cd91a6af4531903a3a522af91681f73a6888be892b67c3fcd49512132c`.
+The original ZIP is preserved as `dsGPT-complex-evidence-42387568715.zip`, durable
+file `libfile_fde3_f-73bbeac4a34c8191918f6fbd416d3214_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The guided action schema previously allowed `write_file` to select existing paths,
+even though guided execution always rejects them. It now expresses that same
+existing constraint in the grammar using a prefix trie of exact current paths.
+No lookahead or unsupported schema negation is required. New names, prefixes,
+extensions and Unicode remain selectable; targeted edits and source reads retain
+their original contracts. The pattern independently bounds names to 1..240
+characters because runtime converters may not combine pattern/length keywords.
+Execution checks, original request, model, context/output budgets and loop/error
+limits are unchanged. No generated implementation or model action was substituted.
+
+Parser compatibility was checked against the actual Ollama v0.40.13 upstream
+pin: llama.cpp b11963, commit `39febd2adb947b70da35e95f9351b3bf58ad170a`.
+A scratch-only converter built from its unchanged JSON/schema/grammar sources
+converted the observed six-path action schema, 240-character boundary case and
+Unicode/special-character paths without warnings. Initial draft escaping and
+deep nesting produced converter warnings and were corrected before publication;
+the final trie flattens four characters per group and uses supported class escapes.
+This parser check and saved-step-51 exclusion are diagnostic checks, not model
+inference, compiler repair or app acceptance.
+
+Before publication: main still e697429; active/queued/waiting/pending run counts
+were all zero. Public inventory contained 121 artifacts totaling 178928710 bytes,
+none expired. No deletion was needed. Archive and billing settings were untouched;
+historical archive storage remains unverified and cache writes remain disabled.
+
+Final validation: 1194 tests plus 6 subtests passed in 97.37 seconds; the focused
+new-file/recovery/completion suite passed 56 tests in 4.08 seconds. Ruff, whitespace,
+static CI policy, pinned tracked-source Gitleaks and manual four-file publication
+review passed. Publish with expected-head lease from e697429. Fresh actual-model
+and platform CI results remain required; the old run did not test this fix.

@@ -180,6 +180,58 @@ class ProjectAction(BaseModel):
         return self
 
 
+def new_file_path_pattern(paths):
+    """Exclude exact existing names using a regular trie, without lookarounds.
+
+    The runtime grammar supports character classes and alternatives, not JSON
+    Schema's `not` or regex lookahead. Prefixes and extensions remain selectable;
+    ordinary path validation and the transaction still decide whether they exist.
+    """
+    root = {}
+    for path in paths:
+        node = root
+        for char in path:
+            node = node.setdefault(char, {})
+        node[None] = True
+
+    def escape(char):
+        return "\\" + char if char in r"\.^$*+?{}[]|()" else char
+
+    def class_escape(char):
+        return f"\\x{ord(char):02x}" if char in "\\]-^" else char
+
+    def emit(node, depth=0):
+        choices = []
+
+        def walk(current, consumed, prefix, levels):
+            remaining = 240 - consumed
+            children = sorted(c for c in current if c is not None)
+            if prefix and None not in current:
+                choices.append(prefix)
+            if not remaining:
+                return
+            if not children:
+                choices.append(prefix + ".{1," + str(remaining) + "}")
+                return
+            choices.append(prefix + "[^" + "".join(class_escape(c) for c in children)
+                           + "].{0," + str(remaining - 1) + "}")
+            for char in children:
+                if consumed + 1 == 240:
+                    continue
+                if levels < 3:
+                    walk(current[char], consumed + 1, prefix + escape(char), levels + 1)
+                else:
+                    choices.append(prefix + escape(char) + emit(current[char], consumed + 1))
+
+        # Flatten four characters per group to stay below the runtime parser's
+        # nesting bound even for a maximum-length (240 character) existing path.
+        walk(node, depth, "", 0)
+        group = "(" + "|".join(choices) + ")"
+        return group if None in node or depth == 0 else group + "?"
+
+    return "^" + emit(root) + "$"
+
+
 def action_schema(
     file_hashes=None,
     reference_sources=False,
@@ -270,6 +322,11 @@ def action_schema(
             )
         if tool == "write_file" and specification:
             properties["expected_sha256"] = {"type": "null"}
+            if file_paths:
+                properties["path"] = {
+                    "type": "string", "minLength": 1, "maxLength": 240,
+                    "pattern": new_file_path_pattern(file_paths),
+                }
         if tool in {"read_file", "edit_file", "browser"} and file_paths is not None:
             properties["path"] = {"enum": file_paths}
         if tool == "read_file" and file_paths is not None and already_visible_read is not None:

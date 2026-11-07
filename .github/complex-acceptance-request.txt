@@ -1,7 +1,7 @@
-Request: observed-eof-after-suffix-2026-11-07
-Base source: ddaf261255e9dcdec37a2cfb1da0e110115dfc94
-Prior actual run 42381612392 failed initial step 25 alternating requirement
-suffixes with an already observed empty EOF. Retain a verified matching EOF
-receipt within the existing bounded history and prompt budget after a suffix.
+Request: new-file-grammar-2026-11-07
+Base source: e697429e17ee77edf7847a101ac017ecc6de60e1
+Prior original run 42387568715 failed at step 53 after rejected overwrite,
+unchanged edit and a compiler failure. Exclude exact existing paths from
+new-file grammar while preserving new names and targeted edits.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.
