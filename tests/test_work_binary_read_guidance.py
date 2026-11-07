@@ -572,3 +572,47 @@ def test_invalid_json_retains_exact_requirement_and_validation_feedback(tmp_path
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     omitted = prompt(store, work, tid, replace(model, context=512, output_tokens=128))
     assert visible_requirement_read(omitted, original) is None
+
+
+@pytest.mark.parametrize("mode", ["valid", "corrupt", "nonterminal", "other_section"])
+@pytest.mark.parametrize("single_character", [False, True])
+def test_requirement_suffix_retains_prior_verified_empty_eof(tmp_path, mode, single_character):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.work import RETAINED_REQUIREMENT_PREFIX, visible_requirement_read
+
+    store, work, tid, _ = setup(tmp_path)
+    original = "Implement the module and test every requested behavior."
+    offset = len(original) - 1 if single_character else 9
+    with store.transaction() as db:
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, ProjectAction(tool="read_requirements", offset=len(original),
+                                   summary="Observed end"))
+    if mode != "valid":
+        with store.transaction() as db:
+            saved = db.execute("SELECT result FROM work_steps WHERE task_id=?", (tid,)).fetchone()
+            page = json.loads(saved["result"])
+            if mode == "corrupt":
+                page["total_characters"] += 1
+            elif mode == "nonterminal":
+                page["has_more"] = True
+            else:
+                page["requirement_id"] = 2
+            db.execute("UPDATE work_steps SET result=? WHERE task_id=?",
+                       (json.dumps(page), tid))
+    commit(work, tid, ProjectAction(tool="read_requirements", offset=offset, summary="Read suffix"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert visible_requirement_read(messages, original, True) == (
+        1, offset, len(original) if mode == "valid" else len(original) - 1)
+    assert json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))[
+        "content"] == original[offset:]
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert visible_requirement_read(messages, original) == (1, offset)
+    without_receipt = [m for m in messages
+                       if not m["content"].startswith(RETAINED_REQUIREMENT_PREFIX)]
+    assert visible_requirement_read(without_receipt, original, True) == (
+        1, offset, len(original) - 1)
+    tight = prompt(store, work, tid, replace(model, context=512, output_tokens=128))
+    assert visible_requirement_read(tight, original, True) is None

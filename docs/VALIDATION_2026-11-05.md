@@ -1406,3 +1406,64 @@ counts were zero; 121 public artifacts totaled 178944370 bytes, none expired.
 No deletion needed. Archive/admin settings unchanged; historical private storage
 remains unverified. Publish with an expected-head lease and require fresh actual
 model acceptance for this source.
+
+### Actual EOF/suffix cycle and browser result (2026-11-07)
+
+Original-request run 42381612392 on exact
+`ddaf261255e9dcdec37a2cfb1da0e110115dfc94` failed initial step 25 with
+`no_progress`. Requirement 1 EOF offset 1360 was read at steps 21 and 23,
+interleaved with suffix reads at offsets 136 and 135; step 25 requested EOF
+again and stopped. Generated native/follow-up jobs were skipped. The empty EOF
+receipt was not retained after a nonempty suffix read, making the already
+observed empty result selectable again.
+
+Original artifact 13580110922 (118178 bytes) was digest-verified against GitHub:
+`0f8297c8dbfb5a41d6c5ceb4dae15605bce7e8cb7762a3456d4bba8c52eba952`.
+Durable evidence:
+`libfile_fde3_f-0f5429b6e6e48191892de5405021c058_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Routine CI 42381612436 on the same source FAILED the browser and required jobs;
+the other seven jobs passed. The DOCX search test expected a completed reply but
+observed running when its default five-second poll elapsed. All other 25 browser
+tests passed. Keep that failure distinct from the passing installed Windows UI,
+local reply, Credential Manager, scheduled restart, reinstall/data preservation
+and Android lifecycle/diagnostics instrumentation (one test). Windows uses the
+separate qwen3:1.7b fixture, not actual 9B app acceptance or complete item 5.
+Staged inference BLOCKED / production REVIEW labels remain. Owner hardware
+remains unverified.
+
+All five report ZIPs, including the failed browser report, were digest-verified
+and preserved as `dsGPT-ci-test-evidence-ddaf261.zip`, 46078 bytes, SHA256
+`98ca0d2cb675b9ef6af79892448b3abbae861d15de90d600a1dbcbb99b3f361f`,
+durable evidence
+`libfile_fde3_f-631cee9a6ec0819181edf4775d8991c2_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Recovery now retains a matching verified observed empty EOF receipt from the
+existing bounded history alongside a latest suffix, only when it fits. The
+grammar combines their adjacent verified ranges. A one-character suffix is not
+mistaken for empty EOF. Unseen prefixes/other sections remain available;
+corrupt, nonterminal, wrong-section or omitted receipts do not block reads.
+Runtime checks, actual-model request, model, loop limits and context/output
+budgets remain unchanged. Eight regression cases cover these boundaries and
+tight-budget omission. Saved-history replay through step 24 includes section 1
+suffix 135..1359 plus previously observed EOF 1360 at estimated 15905/16384,
+including the unchanged 4096 output reserve. Replay is not model acceptance.
+
+The DOCX search test now uses the same bounded 12-second completion wait as the
+existing DOCX lifecycle test, retaining every completion, provenance, hidden
+scope and deletion assertion. No fixture response or production inference limit
+changed. Initial local browser execution lacked the pinned Chromium binary;
+installing that test dependency was necessary before browser validation.
+
+Local browser validation: all 26 Playwright tests passed (2.7 minutes), including
+the exact previously failed DOCX search path. Final focused recovery/guard suite:
+56 passed. Publication review covers the five changed source/test/evidence/request
+files only, with no private history, signing material or diagnostic payloads.
+Pre-dispatch inventory: active/queued/waiting/pending counts all zero; 121 public
+artifacts totaled 178937907 bytes, none expired. No deletion was needed. Archive
+and billing settings untouched; historical private storage remains unverified.
+
+Final full suite: 1187 tests plus 6 subtests passed in 213.99 seconds. Ruff,
+whitespace, static CI policy, pinned tracked-source Gitleaks and manual five-file
+publication review passed. Publish with an expected-head lease from ddaf261;
+fresh actual-model and platform CI evidence is still required for the new source.

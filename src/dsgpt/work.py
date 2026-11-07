@@ -217,10 +217,14 @@ RETAINED_REQUIREMENT_PREFIX = "Previously inspected requirement page (exact save
 def visible_requirement_read(messages, original, include_suffix=False):
     visible = _visible_requirement_read(messages, original, include_suffix)
     eof = visible if include_suffix and visible and len(visible) == 3 and (
-        visible[1] == visible[2]
+        visible[1] == visible[2] and any(
+            number == visible[0] and len(body) == visible[1]
+            for number, (_, _, body) in enumerate(sections(original), 1)
+        )
     ) else None
-    if visible and not eof:
+    if visible and not eof and not include_suffix:
         return visible
+    current = visible
     for message in messages[:-2]:
         if (message["role"] != "user"
                 or not message["content"].startswith(RETAINED_REQUIREMENT_PREFIX)):
@@ -236,6 +240,12 @@ def visible_requirement_read(messages, original, include_suffix=False):
             ]
             visible = _visible_requirement_read(pair, original, include_suffix)
             if visible:
+                if current and not eof:
+                    if (len(current) == len(visible) == 3
+                            and current[0] == visible[0]
+                            and current[2] + 1 == visible[1] == visible[2]):
+                        return current[0], current[1], visible[2]
+                    continue
                 if not eof:
                     return visible
                 if (len(visible) == 3 and visible[0] == eof[0]
@@ -243,7 +253,7 @@ def visible_requirement_read(messages, original, include_suffix=False):
                     return eof[0], visible[1], eof[2]
         except (ValueError, TypeError):
             continue
-    return eof
+    return current
 
 
 def research_page(result, cap):
@@ -1864,6 +1874,33 @@ class WorkRegistry:
                                 context, candidate = fitted
                                 messages = candidate[:-len(pair)]
                             break
+                    if action.get("tool") == "read_requirements" and result.get("content"):
+                        # A suffix read must not erase an already observed empty EOF.
+                        # Keep the receipt visible and verified before excluding that offset.
+                        current = _visible_requirement_read(pair, row["requirements"], True)
+                        if current and len(current) == 3:
+                            for saved in prior[1:]:
+                                previous = json.loads(saved["action"])
+                                page = json.loads(saved["result"])
+                                if page.get("content") != "":
+                                    continue
+                                observed = [
+                                    {"role": "assistant", "content": canonical(previous)},
+                                    {"role": "user", "content":
+                                        "Recorded tool result: " + canonical(page)},
+                                ]
+                                eof = _visible_requirement_read(
+                                    observed, row["requirements"], True)
+                                if eof != (current[0], current[2] + 1, current[2] + 1):
+                                    continue
+                                page.pop("notes", None)
+                                other = {"role": "user", "content":
+                                    RETAINED_REQUIREMENT_PREFIX + canonical(page)}
+                                fitted = fit_asset_context(messages, context, [other] + pair, model)
+                                if fitted:
+                                    context, candidate = fitted
+                                    messages = candidate[:-len(pair)]
+                                break
                     messages.extend(pair)
                     break
             else:

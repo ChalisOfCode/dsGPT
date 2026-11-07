@@ -42,6 +42,9 @@ test("saved DOCX search opens original, respects hidden scope and removes result
             await request.get(`${base}/v1/runs/${run.id}`, { headers })
           ).json()
         ).status,
+      // Match the DOCX lifecycle check: extraction plus the deliberately slow
+      // streamed reply can exceed Playwright's default five-second assertion.
+      { timeout: 12_000 },
     )
     .toBe("completed");
   await page.goto("/");
