@@ -539,3 +539,36 @@ def test_failed_build_retains_current_inspected_source_and_compiler_error(tmp_pa
     assert latest["stderr"] == result["stderr"]
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     assert not json.loads(messages[1]["content"])["build_state"]["completion_ready"]
+
+
+@pytest.mark.parametrize("rejections", [1, 2])
+def test_invalid_json_retains_exact_requirement_and_validation_feedback(tmp_path, rejections):
+    from dsgpt.project_tools import ProjectAction
+    from dsgpt.storage import canonical, utcnow
+    from dsgpt.work import visible_requirement_read
+
+    store, work, tid, _ = setup(tmp_path)
+    original = "Implement the requested behavior, then test it."
+    with store.transaction() as db:
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, ProjectAction(tool="read_requirements", summary="Inspect"))
+    error = {"error": "invalid_action", "fields": [{"message": "Invalid JSON: EOF"}],
+             "help": "Return one JSON action matching the contract."}
+    with store.transaction() as db:
+        for number in range(rejections):
+            db.execute("INSERT INTO work_steps VALUES(?,?,?,?,?)", (
+                tid, number + 2, canonical({"invalid_output": '{"tool":"edit_file"'}),
+                canonical(error), utcnow(),
+            ))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert visible_requirement_read(messages, original) == (1, 0)
+    assert visible_requirement_read(messages, "Changed original") is None
+    latest = json.loads(messages[-1]["content"].removeprefix("Recorded tool result: "))
+    assert latest["error"] == "invalid_action"
+    assert latest["fields"] == error["fields"]
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    omitted = prompt(store, work, tid, replace(model, context=512, output_tokens=128))
+    assert visible_requirement_read(omitted, original) is None

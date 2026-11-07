@@ -973,3 +973,63 @@ certification. Before dispatch all active/queued/waiting/pending counts were zer
 124 public artifacts totaled 179170610 bytes, none expired. No deletion needed.
 Historical private storage remains unverified, archive Actions disabled and
 account usage blocking unchanged from the recorded administrative checks.
+
+## 114db75 routine platform verification
+
+Routine CI 42314308021 passed all nine jobs on exact commit
+`114db758553784d7f5a66ffa685e2b4eb11cac0a`, tree
+`cd43938da2dec56ee6525dd92f5ad93f8bd963dd`. Five report ZIPs were
+GitHub-digest-verified and preserved as `dsGPT-ci-test-evidence-114db75.zip`,
+44214 bytes, SHA256
+`3f061a4ed1fabff7cd8ea9320ef513c71244661097b692ffb79945e1723be374`,
+durable file `libfile_fde3_f-634c07478bd88191801a857c9015cb89_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall owner/chat/model preservation and data-preserving uninstall passed.
+This uses separate qwen3:1.7b fixture inference, not actual 9B complex acceptance.
+The staged report retains inference BLOCKED and production/physical usability
+REVIEW labels. Android lifecycle/diagnostics instrumentation reports OK (one test).
+Complete item 5, production signing and owner hardware remain unverified.
+
+At the 2026-11-07 00:11 UTC check, original-request actual 9B run 42314308022,
+job 128223080445, remains in progress on this exact commit. Exact model loading
+and production Docker setup passed; unchanged-request decisions are active.
+No completed complex-app/follow-up/generated-native result is available.
+No source change, duplicate acceptance or cancellation was performed.
+
+## 114db75 completed complex failure and rejected-response requirement recovery
+
+Original-request actual 9B run 42314308022 on exact
+`114db758553784d7f5a66ffa685e2b4eb11cac0a` failed initial step 19,
+`no_progress`. This supersedes the preceding active observation. After source
+edit step 12, section 2 reads at steps 14/16 were separated by incomplete JSON
+at step 15. Step 17 used an invalid section offset, step 18 produced another
+incomplete JSON response, and step 19 repeated section 2 offset 0 and stopped.
+Neither rejected JSON response executed. Generated native/follow-up jobs skipped.
+
+Original artifact 13553436454 is 117615 bytes, SHA256
+`abce471371a5722046c2e1deebfa819946a9fc1fc8fcc2a8f83d7a34e1043edc`.
+The GitHub digest was verified; unchanged `dsGPT-complex-evidence-42314308022.zip`
+is preserved as durable file
+`libfile_fde3_f-f0bf4b0e89248191b82352b9fe3e27e0_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Invalid-action responses retained source but displaced the inspected requirement.
+The existing bounded requirement retention now also applies after invalid_action:
+keep the most recent observed nonempty exact original page if it fits alongside
+the latest validation feedback. The visible-page guard then prevents repeating
+that same displayed page; omitted/stale pages remain readable. This changes no
+model action, generated implementation, output/context budget, loop limit or
+acceptance criterion. Two synthetic regressions cover one/consecutive rejected
+responses, validation-feedback retention, stale originals and tight-budget
+omission. Focused suite passed 30 tests. Diagnostic replay through step 18 retains
+section 2 offset 0 at estimated 13550/16384 including 4096 output reserve. Replay
+is not actual-model completion or a fresh acceptance pass.
+
+Full suite passed 1154 tests plus 6 subtests in 75.41 seconds. Ruff, whitespace,
+CI-policy and pinned tracked-source Gitleaks passed. Manual four-file publication
+review preserved prior platform notes and excluded private diagnostics,
+conversations, device addresses, credentials, signing material and generated-app
+implementation. This limited review is not a security certification. Before
+dispatch active/queued/waiting/pending counts were zero; 110 public artifacts
+totaled 162572824 bytes, none expired. No deletion needed. Earlier archive
+privacy/Actions-disablement and $0 usage-blocking checks remain the recorded
+administrative evidence; historical private storage remains unverified.

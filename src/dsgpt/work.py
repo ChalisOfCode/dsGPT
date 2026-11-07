@@ -1808,8 +1808,11 @@ class WorkRegistry:
                                 ):
                                     messages.append(other)
                             break
-                    if action.get("tool") == "read_requirements" and not result.get("content"):
-                        # Empty EOF/error responses must not erase the last exact section page.
+                    if (
+                        (action.get("tool") == "read_requirements" and not result.get("content"))
+                        or result.get("error") == "invalid_action"
+                    ):
+                        # Empty reads/rejected JSON must not erase the last exact section page.
                         for saved in prior[1:]:
                             previous = json.loads(saved["action"])
                             page = json.loads(saved["result"])
@@ -1818,7 +1821,8 @@ class WorkRegistry:
                                 {"role": "user", "content":
                                     "Recorded tool result: " + canonical(page)},
                             ]
-                            if (page.get("requirement_id") != action.get("requirement_id", 1)
+                            if ((action.get("tool") == "read_requirements"
+                                 and page.get("requirement_id") != action.get("requirement_id", 1))
                                     or not _visible_requirement_read(
                                         observed, row["requirements"])):
                                 continue

@@ -1,7 +1,7 @@
-Request: failed-build-source-retention-2026-11-06
-Base source: c58a223fff96d18e8343c622af6f125c23aaf58c
-Prior actual run 42298079310 failed at initial step 22 after a failed build
-and a repeated unchanged source read. Retain inspected current-hash source
-alongside the compiler response within the unchanged bounded prompt.
+Request: rejected-response-requirement-retention-2026-11-07
+Base source: 114db758553784d7f5a66ffa685e2b4eb11cac0a
+Prior actual run 42314308022 failed at initial step 19 after incomplete JSON
+responses displaced the inspected requirement page. Retain verified observed
+requirement text with validation feedback within the unchanged bounded prompt.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.
