@@ -1,7 +1,7 @@
-Request: observed-requirement-eof-2026-11-07
-Base source: 5eb1402951d1e2748ebe03f43910cddac9d61754
-Prior actual run 42347937357 failed at initial step 45 after repeated
-successful empty EOF reads. Exclude a verified already-observed EOF together
-with matching retained suffix text while preserving first EOF and unseen text.
+Request: idempotent-context-compaction-2026-11-07
+Base source: d5d85defb61fadc4cbe371f58659f1bfc6b52f2d
+Prior actual run 42356556204 failed after step 25 with work_step_failed.
+Saved-state replay reproduces KeyError inputs during repeated asset compaction.
+Preserve an already-compacted inventory and its provenance/navigation pointers.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

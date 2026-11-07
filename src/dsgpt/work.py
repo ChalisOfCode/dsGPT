@@ -283,7 +283,7 @@ def compact_asset_context(context):
     """Page redundant metadata before sacrificing the actual saved output being read."""
     compact = copy.deepcopy(context)
     assets = compact.get("assets")
-    if assets:
+    if assets and "inputs" in assets:
         compact["assets"] = {
             "catalog_sha256": assets["catalog_sha256"],
             "total_inputs": len(assets["inputs"]),

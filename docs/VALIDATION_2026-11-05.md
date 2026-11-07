@@ -1306,3 +1306,52 @@ Prior uncommitted platform evidence notes are preserved. Publication excludes
 private conversations, diagnostics, device addresses, credentials, signing
 material and generated application source. This limited scan/review is not a
 security certification. Actual-model item 1 and later release gates remain open.
+
+### Platform evidence for d5d85de (2026-11-07)
+
+Routine CI 42356556206 passed all nine jobs on exact source
+`d5d85defb61fadc4cbe371f58659f1bfc6b52f2d`. Five original report ZIPs
+(Windows, Android unit/runtime, backend, browser) were verified against GitHub's
+SHA256 digests and preserved in `dsGPT-ci-test-evidence-d5d85de.zip`
+(44661 bytes; SHA256
+`7a01f5c9a23736e5e4a3ae4684493ce193b2a26a4192f30dc8d04dec32e1ec59`).
+Durable evidence: `libfile_fde3_f-c256c0d4e10c819182ed481e8204b19f_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall and data preservation passed using separate `qwen3:1.7b` fixture.
+Android lifecycle/diagnostics instrumentation reports OK (1 test).
+Staged inference BLOCKED and production REVIEW labels remain; installed-app
+checks do not erase them. Owner hardware remains unverified. These results are
+not actual 9B complex acceptance or full item 5 completion.
+Original-request run 42356556204, job 128355801805, remains in progress after
+pinned model load and production Docker setup passed. No duplicate dispatched.
+
+### Actual model failure and idempotent prompt compaction (2026-11-07)
+
+Original-request run 42356556204 on exact
+`d5d85defb61fadc4cbe371f58659f1bfc6b52f2d` failed after initial step 25 with
+`work_step_failed`; generated native/follow-up jobs skipped. Step 23 rejected an
+identical-text edit, step 24 read requirement 1, and step 25 read its exact EOF.
+No rejected edit executed. A saved-state replay including the original scaffold
+inventory and build profile reproduces `KeyError: inputs` in
+`compact_asset_context`: requirement recovery attempted to compact an already
+compacted asset catalog. This is a controller exception, not `no_progress`.
+
+Original artifact 13570103070 (118014 bytes) was verified against GitHub SHA256
+`cd470bb78d89d43e3be320e801042bc1386718af3cbda7130c69fb7b18971afa` and preserved as
+`dsGPT-complex-evidence-42356556204.zip`, durable evidence
+`libfile_fde3_f-0d2f1d5e9b908191a6f3f01637333e29_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The fix leaves already-compacted catalogs intact instead of indexing their removed
+`inputs` array. Repeated fitting preserves counts, digest and navigation pointers;
+exact results and all acceptance limits remain unchanged. Two regression cases
+cover empty/nonempty input inventories and repeated fitting. The saved-state
+replay now completes prompt assembly at estimated 15539/16384 including the
+unchanged 4096 output reserve. This replay is not fresh model acceptance.
+
+Validation: 1176 tests plus 6 subtests passed in 82.65 seconds; focused suite
+48 passed. Ruff, whitespace, CI policy, pinned tracked-source Gitleaks and manual
+four-file publication review passed. Pre-dispatch active/queued/waiting/pending
+counts were all zero; 121 public artifacts totaled 178883427 bytes, none expired.
+No deletion needed. Archive/admin settings unchanged; historical private storage
+remains unverified. Publish with expected-head lease; fresh original acceptance
+must establish actual-model behavior independently of this replay and regressions.
