@@ -1918,3 +1918,36 @@ retention/grammar/comparison suite: 14 passed in 1.87 seconds. Ruff, whitespace,
 CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
 confirmed observed source only, unchanged validation and acceptance, preserved
 prior notes and the narrow single-run trigger. Fresh model acceptance is required.
+
+### 854e7f4 setup failures before model execution
+
+Actual run 42470474691 failed during pinned Ollama archive download with HTTP504.
+No application model decisions, Docker builds or generated native checks ran.
+Routine CI 42470474829 failed source-audit on the Gitleaks download HTTP504 and
+Android on the Gradle distribution download's 10000ms read timeout. Backend,
+browser, frontend and Windows native compilation passed; downstream Windows and
+Android runtime acceptance skipped. Backend: 1226 cases, zero failures/errors/skips;
+browser: 26 expected, zero skipped/flaky/unexpected. These are setup failures,
+not evidence that the source-retention fix passed or failed actual-model acceptance.
+
+Original model artifact 13612818207, 4878 bytes, SHA256
+`c2c6a0c21bc239e7ac0652bae1d936036b2cbde6313271ecf944dfccf64b0067`;
+two original test ZIPs individually size/digest verified and three failed-job logs
+preserved in `dsGPT-setup-evidence-854e7f4.zip`, 54925 bytes, SHA256
+`701326393d990d023323cfe948ef89f233c3e9cc7f9d8fcb76788cf759cbd0bb`,
+durable evidence
+`libfile_fde3_f-3603364687ac8191ac3d09d46775b3d1_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Pinned runtime/scanner archive opens now retry HTTP502/503/504 only, at most three
+attempts with 1/2-second backoff before writing any bytes. Other HTTP errors,
+stream failures, sizes and digest mismatches remain fatal. Gradle's distribution
+network timeout is 60000ms; its URL and pinned checksum remain unchanged. No model,
+request, inference budgets, loop limits, acceptance timeouts or cache writes change.
+Focused download/preflight suite: 20 passed; retries and exhaustion tested without
+network or sleeping. This does not count as actual-model acceptance.
+
+Full suite: 1222 tests plus six subtests passed in 78.72 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual six-file review kept
+all digest/size checks and acceptance arguments intact. Public inventory before
+publication: 94 artifacts, 135828053 bytes, none expired; active/queued/waiting/
+pending all zero. No deletion needed. Archive/billing/cache settings untouched.

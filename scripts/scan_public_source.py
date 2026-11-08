@@ -6,12 +6,26 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
 VERSION = "8.30.1"
 ARCHIVE_SHA256 = "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
 URL = f"https://github.com/gitleaks/gitleaks/releases/download/v{VERSION}/gitleaks_{VERSION}_linux_x64.tar.gz"
+
+
+def open_release_download(request):
+    """Retry only transient HTTP responses before any archive bytes are written."""
+    for attempt in range(3):
+        try:
+            return urllib.request.urlopen(request, timeout=60)
+        except urllib.error.HTTPError as error:
+            if error.code not in {502, 503, 504} or attempt == 2:
+                raise
+            error.close()
+            time.sleep(2 ** attempt)
 
 
 def main():
@@ -31,7 +45,7 @@ def main():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
         archive = owned / "scanner.tar.gz"
-        with urllib.request.urlopen(URL, timeout=60) as response, archive.open("xb") as out:
+        with open_release_download(URL) as response, archive.open("xb") as out:
             total = 0
             while block := response.read(1024**2):
                 total += len(block)

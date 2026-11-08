@@ -187,11 +187,23 @@ def file_digest(path):
         return hashlib.file_digest(source, "sha256").hexdigest()
 
 
+def open_release_download(request):
+    """Retry only transient HTTP responses before any archive bytes are written."""
+    for attempt in range(3):
+        try:
+            return urllib.request.urlopen(request, timeout=60)
+        except urllib.error.HTTPError as error:
+            if error.code not in {502, 503, 504} or attempt == 2:
+                raise
+            error.close()
+            time.sleep(2 ** attempt)
+
+
 def download_archive(path, timeout):
     started = time.monotonic()
     request = urllib.request.Request(ARCHIVE_URL, headers={"Accept-Encoding": "identity"})
     received = 0
-    with urllib.request.urlopen(request, timeout=60) as response, path.open("xb") as output:
+    with open_release_download(request) as response, path.open("xb") as output:
         require(response.status == 200, "Runtime download did not return HTTP 200")
         require(response.geturl().startswith("https://"), "Runtime redirect was not HTTPS")
         declared = response.headers.get("Content-Length")

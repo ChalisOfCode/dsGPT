@@ -1,7 +1,6 @@
-Request: retain-matching-source-pages-before-unrelated-2026-11-08
-Base source: 3ec270678e0dd57231ee02cf9c66e1b6345b779c
-Prior original run 42462245456 failed after an unrelated source page displaced
-an observed prefix needed with the latest continuation. Prioritize current-hash
-observed pages of that same path within the existing bounded history and budget.
-Run the unchanged original request with the exact 9B model and unchanged
+Request: bounded-pinned-release-download-recovery-2026-11-08
+Base source: 854e7f4cf2061c889282420260641fc8c265a1e7
+Prior run 42470474691 stopped on HTTP504 before model execution. Retry transient
+release-download opens within a bounded three attempts and preserve every pin.
+Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.
