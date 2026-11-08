@@ -2033,3 +2033,67 @@ Routine evidence: 1237 backend cases with no failures/errors/skips; 26 browser
 expected with zero skipped/unexpected/flaky. Before publication all active/queued/
 pending/waiting counts were zero; 111 public artifacts, 157771249 bytes, none
 expired. No deletion needed; archive/billing/cache settings untouched.
+
+### Routine platform evidence on 83cd085 (2026-11-08 UTC)
+
+Routine CI 42483782726 passed all nine jobs on exact
+83cd085c47022d2113b5e001c942108978e232e5. Backend: 1239 cases, zero failures,
+errors or skips; browser: 26 expected, zero skipped/unexpected/flaky. Windows
+installed native UI/local reply, Credential Manager, scheduled restart, reinstall
+and data preservation passed. Android lifecycle instrumentation reports OK (one
+test). Separate qwen3:1.7b fixture evidence is not actual 9B acceptance or complete
+item 5. Staged inference BLOCKED/production REVIEW remain; owner hardware unverified.
+
+Five original report ZIPs individually size/digest verified and preserved as
+`dsGPT-ci-test-evidence-83cd085.zip`, 45694 bytes, SHA256
+`a3310d2bcc4fbe36ed20bb5b4bb15310c1a822fbc6a4c749d73ce80ecc00c755`,
+durable evidence
+`libfile_fde3_f-b62f29b798c0819191ea718b7aece3df_0e1c3d7a1ce08191b900cc9270ea7257`.
+At this platform checkpoint, actual 9B run 42483782694, job 128741133081, was
+in progress after exact-model load and production Docker setup passed.
+No final model acceptance is claimed. No duplicate or cancelled run; no source,
+acceptance, private archive, billing or cache settings changed.
+
+
+### 83cd085 observed no-change edit and partial read cycle
+
+Actual 9B run 42483782694 completed with failure at initial step 68, no_progress,
+in 16699.114 seconds. Exact-model and production Docker setup passed. Step 21
+attempted build_project and failed Kotlin compilation (including redeclaration
+and unresolved references). Step 25 invoked Gradle directly and failed loading
+its native library; the model read that failure at step 26. Neither result is a
+successful application build. Generated native checks and follow-up skipped.
+
+At step 61 the model changed Task.kt to 3170 characters. Reads 64/66 returned
+its first 3000 characters with next_offset 3000. Edits 65/67 supplied identical
+old/new text and were rejected as edit_has_no_change, with that same current
+source page attached. Step 68 repeated the unchanged first-page read and stopped.
+Other generated source issues remain unverified; this diagnosis does not claim
+that the model's implementation satisfies the requested domain API or behavior.
+
+Original artifact 13627549482, 202831 bytes, SHA256
+`a3ac5aead117d89359579541427b6b57c578df4d6fa1b93cbeefbcda7a4bbc09`,
+size/digest verified and preserved as `dsGPT-complex-evidence-42483782694.zip`,
+durable evidence
+`libfile_fde3_f-fb0063ed7cb88191a667c581983e5ee1_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Partial-page guidance now recognizes the exact page attached to a recorded
+no-change edit when the adjacent action is edit_file for that same path. All
+existing byte/hash/length/offset/continuation checks remain required. Other
+errors, mismatched actions and stale/corrupt/omitted text remain readable.
+Unseen offsets and edits remain available. No grammar syntax, runtime validation,
+model, original request, context/output budgets, loop limits or acceptance changes.
+
+Saved-history replay through step 67 reconstructed hash-verified scaffold and
+successful edits, including saved notes and cumulative overview. Both prompts
+use estimated 16045/16384 including unchanged 4096 output reserve. Baseline
+recognizes no displayed partial page after the no-change edit; candidate recognizes
+Task.kt offset 0 and leaves offset 3000 available. Replay is diagnostic only,
+not actual-model acceptance. Focused source/read/feedback tests: 88 passed.
+
+Final full suite: 1242 tests plus six subtests passed in 81.33 seconds. Ruff,
+whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual four-file
+review confirmed the matching-action and current-source checks, preserved prior
+platform evidence and unchanged acceptance trigger. Before publication all
+active/queued/waiting/pending counts were zero; 100 public artifacts, 141552045
+bytes, none expired. No deletion needed. Archive/billing/cache settings untouched.

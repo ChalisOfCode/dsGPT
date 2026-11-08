@@ -1,6 +1,6 @@
-Request: retain-observed-section-comparison-2026-11-08
-Base source: 954004d761618ca60a9cdb0a645e072372c5b910
-Prior run 42476228169 stopped while alternating requirement sections 4 and 1.
-Retain verified observed comparison text within the unchanged prompt budget.
+Request: recognize-no-change-edit-source-page-2026-11-08
+Base source: 83cd085c47022d2113b5e001c942108978e232e5
+Prior run 42483782694 stopped after no-change edits and repeated partial reads.
+Recognize verified displayed source pages attached to matching no-change edits.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

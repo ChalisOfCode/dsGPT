@@ -183,7 +183,7 @@ def visible_partial_source_pages(messages, sources):
         "use them for the next change without rereading: ",
     )
     visible = {}
-    for message in messages:
+    for index, message in enumerate(messages):
         if message["role"] != "user":
             continue
         prefix = next((p for p in prefixes if message["content"].startswith(p)), None)
@@ -193,7 +193,19 @@ def visible_partial_source_pages(messages, sources):
             page = json.loads(message["content"][len(prefix):])
             source = sources.get(page.get("path"))
             offset, content = page.get("offset"), page.get("content")
-            if (not isinstance(source, str) or page.get("error")
+            if page.get("error"):
+                # A no-op edit returns the same authoritative source page as a read.
+                # Bind this exception to its recorded edit; other errors stay readable.
+                previous = messages[index - 1] if index else {}
+                if (page.get("error") != "edit_has_no_change"
+                        or prefix != "Recorded tool result: "
+                        or previous.get("role") != "assistant"):
+                    continue
+                action = json.loads(previous["content"])
+                if (action.get("tool") != "edit_file"
+                        or action.get("path") != page.get("path")):
+                    continue
+            if (not isinstance(source, str)
                     or not isinstance(offset, int) or isinstance(offset, bool) or offset < 0
                     or not isinstance(content, str) or not content
                     or page.get("has_more") is not True

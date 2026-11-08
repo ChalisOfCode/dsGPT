@@ -68,3 +68,59 @@ def test_unmatched_edit_retains_partial_page_and_continuation(tmp_path):
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     tight = prompt(store, work, tid, replace(model, context=2500, output_tokens=512))
     assert visible_partial_source_pages(tight, {'module.py': body}) == {}
+
+
+@pytest.mark.parametrize('damage', [None, 'stale', 'content', 'continuation',
+                                  'other_error', 'wrong_path', 'wrong_tool', 'missing_action'])
+def test_no_change_edit_page_requires_current_bytes_and_matching_action(damage):
+    body = 'value = 1\n' * 317
+    page = source_page({'content': body, 'sha256': hashlib.sha256(body.encode()).hexdigest()},
+                       'module.py', 0)
+    page['error'] = 'edit_has_no_change'
+    action = {'tool': 'edit_file', 'path': 'module.py'}
+    if damage == 'stale':
+        body += '# changed'
+    elif damage == 'content':
+        page['content'] = 'corrupt'
+    elif damage == 'continuation':
+        page['next_offset'] += 1
+    elif damage == 'other_error':
+        page['error'] = 'edit_match_not_unique'
+    elif damage == 'wrong_path':
+        action['path'] = 'other.py'
+    elif damage == 'wrong_tool':
+        action['tool'] = 'read_file'
+    messages = [{'role': 'assistant', 'content': json.dumps(action)},
+                {'role': 'user', 'content': 'Recorded tool result: ' + json.dumps(page)}]
+    if damage == 'missing_action':
+        messages.pop(0)
+    assert visible_partial_source_pages(messages, {'module.py': body}) == (
+        {} if damage else {'module.py': {0}})
+
+
+def test_no_change_edit_exposes_continuation_without_repeating_prefix(tmp_path):
+    store, work, tid, _ = setup(tmp_path)
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, 'Implement the module and test it.')
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = '# module\n' + 'value = 1\n' * 317
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    commit(work, tid, ProjectAction(tool='write_file', path='module.py', content=body,
+                                   summary='Create'))
+    commit(work, tid, ProjectAction(tool='read_file', path='module.py', summary='Inspect'))
+    commit(work, tid, ProjectAction(tool='edit_file', path='module.py', old_text=body[:20],
+                                   new_text=body[:20], expected_sha256=digest, summary='Edit'))
+    model = replace(work.models['local'], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    latest = json.loads(messages[-1]['content'].removeprefix('Recorded tool result: '))
+    assert latest['error'] == 'edit_has_no_change'
+    assert latest['content'] == body[:3000] and latest['next_offset'] == 3000
+    pages = visible_partial_source_pages(messages, {'module.py': body})
+    assert pages == {'module.py': {0}}
+    schema = action_schema(file_paths=['module.py'], visible_read_pages=pages)
+    reads = [v for v in schema['oneOf'] if v['properties']['tool']['const'] == 'read_file']
+    assert not any(v['properties']['offset']['minimum'] <= 0 for v in reads)
+    assert any(v['properties']['offset']['minimum'] <= 3000
+               <= v['properties']['offset']['maximum'] for v in reads)
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert store.one('SELECT content FROM work_files WHERE task_id=?', (tid,))['content'] == body
