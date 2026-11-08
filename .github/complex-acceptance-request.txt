@@ -1,6 +1,6 @@
-Request: bounded-asset-response-timeout-recovery-2026-11-08
-Base source: 0c5859f811001d9814c6190395e0e39360e184a3
-Prior run 42473436414 stopped on apktool response-open timeout before model tasks.
-Retry transient asset response opens within three attempts; preserve all pins.
+Request: retain-observed-section-comparison-2026-11-08
+Base source: 954004d761618ca60a9cdb0a645e072372c5b910
+Prior run 42476228169 stopped while alternating requirement sections 4 and 1.
+Retain verified observed comparison text within the unchanged prompt budget.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

@@ -1993,3 +1993,43 @@ no private log contents in source, and the unchanged-request single-run trigger.
 Before publication: active/queued/waiting/pending all zero; 105 public artifacts,
 152035174 bytes, none expired. No deletion needed. Private archive, billing and
 cache settings remain untouched.
+
+### 954004d observed alternating requirement reads
+
+Actual 9B run 42476228169 passed exact-model and production Docker setup, then
+failed initial step 27 with no_progress in 4468.404 seconds. Requirement section 4
+was read at steps 22/25 and section 1 at 24/26; step 27 repeated section 4 a third
+time. No build_project occurred; generated native/follow-up checks skipped.
+Step 18 also wrote a distinct MainActivity.kt} path; step 20 invalid path was
+rejected. Those observations do not prove complete source correctness.
+
+Original artifact 13618077583, 126366 bytes, SHA256
+`fea1d52fe05ce967eb668bbf15342f37479b0875738bf9366695c38c9aa8856d`;
+original plus two CI report ZIPs individually size/digest verified and Android
+failure log preserved in dsGPT-evidence-954004d.zip, 158273 bytes, SHA256
+`6b2d0d114b0c77a296a96e315b6bc4b6c2c0aad404c5ba54fe1c44bb79ab0ccb`,
+durable evidence
+`libfile_fde3_f-f0d1fed9f2508191bf668ee428c8d57e_0e1c3d7a1ce08191b900cc9270ea7257`.
+Routine CI 42476228144 failed Android on Gradle distribution HTTP502, before
+compilation; required failed and downstream Windows/Android runtime skipped.
+Source audit/backend/browser/frontend/Windows native compilation passed.
+
+Section comparisons now retain the latest verified observed different section
+from bounded history when it fits, deferring generated overview/preview as needed.
+Empty reads retain the existing same-section recovery behavior. Corrupt/stale
+observations remain unreadable as evidence, and latest result stays intact.
+Saved-history replay through step 26 includes hash-verified scaffold, successful
+edits and cumulative overview: baseline only section 1 at 15884/16384; candidate
+also retains section 4 at 15433/16384 including unchanged 4096 output reserve.
+Replay is diagnostic, not actual-model acceptance. Model/request/context/output/
+loop/runtime checks and grammar syntax are unchanged. No cache writes added.
+
+Final full suite: 1233 tests plus six subtests passed in 81.11 seconds; focused
+comparison/requirement/read suite: 64 passed. An initial candidate broke existing
+beyond-EOF recovery; corrected before publication, with that assertion unchanged.
+Ruff, whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual
+four-file review verified observed-text-only retention and unchanged acceptance.
+Routine evidence: 1237 backend cases with no failures/errors/skips; 26 browser
+expected with zero skipped/unexpected/flaky. Before publication all active/queued/
+pending/waiting counts were zero; 111 public artifacts, 157771249 bytes, none
+expired. No deletion needed; archive/billing/cache settings untouched.

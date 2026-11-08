@@ -1897,11 +1897,12 @@ class WorkRegistry:
                                     messages.append(other)
                                 break
                     if (
-                        (action.get("tool") == "read_requirements" and not result.get("content"))
+                        (action.get("tool") == "read_requirements"
+                         and (not result.get("content") or not result.get("error")))
                         or result.get("error") == "invalid_action"
                         or (action.get("tool") == "read_file" and not result.get("error"))
                     ):
-                        # Source inspection, empty reads and rejected JSON must not erase
+                        # Section comparisons, source inspection and rejected JSON retain
                         # the last observed exact section page when it still fits.
                         for saved in prior[1:]:
                             previous = json.loads(saved["action"])
@@ -1911,16 +1912,20 @@ class WorkRegistry:
                                 {"role": "user", "content":
                                     "Recorded tool result: " + canonical(page)},
                             ]
-                            if ((action.get("tool") == "read_requirements"
-                                 and page.get("requirement_id") != action.get("requirement_id", 1))
-                                    or not _visible_requirement_read(
-                                        observed, row["requirements"])):
+                            same_section = page.get("requirement_id") == action.get(
+                                "requirement_id", 1)
+                            wrong_section = action.get("tool") == "read_requirements" and (
+                                same_section if result.get("content") else not same_section)
+                            if (wrong_section or not _visible_requirement_read(
+                                    observed, row["requirements"])):
                                 continue
                             page.pop("notes", None)
                             other = {"role": "user", "content":
                                 RETAINED_REQUIREMENT_PREFIX + canonical(page)}
                             fitted = fit_asset_context(messages, context, [other] + pair, model)
-                            if not fitted and action.get("tool") == "read_file":
+                            if not fitted and action.get("tool") in {
+                                "read_file", "read_requirements"
+                            }:
                                 compact = compact_asset_context(context)
                                 compact["requirements"]["overview"] = (
                                     "Generated overview deferred to retain inspected requirement; "

@@ -75,3 +75,34 @@ def test_comparison_can_displace_unrelated_source_but_not_latest_result(tmp_path
             observed_eviction = True
             break
     assert observed_eviction
+
+
+@pytest.mark.parametrize('corrupt', [False, True])
+def test_section_comparison_retains_verified_previous_section(tmp_path, corrupt):
+    from dsgpt.work import RETAINED_REQUIREMENT_PREFIX
+    from dsgpt.work_specs import CHUNK_BYTES
+    store, work, tid, _ = setup(tmp_path)
+    original = 'a' * CHUNK_BYTES + 'b' * 500
+    with store.transaction() as db:
+        db.execute('UPDATE work_tasks SET requirements=? WHERE id=?', (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, ProjectAction(tool='read_requirements', requirement_id=2, summary='Read'))
+    if corrupt:
+        with store.transaction() as db:
+            row = db.execute('SELECT result FROM work_steps WHERE task_id=?', (tid,)).fetchone()
+            result = json.loads(row['result'])
+            result['content'] = 'invented'
+            db.execute('UPDATE work_steps SET result=? WHERE task_id=?', (json.dumps(result), tid))
+    commit(work, tid, ProjectAction(tool='read_requirements', requirement_id=1, summary='Compare'))
+    model = replace(work.models['local'], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    retained = [json.loads(m['content'][len(RETAINED_REQUIREMENT_PREFIX):]) for m in messages
+                if m['content'].startswith(RETAINED_REQUIREMENT_PREFIX)]
+    assert bool(retained) is not corrupt
+    if retained:
+        assert retained[0]['requirement_id'] == 2
+        assert retained[0]['content'] == 'b' * 500
+    latest = json.loads(messages[-1]['content'].removeprefix('Recorded tool result: '))
+    assert latest['requirement_id'] == 1
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
