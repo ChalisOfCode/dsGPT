@@ -1680,3 +1680,78 @@ waiting and pending counts were zero. Public inventory: 121 artifacts, 178980160
 bytes, none expired. Historical private storage remains unverified and untouched.
 Publish with an expected-head lease from 329d140, preserving candidate 1963113
 as an ancestor. Fresh actual-model acceptance is still required.
+
+### Fresh platform CI on d257834 (2026-11-08 UTC)
+
+Routine CI 42428425166 passed all nine jobs on exact
+`d257834ef65a180443fa2cba4582f503a8facff0`. Browser report: 26 expected,
+zero skipped, unexpected or flaky tests. Five original report archives were
+individually digest-verified and preserved as `dsGPT-ci-test-evidence-d257834.zip`,
+45723 bytes, SHA256
+`6128a30c9a75d5d6518ffc9231317e4c2fc256ff1697eb01880e562d5acd0b1f`,
+durable evidence
+`libfile_fde3_f-897f983fefe88191a47249b9b4409a74_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall/data preservation and uninstall-preserves-data passed.
+Android lifecycle/diagnostics instrumentation reports OK (one test).
+Windows uses separate qwen3:1.7b, not the exact 9B complex-app acceptance or
+complete item 5. Staged inference BLOCKED/production REVIEW labels remain;
+owner hardware remains unverified.
+
+Actual 9B run 42428425205, job 128571686556, remains in progress on this exact
+source after pinned model loading and production Docker toolchain setup passed.
+The unchanged original-request model decisions are active. No duplicate run was
+started or canceled; no final complex-app result or release is claimed.
+
+Live browser observation at 2026-11-08 01:41 UTC: actual run 42428425205
+remained in initial model decisions through step 28. Progress categories recorded
+write_file at 15 and edit_file at 19/23; no tool_error or validation_rejected was
+shown through 28. These categories do not establish source correctness, compilation,
+or native acceptance. Complete final evidence is still pending.
+
+### Actual d257834 result and observed-source priority repair (2026-11-08 UTC)
+
+Actual 9B run 42428425205 completed failure after initial step 42 in 7883.437
+seconds (`no_progress`). Generated native and follow-up jobs were skipped; no
+`build_project` action occurred. Step 29 created a distinct file whose name ends
+in `MainActivity.kt}`. Steps 34–41 then cycled through that file, MainActivity,
+Task and the manifest; step 42 requested MainActivity for the third unchanged
+read. These were actual model actions, not compiler or native acceptance.
+
+Original artifact 13599779272 was size/digest verified and preserved as
+`dsGPT-complex-evidence-42428425205.zip`, 139837 bytes, SHA256
+`9c84f207a3a4868b478e2bfca627ef335de5b61affd08d907b0651f47f255f82`,
+durable evidence
+`libfile_fde3_f-f4c8852bacbc81918b32e35431f24671_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Replay through step 41 reconstructs saved original requirements, section notes,
+the cumulative overview recovered from the review action, observed source bytes,
+build target and bounded action history. Baseline retains three source files but
+omits MainActivity: the generated overview consumes the space needed for that
+page. An earlier replay without the saved overview incorrectly retained all four;
+it was corrected before selecting the repair. This is diagnostic replay, not a
+fresh model run or proof of generated application correctness.
+
+The repair defers the generated overview with requirement navigation when needed
+to retain observed source. Current-hash checks, bounded history, partial-page
+handling, authoritative saved requirements and source edit tools are unchanged.
+Corrected replay retains all four complete current source files at estimated
+15829/16384 tokens including the unchanged 4096 output reserve. No model action,
+generated implementation, request, model, context/output budget, loop limit,
+runtime validation or acceptance check is substituted or relaxed.
+
+Two regression cases cover overview/source competition and a changed source;
+the unchanged-source case fails on baseline. Tight-context assertions verify that
+omitted source remains readable and saved requirements remain byte-for-byte
+unchanged. Focused source/edit grammar suites: 43 passed. Public inventory before
+publication: 121 artifacts, 179001960 bytes, none expired; active, queued, waiting
+and pending run counts all zero. No deletion needed. Prior private-archive
+privacy/Actions disablement and account usage-blocking observations remain the
+administrative baseline; historical private storage is still unverified/untouched.
+
+Full suite: 1206 tests plus six subtests passed in 86.77 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+confirmed the change only prioritizes displayed observed source over a generated
+overview, with two regressions, preserved evidence notes and the narrow acceptance
+request trigger. Fresh actual-model acceptance is required; item 1 remains open.

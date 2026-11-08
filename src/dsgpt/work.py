@@ -1722,6 +1722,10 @@ class WorkRegistry:
                                     # Prefer inspected source to redundant inventory/preview data.
                                     # Keep authoritative requirements saved and explicitly pageable.
                                     compact = json.loads(canonical(context))
+                                    compact["requirements"]["overview"] = (
+                                        "Generated overview deferred to retain inspected source; "
+                                        "list_requirements/read_requirements retain all sections."
+                                    )
                                     compact["project_files"]["files"] = files[:1]
                                     compact["project_files"]["next_offset"] = (
                                         1 if len(files) > 1 else None

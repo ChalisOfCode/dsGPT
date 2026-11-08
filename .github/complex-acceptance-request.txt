@@ -1,7 +1,6 @@
-Request: paired-edit-json-path-boundaries-2026-11-08
-Base source: 329d1409b955182d4b70f3b6c81d2adc62a9e8d3
-Prior original run 42403711453 reached its unchanged acceptance deadline after
-step 74 without a build. Bind edit paths to their own current hashes and prevent
-new-file path patterns from consuming serialized JSON field boundaries.
+Request: observed-source-overview-priority-2026-11-08
+Base source: d257834ef65a180443fa2cba4582f503a8facff0
+Prior original run 42428425205 stopped at step 42 after unchanged source reads.
+Defer generated overview when needed to retain verified observed current source.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

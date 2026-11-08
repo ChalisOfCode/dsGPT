@@ -616,3 +616,71 @@ def test_requirement_suffix_retains_prior_verified_empty_eof(tmp_path, mode, sin
         1, offset, len(original) - 1)
     tight = prompt(store, work, tid, replace(model, context=512, output_tokens=128))
     assert visible_requirement_read(tight, original, True) is None
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_observed_sources_outrank_generated_overview_under_context_pressure(tmp_path, changed):
+    from dsgpt.project_tools import ProjectAction, action_schema
+    from dsgpt.work import visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path)
+    original = "\n\n".join(
+        f"Section {i}: " + "Preserve required behavior and verify it. " * 27
+        for i in range(8)
+    )
+    with store.transaction() as db:
+        db.execute("DELETE FROM work_inputs WHERE task_id=?", (tid,))
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_specs SET brief=? WHERE task_id=?",
+                   ("Generated project overview. " * 27, tid))
+        db.execute("UPDATE work_spec_sections SET notes=? WHERE task_id=?",
+                   ("Generated navigation notes. " * 25, tid))
+    bodies = {
+        "src/application/main.py": "# main source\n" + "value = 1\n" * 217,
+        "src/application/other.py": "# other source\n" + "value = 2\n" * 209,
+        "src/application/task.py": "# task source\n" + "value = 3\n" * 32,
+        "src/application/config.py": "# config source\n" + "value = 4\n" * 54,
+    }
+    for path, body in bodies.items():
+        commit(work, tid, ProjectAction(tool="write_file", path=path, content=body,
+                                       summary="Create test source"))
+    for path in bodies:
+        commit(work, tid, ProjectAction(tool="read_file", path=path, summary="Inspect"))
+    revisions = {p: hashlib.sha256(b.encode()).hexdigest() for p, b in bodies.items()}
+    if changed:
+        commit(work, tid, ProjectAction(tool="edit_file", path="src/application/main.py",
+            old_text="# main source", new_text="# changed source",
+            expected_sha256=revisions["src/application/main.py"], summary="Change"))
+        revisions["src/application/main.py"] = hashlib.sha256(
+            bodies["src/application/main.py"].replace("# main source", "# changed source").encode()
+        ).hexdigest()
+        commit(work, tid, ProjectAction(tool="read_file", path="src/application/config.py",
+                                       summary="Inspect"))
+    model = replace(work.models["local"], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    visible = visible_source_reads(messages, revisions)
+    expected = set(bodies) - ({"src/application/main.py"} if changed else set())
+    assert visible == expected
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    context = json.loads(messages[1]["content"])
+    if not changed:
+        assert "overview deferred" in context["requirements"]["overview"]
+    saved = store.one("SELECT requirements FROM work_tasks WHERE id=?", (tid,))
+    assert saved["requirements"] == original
+    assert not context["build_state"]["completion_ready"]
+    schema = action_schema(file_paths=list(bodies), already_visible_read=visible)
+    readers = [v["properties"]["path"]["enum"] for v in schema["oneOf"]
+               if v["properties"]["tool"]["const"] == "read_file"]
+    assert readers == ([["src/application/main.py"]] if changed else [])
+    if not changed:
+        tight = replace(model, context=10000)
+        limited = prompt(store, work, tid, tight)
+        omitted = set(bodies) - visible_source_reads(limited, revisions)
+        assert omitted
+        schema = action_schema(file_paths=list(bodies),
+                               already_visible_read=visible_source_reads(limited, revisions))
+        readers = next(v["properties"]["path"]["enum"] for v in schema["oneOf"]
+                       if v["properties"]["tool"]["const"] == "read_file")
+        assert omitted <= set(readers)
+        assert ollama_input_estimate(limited) + tight.output_tokens <= tight.context
