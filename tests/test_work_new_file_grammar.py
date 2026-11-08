@@ -98,3 +98,14 @@ async def test_controller_refreshes_creation_grammar_without_weakening_runtime(t
         result = ProjectTools.apply(db, tid, ProjectAction(tool="edit_file", path="notes.txt",
             old_text=original, new_text="changed", expected_sha256=row["sha256"], summary="Edit"))
     assert "error" not in result
+
+
+@pytest.mark.parametrize("value", [
+    'new", "path":"foo.kt', 'foo.kt", "path":"foo.kt',
+    r"\u0066oo.kt", "new\nfile", "new\x00file", "new\tfile",
+])
+def test_path_pattern_cannot_cross_serialized_json_boundaries(value):
+    pattern = new_file_path_pattern(["foo.kt"])
+    assert not re.fullmatch(pattern, value)
+    assert re.fullmatch(pattern, "雪/new.kt")
+    assert re.fullmatch(pattern, "foo.kt.new")

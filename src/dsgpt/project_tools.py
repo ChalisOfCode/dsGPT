@@ -200,6 +200,10 @@ def new_file_path_pattern(paths):
     def class_escape(char):
         return f"\\x{ord(char):02x}" if char in "\\]-^" else char
 
+    # GBNF patterns operate on serialized JSON, not decoded string values.
+    # Never let a path consume a quote/backslash and inject another JSON field.
+    forbidden = r'"\x5c\x00-\x1f'
+    path_char = "[^" + forbidden + "]"
     choices = []
 
     def walk(node, prefix, depth):
@@ -210,10 +214,10 @@ def new_file_path_pattern(paths):
         if not remaining:
             return
         if not children:
-            choices.append(prefix + ".{1," + str(remaining) + "}")
+            choices.append(prefix + path_char + "{1," + str(remaining) + "}")
             return
-        choices.append(prefix + "[^" + "".join(class_escape(c) for c in children)
-                       + "].{0," + str(remaining - 1) + "}")
+        choices.append(prefix + "[^" + forbidden + "".join(class_escape(c) for c in children)
+                       + "]" + path_char + "{0," + str(remaining - 1) + "}")
         for char in children:
             walk(node[char], prefix + escape(char), depth + 1)
 

@@ -1,7 +1,7 @@
-Request: flat-new-file-grammar-2026-11-07
-Base source: 23688cc12eeed7651a752c6243f8af38f2678c5a
-Prior original run 42401331943 failed after scaffold when runtime grammar
-initialization rejected expanded optional path subtrees. Flatten alternatives,
-retain exact existing-path exclusion, and verify conversion plus runtime parsing.
+Request: paired-edit-json-path-boundaries-2026-11-08
+Base source: 329d1409b955182d4b70f3b6c81d2adc62a9e8d3
+Prior original run 42403711453 reached its unchanged acceptance deadline after
+step 74 without a build. Bind edit paths to their own current hashes and prevent
+new-file path patterns from consuming serialized JSON field boundaries.
 Run the unchanged original request with the exact 9B model and all original
 context/output budgets, loop limits and independent native acceptance checks.

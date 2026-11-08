@@ -1635,3 +1635,48 @@ maximum-length and special-character schemas with no warnings (50764, 62478 and
 10025 rules respectively). Saved-action/schema replay and parser checks are not
 actual-model acceptance. No model action, original request, budget, loop limit,
 runtime validation, or native acceptance check was substituted or weakened.
+
+### Actual 329d140 timeout and serialized path boundary recovery (2026-11-08)
+
+Original-request actual 9B run 42403711453 completed with failure after initial
+step 74 and 18000.359 seconds. The acceptance deadline raised TimeoutError:
+"Acceptance budget reached; task paused without inventing completion". This was
+not a no-progress stop. No build_project action occurred; generated native and
+follow-up acceptance did not run. Steps 38 and 68 used a different file's hash for
+MainActivity edits and were correctly rejected, confirming the prepared paired
+path/revision schema addresses an observed failure in this run too.
+
+Original artifact 13595529038 was digest-verified and preserved as
+`dsGPT-complex-evidence-42403711453.zip`, 189093 bytes, SHA256
+`e1993bd580546dd1a68a3d05aab6b501bb145f7db7f5dd539057936598322302`,
+durable evidence
+`libfile_fde3_f-58ace56275648191b2bbea2cc15d0c15_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Existing-file writes at steps 11, 42 and 70 were also rejected at execution despite
+the schema's intended exclusion. Investigation reproduced a concrete semantic
+hole with unchanged production llama.cpp b11963: regex wildcards operate on raw
+serialized JSON and can consume quotation marks. A response with path "new"
+followed by a second path "foo.kt" is accepted by the old full action grammar,
+then JSON decoding selects the existing file. Parsed saved actions include extra
+fields; raw response text was not retained, so this reproduction does not prove
+the exact serialization route used by those three actions.
+
+Restrict both trie-divergence characters and remaining path characters to exclude
+quotes, backslashes and ASCII controls. These are already rejected in file paths
+at execution. Pinned production grammar semantic acceptance now rejects the
+reproduced duplicate-path response and exact existing paths, while accepting
+Unicode new paths and existing-name extensions. Six regressions cover serialized
+field boundaries, escaped-path bypasses and controls. Runtime validation, model
+choices, original request, context/output budgets, loop limits and acceptance
+checks remain unchanged. Parser semantic checks are not actual-model acceptance.
+
+Final combined validation: 1204 tests plus 6 subtests passed in 75.89 seconds;
+17 focused new-file/revision tests passed. Pinned unchanged b11963 observed,
+maximum-length and special-character schemas convert and parse without warnings.
+Ruff, whitespace, static CI policy, pinned tracked-source Gitleaks and manual
+five-file source/evidence review passed. No source, signing material or unique
+artifact was deleted. Pre-dispatch main remained 329d140; all in-progress, queued,
+waiting and pending counts were zero. Public inventory: 121 artifacts, 178980160
+bytes, none expired. Historical private storage remains unverified and untouched.
+Publish with an expected-head lease from 329d140, preserving candidate 1963113
+as an ancestor. Fresh actual-model acceptance is still required.
