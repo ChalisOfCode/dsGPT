@@ -1805,3 +1805,63 @@ CI policy and pinned tracked-source Gitleaks passed. Manual five-file review
 confirmed exact displayed-byte verification and preserved runtime limits. Publish
 with an expected-head lease from ebaeeb3; fresh actual-model acceptance remains
 required and all five-item release gates remain in force.
+
+### Routine platform evidence on 187ab3d (2026-11-08 UTC)
+
+Routine CI 42445714392 passed all nine jobs on exact
+187ab3d23bbec7b916d0637dbc0d58f1efd6c331. Browser report: 26 expected,
+zero skipped/unexpected/flaky. Backend report: 1220 cases, zero errors/failures/
+skips. Windows installed native UI/local reply, Credential Manager, scheduled
+restart, reinstall and data preservation passed. Android lifecycle instrumentation
+reports OK (one test). The separate qwen3:1.7b fixture is not actual 9B acceptance
+or complete item 5. Staged inference BLOCKED/production REVIEW remain; physical
+owner hardware is unverified.
+
+Five original report ZIPs were individually size/digest verified and preserved in
+`dsGPT-ci-test-evidence-187ab3d.zip`, 45392 bytes, SHA256
+`eec38d40f7c42f1be1155ddb0554021ba363f33c0828030802ad7c8ece29334b`,
+durable evidence
+`libfile_fde3_f-58812d5824a88191b614ed74c647282b_0e1c3d7a1ce08191b900cc9270ea7257`.
+Actual 9B run 42445714304, job 128624081250, remains in progress on this exact
+source after pinned model load and production Docker setup passed. Its unchanged
+request decision step is active; no final model acceptance is claimed. No duplicate
+run was dispatched and no active run was cancelled.
+
+### Actual 187ab3d failure and source/requirement comparison recovery
+
+Actual 9B run 42445714304 failed initial step 46 with `no_progress` in
+7760.025 seconds. Requirement 1 offset 0 reads at 40/42 were separated by
+source inspection; reads 43–45 paged MainActivity at 0/3000/6000. Step 46
+requested the same unchanged requirement page a third time. No build_project
+occurred; generated native/follow-up jobs skipped. Earlier edit 27 was rejected
+as unchanged. No rejected edit was executed.
+
+Original artifact 13607162584, 149075 bytes, SHA256
+`b121bb9faccf49a47185aa614c5939024b1506ff2ef8ddce95d4c4d94e73dcf8`,
+verified and durably preserved as `dsGPT-complex-evidence-42445714304.zip`,
+`libfile_fde3_f-4ca99705523c8191a5598092ede64a2b_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Source reads now retain the latest verified observed requirement page from the
+existing bounded history when it fits. Generated overview/section previews may
+be deferred with navigation; older retained pages of unrelated files may be
+omitted to fit the exact comparison. Latest tool result and retained pages of
+its target stay intact. Omitted source remains readable. Missing/corrupt/stale
+requirements do not qualify. Runtime checks, model, original request, context,
+output reserve, loop limits and acceptance remain unchanged.
+
+Saved-history diagnostic through step 45 reconstructs hash-verified scaffold
+files, successful edits, saved section notes and cumulative overview. Baseline
+shows no retained requirement at estimated 16103 tokens including output reserve;
+candidate retains section 1 offset 0 through 1359 at 15605/16384, including the
+unchanged 4096 reserve. This is diagnostic replay, not model acceptance.
+Four regressions cover verified comparison, corrupt/stale text, omitted text and
+budget-driven unrelated-source omission while retaining latest source result.
+Public storage before publication: 99 artifacts, 146510050 bytes, none expired;
+active/queued/waiting/pending counts all zero. No deletion needed. Private archive,
+billing and cache settings remain unchanged; historical private storage unverified.
+
+Final full suite: 1218 tests plus six subtests passed in 81.80 seconds. Focused
+comparison/source/requirement suite: 62 passed. Ruff, whitespace, CI policy and
+pinned tracked-source Gitleaks passed. Manual four-file review confirmed observed
+text only, unchanged runtime enforcement, preserved evidence and narrow dispatch.
+No action schema or grammar syntax changed. Fresh actual-model acceptance required.

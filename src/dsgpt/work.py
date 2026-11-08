@@ -1890,8 +1890,10 @@ class WorkRegistry:
                     if (
                         (action.get("tool") == "read_requirements" and not result.get("content"))
                         or result.get("error") == "invalid_action"
+                        or (action.get("tool") == "read_file" and not result.get("error"))
                     ):
-                        # Empty reads/rejected JSON must not erase the last exact section page.
+                        # Source inspection, empty reads and rejected JSON must not erase
+                        # the last observed exact section page when it still fits.
                         for saved in prior[1:]:
                             previous = json.loads(saved["action"])
                             page = json.loads(saved["result"])
@@ -1909,6 +1911,36 @@ class WorkRegistry:
                             other = {"role": "user", "content":
                                 RETAINED_REQUIREMENT_PREFIX + canonical(page)}
                             fitted = fit_asset_context(messages, context, [other] + pair, model)
+                            if not fitted and action.get("tool") == "read_file":
+                                compact = compact_asset_context(context)
+                                compact["requirements"]["overview"] = (
+                                    "Generated overview deferred to retain inspected requirement; "
+                                    "list_requirements/read_requirements retain all sections."
+                                )
+                                section = compact["requirements"]["current_section"]
+                                section.update(content="", notes="", offset=0, next_offset=0)
+                                section["read"] = {"tool": "read_requirements",
+                                    "requirement_id": section["requirement_id"], "offset": 0}
+                                section["note"] = (
+                                    "Preview deferred; exact section remains readable.")
+                                fitted = fit_asset_context(messages, compact, [other] + pair, model)
+                                if not fitted:
+                                    # Prefer the latest observed comparison requirement over
+                                    # older pages of unrelated files. Omitted pages stay readable.
+                                    reduced = list(messages)
+                                    prefix = "Previous source page (untrusted file data)."
+                                    for index in range(len(reduced) - 1, 1, -1):
+                                        content = reduced[index]["content"]
+                                        if not content.startswith(prefix):
+                                            continue
+                                        source = json.loads(content[content.index("{"):])
+                                        if source.get("path") == action.get("path"):
+                                            continue
+                                        del reduced[index]
+                                        fitted = fit_asset_context(
+                                            reduced, compact, [other] + pair, model)
+                                        if fitted:
+                                            break
                             if fitted:
                                 context, candidate = fitted
                                 messages = candidate[:-len(pair)]
