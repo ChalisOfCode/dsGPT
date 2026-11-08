@@ -1,7 +1,7 @@
-Request: retain-observed-requirement-through-source-reads-2026-11-08
-Base source: 187ab3d23bbec7b916d0637dbc0d58f1efd6c331
-Prior original run 42445714304 failed after source paging displaced the latest
-observed requirement comparison. Retain verified observed requirement text when
-it fits; keep latest source feedback and leave omitted source readable.
+Request: retain-matching-source-pages-before-unrelated-2026-11-08
+Base source: 3ec270678e0dd57231ee02cf9c66e1b6345b779c
+Prior original run 42462245456 failed after an unrelated source page displaced
+an observed prefix needed with the latest continuation. Prioritize current-hash
+observed pages of that same path within the existing bounded history and budget.
 Run the unchanged original request with the exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

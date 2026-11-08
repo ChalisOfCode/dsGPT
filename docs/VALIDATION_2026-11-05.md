@@ -1865,3 +1865,56 @@ comparison/source/requirement suite: 62 passed. Ruff, whitespace, CI policy and
 pinned tracked-source Gitleaks passed. Manual four-file review confirmed observed
 text only, unchanged runtime enforcement, preserved evidence and narrow dispatch.
 No action schema or grammar syntax changed. Fresh actual-model acceptance required.
+
+### Routine platform evidence on 3ec2706 (2026-11-08 UTC)
+
+Routine CI 42462245444 passed all nine jobs on exact
+3ec270678e0dd57231ee02cf9c66e1b6345b779c. Browser report: 26 expected,
+zero skipped/unexpected/flaky. Backend report: 1224 cases, zero errors/failures/
+skips. Windows installed native UI/local reply, Credential Manager, scheduled
+restart, reinstall and data preservation passed. Android lifecycle instrumentation
+reports OK (one test). The separate qwen3:1.7b fixture is not actual 9B acceptance
+or complete item 5. Staged inference BLOCKED/production REVIEW remain; physical
+owner hardware is unverified.
+
+Five original report ZIPs were individually size/digest verified and preserved in
+`dsGPT-ci-test-evidence-3ec2706.zip`, 46060 bytes, SHA256
+`00251104aa5267bdad12fc00b38fce9f11e808f1c23a1c8aaa38250a15c5ebaf`,
+durable evidence
+`libfile_fde3_f-da718cfb93708191b0f9f403f04e7972_0e1c3d7a1ce08191b900cc9270ea7257`.
+Actual 9B run 42462245456, job 128673835688, remains in progress on this exact
+source after pinned model load and production Docker setup passed. Its unchanged
+request decision step is active; no final model acceptance is claimed. No duplicate
+run was dispatched and no active run was cancelled. These notes do not alter the
+source under acceptance; the ordered release gates remain in force.
+
+### Actual 3ec2706 failure and same-file page retention
+
+Actual 9B run 42462245456 failed initial step 25 with no_progress in
+5177.197 seconds. Step 21 edit_match_not_unique rejected invented source;
+22 read TaskLedger.kt offset 0, 23 read distinct TaskLedger.kt} offset 0,
+24 read TaskLedger.kt offset 3000, then 25 repeated its unchanged offset 0.
+No build_project occurred; generated native/follow-up jobs skipped.
+Original artifact 13612143009, 118130 bytes, SHA256
+`bbc78f34aeaf7b40c990fc6594ac59efb1ae24df81e18a7fde60a1a72f60d5bd`
+is verified and durably preserved as dsGPT-complex-evidence-42462245456.zip,
+`libfile_fde3_f-94f824914aa88191b069aa0d113b8082_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Saved-state replay through step 24 reconstructs verified scaffold, successful
+writes/edits, section notes and cumulative overview. Baseline retained the newer
+unrelated TaskLedger.kt} page at estimated 15356/16384 including output reserve,
+omitting the target prefix. Candidate prioritizes observed pages matching the
+latest source result before unrelated pages, preserving recency within each group.
+It retains TaskLedger.kt offset 0 at 15335/16384 including unchanged 4096 reserve.
+Latest continuation stays intact. Current-hash checks and runtime enforcement are
+unchanged; stale/omitted pages remain readable. This is replay, not model acceptance.
+Two regressions exercise constrained retention and stale-prefix exclusion.
+No grammar syntax, model, original request, context/output or loop limits changed.
+Public inventory: 99 artifacts, 146513826 bytes, none expired; active/queued/waiting/
+pending all zero. No deletion needed; private archive/billing/cache settings untouched.
+
+Full suite: 1220 tests plus six subtests passed in 82.92 seconds. Focused source
+retention/grammar/comparison suite: 14 passed in 1.87 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+confirmed observed source only, unchanged validation and acceptance, preserved
+prior notes and the narrow single-run trigger. Fresh model acceptance is required.

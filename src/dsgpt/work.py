@@ -1718,7 +1718,16 @@ class WorkRegistry:
                         and len(prior) >= 2
                     ):
                         seen = {(result.get("path"), result.get("offset"))}
-                        for saved in prior[1:]:
+                        # A continuation needs its own earlier pages before unrelated
+                        # source consumes the bounded prompt. Preserve recency within
+                        # each group and retain only observed current-hash pages below.
+                        source_history = sorted(
+                            prior[1:],
+                            key=lambda saved: (
+                                json.loads(saved["result"]).get("path") != result.get("path")
+                            ),
+                        )
+                        for saved in source_history:
                             previous = json.loads(saved["action"])
                             page = json.loads(saved["result"])
                             key = (page.get("path"), page.get("offset"))
