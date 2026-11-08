@@ -2097,3 +2097,62 @@ review confirmed the matching-action and current-source checks, preserved prior
 platform evidence and unchanged acceptance trigger. Before publication all
 active/queued/waiting/pending counts were zero; 100 public artifacts, 141552045
 bytes, none expired. No deletion needed. Archive/billing/cache settings untouched.
+
+### Routine platform evidence on 92187c7 (2026-11-08 UTC)
+
+Routine CI 42507901096 passed all nine jobs on exact
+92187c7ebca2c7be136785116ddeb9c61e9d7e26. Backend: 1248 cases, no failures,
+errors or skips. Browser: 26 expected, zero skipped/unexpected/flaky. Installed
+Windows native UI/local reply, Credential Manager, scheduled restart, reinstall
+and data preservation passed. Android lifecycle instrumentation: OK (one test).
+Separate qwen3:1.7b fixture evidence is not actual 9B acceptance or complete item 5.
+Staged inference BLOCKED/production REVIEW remain; owner hardware unverified.
+
+Five original report ZIPs individually size/digest verified and preserved as
+`dsGPT-ci-test-evidence-92187c7.zip`, 46276 bytes, SHA256
+`32e884bd081297777bd2ab3d4f0e6d1fa4060898efb4266b1c2bad09c454f69d`,
+durable evidence
+`libfile_fde3_f-fc37d0395100819187b53c178d5def9b_0e1c3d7a1ce08191b900cc9270ea7257`.
+Actual 9B run 42507901320, job 128814418461, remains in progress after exact-model
+load and production Docker setup passed, with original-request decisions active.
+No final model acceptance claimed. No duplicate/cancelled run or source, acceptance,
+private archive, billing or cache changes.
+
+### Actual-model failure and rejected-edit context recovery (2026-11-08 UTC)
+
+Run 42507901320 on exact 92187c7 completed with initial task no_progress at
+step 50 after 9935.173 seconds. Exact model and production Docker setup passed.
+Step 24 build_project failed Kotlin compilation. Subsequent edits did not produce
+another build. Step 45 changed a lambda type annotation, step 47 reverted it;
+reads 44 and 48 therefore observed the same source again. Step 49 proposed an
+unmatched unchanged replacement (zero matches); step 50 repeated that read and
+correctly hit the existing loop guard. Generated native and follow-up jobs skipped.
+No item 1 acceptance, deliverable correctness, or item 5 completion is claimed.
+
+Original artifact 13633424454 verified at 168971 bytes, SHA256
+`24e2bacef01bb456b0ea4a4f08c1bf9c1c05a60c982c1026dd13dbc75e2dc026`,
+preserved as `dsGPT-complex-evidence-42507901320.zip`, durable evidence
+`libfile_fde3_f-7bb2faea6c4481919ecd883040f8e39a_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The bounded rejection prompt could omit the latest observed exact source while
+retaining generated requirement overview/preview. Add a fallback that defers that
+preview when necessary to fit the source and rejection feedback together. Current
+hash and observed-page checks, latest result, source bytes and full saved requirements
+remain intact. No model/request/runtime/context/output/loop/grammar/acceptance changes.
+An initial candidate removing rejected proposal text was discarded: a replay missing
+build state and session summary did not reproduce the actual pressure.
+
+Corrected saved-history replay through 49 reconstructs verified scaffold/edits,
+review notes/overview, recorded failed build and latest session summary. Baseline
+omits the source at 16331/16384 estimated tokens including 4096 output reserve;
+candidate retains complete MainActivity.kt at 15745/16384 (before wording cleanup).
+Replay is diagnostic only. Regression test fails on baseline and passes with the
+fallback; stale observed source remains rejected. Focused feedback/source tests:
+50 passed. Before publication, active/queued/waiting/pending all zero; 89 public
+artifacts, 125295382 bytes, none expired. No deletion needed. Archive, billing and
+cache settings untouched.
+
+Final full suite: 1244 tests plus six subtests passed in 86.19 seconds. Ruff,
+whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual four-file
+review passed. Final replay remains 15745/16384 including output reserve. Original
+request and all runtime/model/acceptance limits remain unchanged.

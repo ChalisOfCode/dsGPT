@@ -1902,11 +1902,23 @@ class WorkRegistry:
                                     "role": "user",
                                     "content": RETAINED_SOURCE_PREFIX + canonical(page),
                                 }
-                                if (
-                                    ollama_input_estimate(messages + [other] + pair)
-                                    + model.output_tokens <= model.context
-                                ):
-                                    messages.append(other)
+                                fitted = fit_asset_context(messages, context, [other] + pair, model)
+                                if not fitted:
+                                    compact = compact_asset_context(context)
+                                    compact["requirements"]["overview"] = (
+                                        "Overview deferred to retain source after rejection; "
+                                        "list_requirements/read_requirements retain all sections."
+                                    )
+                                    section = compact["requirements"]["current_section"]
+                                    section.update(content="", notes="", offset=0, next_offset=0)
+                                    section["read"] = {"tool": "read_requirements",
+                                        "requirement_id": section["requirement_id"], "offset": 0}
+                                    section["note"] = "Preview deferred; edit changed no bytes."
+                                    fitted = fit_asset_context(
+                                        messages, compact, [other] + pair, model)
+                                if fitted:
+                                    context, candidate = fitted
+                                    messages = candidate[:-len(pair)]
                                 break
                     if (
                         (action.get("tool") == "read_requirements"

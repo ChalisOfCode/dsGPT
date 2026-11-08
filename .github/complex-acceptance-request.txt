@@ -1,6 +1,6 @@
-Request: recognize-no-change-edit-source-page-2026-11-08
-Base source: 83cd085c47022d2113b5e001c942108978e232e5
-Prior run 42483782694 stopped after no-change edits and repeated partial reads.
-Recognize verified displayed source pages attached to matching no-change edits.
+Request: retain-rejected-edit-source-under-context-pressure-2026-11-08
+Base source: 92187c7ebca2c7be136785116ddeb9c61e9d7e26
+Prior run 42507901320 stopped after an unmatched edit and repeated unchanged read.
+Defer generated requirement preview when needed to retain observed current source.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

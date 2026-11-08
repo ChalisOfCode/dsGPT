@@ -252,3 +252,46 @@ def test_rejected_overwrite_retains_target_not_newer_unrelated_read(tmp_path, ca
             "file_changed_read_before_overwrite") in messages[-1]["content"]
     assert store.one("SELECT content FROM work_files WHERE task_id=? AND path='a.py'", (tid,))[
         "content"] == ("changed" if case == "stale" else body)
+
+
+@pytest.mark.parametrize('stale', [False, True])
+def test_rejected_edit_retains_source_under_context_pressure(tmp_path, stale):
+    import hashlib
+
+    from dsgpt.storage import canonical, utcnow
+    from dsgpt.work import RETAINED_SOURCE_PREFIX, visible_source_read
+
+    store, work, tid, _ = setup(tmp_path, target='source')
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, 'Implement the module and verify its behavior. ' * 45)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+        db.execute('UPDATE work_specs SET brief=? WHERE task_id=?',
+                   ('Overview details. ' * 150, tid))
+    body = '# Unicode π\n' + 'value = 0\n' * 210
+    digest = hashlib.sha256(body.encode()).hexdigest()
+    commit(work, tid, action(tool='write_file', path='a.py', content=body))
+    commit(work, tid, action(tool='read_file', path='a.py'))
+    commit(work, tid, action(tool='edit_file', path='a.py', old_text='absent',
+                            new_text='replacement', expected_sha256=digest))
+    with store.transaction() as db:
+        db.execute('UPDATE work_sessions SET summary=? WHERE task_id=?',
+                   ('Inspect errors. ' * 25, tid))
+        db.execute('INSERT INTO work_executions(id,task_id,step,action,snapshot_sha256,'
+                   'status,result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)',
+                   ('build', tid, 0, '{}', 'old-snapshot', 'failed',
+                    canonical({'error': 'command_failed', 'stderr': 'Compiler error. ' * 150,
+                               'stdout': 'Build output. ' * 80}), utcnow(), utcnow()))
+        if stale:
+            db.execute("UPDATE work_files SET content='changed',sha256='changed' WHERE task_id=?",
+                       (tid,))
+    model = replace(work.models['local'], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    result = json.loads(messages[-1]['content'].removeprefix('Recorded tool result: '))
+    assert result['error'] == 'edit_match_not_unique' and result['matches'] == 0
+    retained = [m for m in messages if m['content'].startswith(RETAINED_SOURCE_PREFIX)]
+    assert bool(retained) is not stale
+    assert visible_source_read(messages, {'a.py': digest}) == (None if stale else 'a.py')
+    if not stale:
+        page = json.loads(retained[0]['content'][len(RETAINED_SOURCE_PREFIX):])
+        assert page['content'] == body and page['sha256'] == digest
