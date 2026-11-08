@@ -1,6 +1,6 @@
-Request: bounded-pinned-release-download-recovery-2026-11-08
-Base source: 854e7f4cf2061c889282420260641fc8c265a1e7
-Prior run 42470474691 stopped on HTTP504 before model execution. Retry transient
-release-download opens within a bounded three attempts and preserve every pin.
+Request: bounded-asset-response-timeout-recovery-2026-11-08
+Base source: 0c5859f811001d9814c6190395e0e39360e184a3
+Prior run 42473436414 stopped on apktool response-open timeout before model tasks.
+Retry transient asset response opens within three attempts; preserve all pins.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

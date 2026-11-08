@@ -4,6 +4,8 @@ import hashlib
 import shutil
 import sys
 import tarfile
+import time
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -60,6 +62,24 @@ INPUTS = (
 )
 
 
+def open_asset_download(url):
+    """Retry transient response-open failures, never a partial or invalid archive."""
+    for attempt in range(3):
+        try:
+            return urllib.request.urlopen(url, timeout=120)
+        except urllib.error.HTTPError as error:
+            if error.code not in {502, 503, 504} or attempt == 2:
+                raise
+            error.close()
+        except urllib.error.URLError as error:
+            if not isinstance(error.reason, TimeoutError) or attempt == 2:
+                raise
+        except TimeoutError:
+            if attempt == 2:
+                raise
+        time.sleep(2 ** attempt)
+
+
 def install(root):
     root = Path(root)
     downloads = root / "downloads"
@@ -73,7 +93,7 @@ def install(root):
             or hashlib.sha256(target.read_bytes()).hexdigest() != expected
         ):
             digest, total = hashlib.sha256(), 0
-            with urllib.request.urlopen(url, timeout=120) as response, target.open("wb") as output:
+            with open_asset_download(url) as response, target.open("wb") as output:
                 while data := response.read(1024 * 1024):
                     total += len(data)
                     if total > size:

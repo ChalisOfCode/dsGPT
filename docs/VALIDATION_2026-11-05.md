@@ -1951,3 +1951,45 @@ CI policy and pinned tracked-source Gitleaks passed. Manual six-file review kept
 all digest/size checks and acceptance arguments intact. Public inventory before
 publication: 94 artifacts, 135828053 bytes, none expired; active/queued/waiting/
 pending all zero. No deletion needed. Archive/billing/cache settings untouched.
+
+### 0c5859f production-toolchain setup failure
+
+Actual 9B run 42473436414 failed production Docker setup before application model
+execution. The pinned exact-model load and cold-load preflight passed. SDK/Gradle
+and voice inputs downloaded successfully, then apktool's response-open operation
+raised TimeoutError after the existing 120-second socket timeout. No model task,
+build_project, generated native or follow-up acceptance ran. This is setup failure,
+not evidence for or against the source-page retention fix.
+
+Original artifact 13614622341, 64631 bytes, SHA256
+`f531cd78c8dd27132b8fae3ed9b3baf8e3feb4c0452ad27d0518e0ee2b25e3ed`.
+It and five original CI report ZIPs were individually size/digest verified and
+preserved in `dsGPT-evidence-0c5859f.zip`, 110494 bytes, SHA256
+`b91b2f65d7d1046e2b01997c05e39108b195c5e8156be21c91fa37473049f6ba`,
+durable evidence
+`libfile_fde3_f-867568cb63248191800714dee2a17711_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Routine CI 42473436405 passed all nine jobs on exact
+0c5859f811001d9814c6190395e0e39360e184a3. Backend: 1228 cases, zero failures,
+errors or skips; browser: 26 expected, zero skipped/unexpected/flaky. Windows
+installed native UI/local reply, Credential Manager, scheduled restart, reinstall
+and data preservation passed; Android lifecycle instrumentation reports OK (one
+test). The separate qwen3:1.7b fixture is not actual 9B acceptance or complete
+item 5. Staged inference BLOCKED/production REVIEW remain; owner hardware unverified.
+
+Asset response opens now retry direct or wrapped TimeoutError and HTTP502/503/504
+at most three times, with 1/2-second backoff. The 120-second timeout, URLs, pinned
+sizes/digests and extraction checks remain unchanged. Other open errors, stream
+failures and integrity failures remain fatal. Regressions cover recovery,
+exhaustion, permanent errors, retries before file creation, successful verified
+installation, partial streams, size and digest rejection. Focused asset/release
+suite: 11 passed. No model/request/context/output/loop/acceptance limit changed;
+no cache writes added. Fresh actual-model acceptance is still required.
+
+Full suite: 1231 tests plus six subtests passed in 81.81 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+confirmed bounded response-open retries only, unchanged integrity enforcement,
+no private log contents in source, and the unchanged-request single-run trigger.
+Before publication: active/queued/waiting/pending all zero; 105 public artifacts,
+152035174 bytes, none expired. No deletion needed. Private archive, billing and
+cache settings remain untouched.
