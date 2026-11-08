@@ -1,6 +1,7 @@
-Request: observed-source-overview-priority-2026-11-08
-Base source: d257834ef65a180443fa2cba4582f503a8facff0
-Prior original run 42428425205 stopped at step 42 after unchanged source reads.
-Defer generated overview when needed to retain verified observed current source.
-Run the unchanged original request with the exact 9B model and all original
+Request: verified-partial-source-continuation-2026-11-08
+Base source: ebaeeb387733ffae2a8e8ca463c7a342b7c9de7e
+Prior original run 42440608986 stopped after rereading a partial source page
+around rejected edits. Retain observed target pages and exclude only verified
+already-visible partial offsets while leaving unseen source and edits available.
+Run the unchanged original request with the exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

@@ -1755,3 +1755,53 @@ CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
 confirmed the change only prioritizes displayed observed source over a generated
 overview, with two regressions, preserved evidence notes and the narrow acceptance
 request trigger. Fresh actual-model acceptance is required; item 1 remains open.
+
+### Actual ebaeeb3 failure and partial-source read recovery (2026-11-08 UTC)
+
+Actual 9B run 42440608986 failed initial step 17 with `no_progress` after
+2337.177 seconds. Step 11 wrote a 3995-character Task module. Reads 13/15 returned
+only its first 3000 characters, correctly reporting `has_more` and `next_offset`.
+Edits 14/16 invented text around the page boundary and were rejected with zero
+matches. Step 17 requested the unchanged first page a third time. No rejected
+edit executed; no compiler or generated native/follow-up job ran.
+
+Original artifact 13602721675: 107984 bytes, SHA256
+`5a09b73bc075b8f7b82aab7e89adac982fec5e8576d69d371081e38639d87765`.
+It and five routine-CI report ZIPs were individually size/digest checked and
+preserved together in `dsGPT-evidence-ebaeeb3.zip`, 152756 bytes, SHA256
+`3a30fef54f17b28be8b579c26825f263f16339495a0e2608f81a6c61fe131a81`,
+durable evidence
+`libfile_fde3_f-74f9f8bec270819193b810e73f2aaf63_0e1c3d7a1ce08191b900cc9270ea7257`.
+Routine CI 42440608984 passed all nine jobs. Browser: 26 expected, zero
+skipped/unexpected/flaky. Installed Windows UI/local reply, Credential Manager,
+restart/reinstall/data preservation passed; Android lifecycle instrumentation
+reports OK (one test). The separate qwen3:1.7b fixture is not actual 9B acceptance
+or full item 5. Staged inference BLOCKED/production REVIEW labels remain;
+owner hardware is unverified.
+
+Recovery now retains the latest observed matching target page after an unmatched
+edit rejection, within the same history/context bounds. Guided read grammar
+excludes only exact offsets of displayed partial pages whose content, hash,
+length and continuation match current saved source. Other offsets (including
+next_offset), unseen files and edits remain available. Missing, stale, corrupt,
+empty or omitted pages do not qualify. No full file is injected into the prompt;
+current source is used only to verify displayed bytes. Edit feedback explicitly
+explains page boundaries and continuation. Runtime validation is unchanged.
+
+Saved-history replay through step 16 identifies the displayed Task offset 0 at
+estimated 16364/16384 including the unchanged 4096 output reserve. This is
+replay, not fresh actual-model acceptance. Eight regressions cover byte/hash
+verification, omission, changed files, offset grammar, retained partial source,
+rejected-edit atomicity and tight budgets. Focused suites: 51 passed. The unchanged
+pinned b11963 converter/parser accepted the new schema without warnings; semantic
+driver rejects observed offsets 0/30 and accepts unseen offset 3000. No model,
+request, context/output/loop limits, generated actions or acceptance was replaced.
+Public inventory: 121 artifacts, 178996249 bytes, zero expired. Active/queued/
+waiting/pending runs all zero before publication; no deletion needed. Private
+archive and billing settings remain unchanged; historical private storage unverified.
+
+Full suite: 1214 tests plus six subtests passed in 79.69 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual five-file review
+confirmed exact displayed-byte verification and preserved runtime limits. Publish
+with an expected-head lease from ebaeeb3; fresh actual-model acceptance remains
+required and all five-item release gates remain in force.

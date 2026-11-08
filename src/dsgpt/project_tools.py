@@ -244,6 +244,7 @@ def action_schema(
     visible_requirement_page=None,
     requirement_lengths=None,
     file_revisions=None,
+    visible_read_pages=None,
 ):
     """Make tool-specific required arguments visible to the runtime's JSON grammar."""
     base = ProjectAction.model_json_schema()["properties"]
@@ -336,6 +337,23 @@ def action_schema(
             if not remaining:
                 continue
             properties["path"] = {"enum": remaining}
+        if tool == "read_file" and file_paths is not None and visible_read_pages:
+            for path in properties["path"]["enum"]:
+                low = 0
+                excluded = sorted(set(visible_read_pages.get(path, ())))
+                for stop in [*excluded, MAX_FILE_BYTES + 1]:
+                    if low < stop:
+                        choice = copy.deepcopy(properties)
+                        choice["path"] = {"const": path}
+                        choice["offset"] = {"type": "integer", "minimum": low,
+                                            "maximum": stop - 1}
+                        needed = ["tool", "summary", *required]
+                        if low:
+                            needed.append("offset")
+                        variants.append({"type": "object", "properties": choice,
+                                         "required": needed, "additionalProperties": False})
+                    low = stop + 1
+            continue
         if tool == "download_file" and download_urls:
             properties["url"] = {"enum": download_urls}
         if tool == "download_file":
@@ -558,7 +576,10 @@ class ProjectTools:
                     "error": "edit_match_not_unique",
                     "matches": count,
                     "help": (
-                        "Read the current file and provide an exact, uniquely matching old_text."
+                        "No edit was applied. Provide exact, uniquely matching old_text. "
+                        "A read_file page may end mid-expression; that is not a source error. "
+                        "Reuse displayed source; follow its next_offset for unseen text "
+                        "instead of repeating the same page or inventing its continuation."
                     ),
                 }
             if action.old_text == action.new_text:

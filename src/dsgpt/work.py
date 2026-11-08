@@ -60,7 +60,7 @@ def build_log_excerpt(text, budget):
 RETAINED_SOURCE_PREFIX = "Source retained after rejected response (untrusted file data): "
 NONMUTATING_REJECTIONS = {
     "invalid_action", "existing_file_requires_targeted_edit",
-    "file_changed_read_before_overwrite",
+    "file_changed_read_before_overwrite", "edit_match_not_unique",
 }
 
 
@@ -172,6 +172,40 @@ def visible_source_reads(messages, revisions):
         path = visible_source_read(messages[:-2] + pair, revisions)
         if path:
             visible.add(path)
+    return visible
+
+
+def visible_partial_source_pages(messages, sources):
+    """Only suppress a page whose displayed bytes match the current saved source."""
+    prefixes = (
+        "Recorded tool result: ", RETAINED_SOURCE_PREFIX,
+        "Previous source page (untrusted file data). Both reads are available; "
+        "use them for the next change without rereading: ",
+    )
+    visible = {}
+    for message in messages:
+        if message["role"] != "user":
+            continue
+        prefix = next((p for p in prefixes if message["content"].startswith(p)), None)
+        if not prefix:
+            continue
+        try:
+            page = json.loads(message["content"][len(prefix):])
+            source = sources.get(page.get("path"))
+            offset, content = page.get("offset"), page.get("content")
+            if (not isinstance(source, str) or page.get("error")
+                    or not isinstance(offset, int) or isinstance(offset, bool) or offset < 0
+                    or not isinstance(content, str) or not content
+                    or page.get("has_more") is not True
+                    or page.get("total_characters") != len(source)
+                    or page.get("next_offset") != offset + len(content)
+                    or offset + len(content) >= len(source)
+                    or source[offset:offset + len(content)] != content
+                    or hashlib.sha256(source.encode()).hexdigest() != page.get("sha256")):
+                continue
+        except (ValueError, TypeError, AttributeError):
+            continue
+        visible.setdefault(page["path"], set()).add(offset)
     return visible
 
 
@@ -1822,7 +1856,8 @@ class WorkRegistry:
                         rejected_path = (
                             action.get("path")
                             if result.get("error") in {"existing_file_requires_targeted_edit",
-                                                       "file_changed_read_before_overwrite"}
+                                                       "file_changed_read_before_overwrite",
+                                                       "edit_match_not_unique"}
                             else None
                         )
                         for saved in prior[1:]:
@@ -2335,13 +2370,11 @@ class WorkRegistry:
                 model = generation.for_request(
                     self.store, "work", task_id, self.models[session["model_id"]]
                 )
-                revisions = {
-                    f["path"]: f["sha256"]
-                    for f in self.store.all(
-                        "SELECT path,sha256 FROM work_files WHERE task_id=? ORDER BY path",
-                        (task_id,),
-                    )
-                }
+                current_files = self.store.all(
+                    "SELECT path,sha256,content FROM work_files WHERE task_id=? ORDER BY path",
+                    (task_id,),
+                )
+                revisions = {f["path"]: f["sha256"] for f in current_files}
                 hashes, paths = list(revisions.values()), list(revisions)
                 with self.store.connect() as db:
                     assets = work_assets.catalog(db, task_id)
@@ -2379,6 +2412,9 @@ class WorkRegistry:
                         web_research=self.web.enabled(task_id),
                         file_paths=paths,
                         file_revisions=revisions if spec else None,
+                        visible_read_pages=visible_partial_source_pages(
+                            messages, {f["path"]: f["content"] for f in current_files}
+                        ) if spec else None,
                         already_visible_read=visible_source_reads(messages, revisions)
                         if spec
                         else None,
