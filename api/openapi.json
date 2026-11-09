@@ -16,6 +16,18 @@
             "title": "Lifetime Seconds",
             "type": "integer"
           },
+          "profile_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Revision"
+          },
           "task_id": {
             "format": "uuid",
             "title": "Task Id",
@@ -7477,6 +7489,60 @@
           }
         },
         "summary": "Revise Task"
+      }
+    },
+    "/v1/work/tasks/{task_id}/account-grants": {
+      "get": {
+        "operationId": "list_task_account_grants_v1_work_tasks__task_id__account_grants_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Task Account Grants"
       }
     },
     "/v1/work/tasks/{task_id}/account-grants/{grant_id}/read": {

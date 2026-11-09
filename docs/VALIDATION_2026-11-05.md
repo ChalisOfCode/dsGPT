@@ -2799,3 +2799,29 @@ their Actions sizes and SHA256 digests. Private evidence bundle:
 dsGPT-ci-test-evidence-83b174b.zip, 43,125 bytes, SHA256
 5183dcd26a66a853df0a4405c23855d49cd2c490eec14abe64be35a0d241afe8.
 No guard change, artifact deletion, paid runner, or final installer release.
+
+### Delegated saved-profile account reads
+
+Schema v30 pins browser grants to one saved profile revision. An owner must
+review the current saved revision before granting a task/device access. Existing
+cookie grants, encrypted profiles and interrupted-write receipts migrate without
+rewriting them. Replacing a profile, editing the task, expiring the grant or
+revoking the device, session or grant prevents a subsequent read. An active
+read rechecks authority and aborts its disposable browser before returning.
+
+A delegated browser can fetch only the configured exact HTTPS page, once, using
+the relevant cookie from the saved profile. It rejects redirects, HTML, cookie
+rotation and known credential reflections. The guest receives no private page
+content or remote headers, and delegated reads never save the profile. Results
+are bounded plain text for the requesting device. Desktop Work only lists or
+reads grants on explicit request and clears the view on task revision change.
+Nothing is added to model context, public research, task files or logs.
+
+Local validation: 91 focused backend checks passed and two Windows-only checks
+were skipped. A real Chromium fixture restored a saved HttpOnly cookie through
+a fresh backend and exercised the paired-device API; transport and container
+were synthetic. Separate fixture cases cover in-flight revocation, scope,
+migration and refused responses. Three desktop Chromium UI fixture scenarios
+passed and the production web bundle built. Production Docker/TLS, MFA,
+Windows DPAPI and the Android presentation still need acceptance. Item 2
+remains open. No paid services, guard changes, artifact deletion or installers.

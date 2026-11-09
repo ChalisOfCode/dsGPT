@@ -103,11 +103,11 @@ start one five-minute handoff on the exact configured origin and page, and
 request a no-store PNG, send bounded input, save or discard. Handoff identifiers
 are replaced on reopen. Revocation discards the running browser; paired and
 non-loopback clients cannot use these endpoints. Browser sessions do not expose
-legacy cookie reads or Work grants. The desktop now provides a private modal
+legacy cookie reads. The desktop now provides a private modal
 screenshot/input view, cookie-free enrollment and explicit save/discard. Its native binary transport caps PNG bytes
 and dimensions and never writes frames to disk. Text clears before input dispatch;
 errors do not retry, expiry removes images and stale discard cannot close a newer
-handoff. Browser profiles do not offer incompatible legacy Work grants.
+handoff.
 
 The owner can now opt in to reviewing a form triggered by the next click or
 Enter. Only a supported top-level, same-origin form can pause for review.
@@ -118,10 +118,21 @@ not establish the outcome. A durable receipt blocks further submissions until
 the owner inspects a fresh page and confirms whether the remote change applied.
 Credential fields and cookies do not appear in receipts or review metadata.
 
-Remaining for item 2: task/device-scoped authenticated access, controlled
-production Docker/HTTPS and native Windows acceptance, including login/MFA,
-profile restart, revocation and interrupted writes. Chromium with synthetic
-transport and desktop UI fixtures establish their separate boundaries only.
+Saved browser profiles support an explicit, expiring grant for one task
+revision, paired Work device, configured page and profile revision. Replacing
+the profile invalidates previous grants. The delegated reader restores the
+profile into a disposable isolated browser and allows one signed-in GET to
+the exact approved path. Only bounded plain text is supported. Redirects,
+cookie rotation, rendered HTML and known credential reflections are rejected.
+No profile state is saved by a delegated read. Revocation and task or profile
+changes cancel the read and prevent response release. The desktop Work view
+lists grants and reads the selected page only on request; text remains in that
+view and is not attached to a task, used for research or sent to a model.
+
+Remaining for item 2: paired Android presentation and controlled production
+Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
+revocation and interrupted writes. Chromium with synthetic transport and
+desktop UI fixtures establish their separate boundaries only.
 
 ## 3. Document layout and spreadsheet formula validation — queued after 2
 

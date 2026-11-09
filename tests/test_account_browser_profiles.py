@@ -8,7 +8,7 @@ from test_account_browser_writes import make_ledger
 from test_account_sessions import FixtureProtection
 
 from dsgpt.account_browser_profiles import AccountBrowserProfiles, AccountProfileError, validate
-from dsgpt.storage import Store, uid
+from dsgpt.storage import SCHEMA_VERSION, Store, uid
 
 FILES = {
     "Default/Network/Cookies": b"cookie-sentinel",
@@ -92,12 +92,13 @@ def test_v28_migration_preserves_sessions_and_receipts(tmp_path):
     ledger.begin(uid(), origin="https://example.org")
     before = ledger.pending()
     with sqlite3.connect(ledger.store.path) as db:
+        db.execute("ALTER TABLE account_grants DROP COLUMN profile_revision")
         db.execute("DROP TABLE account_browser_profiles")
         db.execute("PRAGMA user_version=28")
     ledger.store = Store(tmp_path)
     assert ledger.pending() == before
     assert vault(ledger).restore() == (0, None)
-    assert len(list(tmp_path.glob("before-v28-to-v29-*.db"))) == 1
+    assert len(list(tmp_path.glob(f"before-v28-to-v{SCHEMA_VERSION}-*.db"))) == 1
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Native current-user Windows protection")

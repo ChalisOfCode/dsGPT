@@ -122,7 +122,7 @@ jobs:
         run: |
           export DSGPT_PROFILE_TEST_CHROMIUM="$(cd clients/desktop && node --input-type=module -e 'import { chromium } from "playwright"; console.log(chromium.executablePath())')"
           test -x "$DSGPT_PROFILE_TEST_CHROMIUM"
-          python -m pytest -q tests/test_account_browser_worker.py tests/test_account_browser_bridge.py tests/test_account_browser_lifecycle.py --junitxml=reports/private-browser.xml
+          python -m pytest -q tests/test_account_browser_worker.py tests/test_account_browser_bridge.py tests/test_account_browser_lifecycle.py tests/test_account_browser_read.py --junitxml=reports/private-browser.xml
       - name: Check diagnostic storage
         id: diagnostics
         if: always() && hashFiles('reports/browser.json') != ''

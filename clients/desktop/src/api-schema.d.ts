@@ -1450,6 +1450,23 @@ export interface paths {
         patch: operations["revise_task_v1_work_tasks__task_id__patch"];
         trace?: never;
     };
+    "/v1/work/tasks/{task_id}/account-grants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Task Account Grants */
+        get: operations["list_task_account_grants_v1_work_tasks__task_id__account_grants_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/work/tasks/{task_id}/account-grants/{grant_id}/read": {
         parameters: {
             query?: never;
@@ -1740,6 +1757,8 @@ export interface components {
              * @default 900
              */
             lifetime_seconds: number;
+            /** Profile Revision */
+            profile_revision?: number | null;
             /**
              * Task Id
              * Format: uuid
@@ -5772,6 +5791,39 @@ export interface operations {
                 "application/json": components["schemas"]["TaskRevision"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_task_account_grants_v1_work_tasks__task_id__account_grants_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

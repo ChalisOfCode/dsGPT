@@ -553,3 +553,10 @@ CREATE TABLE account_browser_profiles (
 );
 """
 REQUIRED_TABLES[29] = {"account_browser_profiles"}
+
+MIGRATIONS[30] = """
+ALTER TABLE account_grants ADD COLUMN profile_revision INTEGER
+ CHECK(profile_revision IS NULL OR profile_revision > 0);
+"""
+
+REQUIRED_TABLES[30] = set()

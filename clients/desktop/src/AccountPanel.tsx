@@ -20,6 +20,7 @@ type Grant = {
   task_revision: number;
   device_id: string;
   expires_at: number;
+  profile_revision?: number | null;
 };
 
 export function AccountPanel({ client }: { client: Client }) {
@@ -62,9 +63,7 @@ export function AccountPanel({ client }: { client: Client }) {
             "Account permissions are unavailable on this backend.",
           );
         }
-        const hasSession = result.sessions.some(
-          (s) => s.id === session && !s.browser_profile,
-        );
+        const hasSession = result.sessions.some((s) => s.id === session);
         const [ts, ds, gs] = await Promise.all([
           hasSession
             ? client.request<Task[]>("/v1/work/tasks?limit=20")
@@ -171,6 +170,7 @@ export function AccountPanel({ client }: { client: Client }) {
               client={client}
               account={selected}
               enabled={ready && available && !busy}
+              onSaved={() => setRefresh((n) => n + 1)}
             />
             <p>
               Revocation prevents future reads and discards pending responses.
@@ -184,118 +184,121 @@ export function AccountPanel({ client }: { client: Client }) {
             >
               Revoke account session
             </button>
-            {selected.browser_profile ? (
-              <p>Work access for browser profiles is not available yet.</p>
-            ) : (
-              <>
-                <h3>Grant page access</h3>
-                <label>
-                  Task
-                  <select
-                    aria-label="Account access task"
-                    value={task}
-                    onChange={(e) => {
-                      setTask(e.target.value);
-                      setReviewed(false);
-                    }}
-                  >
-                    <option value="">Choose a task</option>
-                    {tasks.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.title} — revision {t.revision}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {chosen && (
-                  <details>
-                    <summary>Review task requirements</summary>
-                    <pre>{chosen.requirements}</pre>
-                  </details>
-                )}
-                <label>
-                  Device
-                  <select
-                    aria-label="Account access device"
-                    value={device}
-                    onChange={(e) => {
-                      setDevice(e.target.value);
-                      setReviewed(false);
-                    }}
-                  >
-                    <option value="">Choose a device</option>
-                    {devices.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} — {d.id}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+            {Boolean(selected.browser_profile) && (
+              <p>
+                {selected.profile_revision
+                  ? `Saved profile revision ${selected.profile_revision}. A grant reads only the approved plain-text page. Saving a new profile invalidates the grant.`
+                  : "Save a signed-in browser profile before granting access."}
+              </p>
+            )}
+            <h3>Grant page access</h3>
+            <label>
+              Task
+              <select
+                aria-label="Account access task"
+                value={task}
+                onChange={(e) => {
+                  setTask(e.target.value);
+                  setReviewed(false);
+                }}
+              >
+                <option value="">Choose a task</option>
+                {tasks.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title} — revision {t.revision}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {chosen && (
+              <details>
+                <summary>Review task requirements</summary>
+                <pre>{chosen.requirements}</pre>
+              </details>
+            )}
+            <label>
+              Device
+              <select
+                aria-label="Account access device"
+                value={device}
+                onChange={(e) => {
+                  setDevice(e.target.value);
+                  setReviewed(false);
+                }}
+              >
+                <option value="">Choose a device</option>
+                {devices.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} — {d.id}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p>
+              Shows up to 20 recent tasks and 200 devices. Access lasts 15
+              minutes, applies only to this task revision and page, and permits
+              no website writes. Changing the task invalidates access.
+            </p>
+            <label>
+              <input
+                type="checkbox"
+                checked={reviewed}
+                onChange={(e) => setReviewed(e.target.checked)}
+              />
+              I approve this device reading this account page for the selected
+              task.
+            </label>
+            <button
+              disabled={
+                !available ||
+                (Boolean(selected.browser_profile) &&
+                  !selected.profile_revision) ||
+                !chosen ||
+                !devices.some((d) => d.id === device) ||
+                !reviewed
+              }
+              onClick={() =>
+                void mutate(`/v1/account-sessions/${session}/grants`, "POST", {
+                  task_id: task,
+                  task_revision: chosen!.revision,
+                  device_id: device,
+                  lifetime_seconds: 900,
+                  ...(selected.browser_profile && {
+                    profile_revision: selected.profile_revision,
+                  }),
+                })
+              }
+            >
+              Grant 15-minute read access
+            </button>
+            <h3>Existing grants</h3>
+            {grants.length === 0 && <p>No grants for this account.</p>}
+            {grants.map((g) => (
+              <article key={g.id} aria-label={`Account grant ${g.id}`}>
                 <p>
-                  Shows up to 20 recent tasks and 200 devices. Access lasts 15
-                  minutes, applies only to this task revision and page, and
-                  permits no website writes. Changing the task invalidates
-                  access.
+                  Task{" "}
+                  {tasks.find((t) => t.id === g.task_id)?.title || g.task_id},
+                  revision {g.task_revision}; device{" "}
+                  {devices.find((d) => d.id === g.device_id)?.name ||
+                    g.device_id}
+                  . Expires {new Date(g.expires_at * 1000).toLocaleString()}.
+                  {g.profile_revision
+                    ? ` Saved profile revision ${g.profile_revision}.`
+                    : ""}{" "}
+                  Authorization is rechecked on every read.
                 </p>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={reviewed}
-                    onChange={(e) => setReviewed(e.target.checked)}
-                  />
-                  I approve this device reading this account page for the
-                  selected task.
-                </label>
                 <button
-                  disabled={
-                    !available ||
-                    !chosen ||
-                    !devices.some((d) => d.id === device) ||
-                    !reviewed
-                  }
                   onClick={() =>
                     void mutate(
-                      `/v1/account-sessions/${session}/grants`,
-                      "POST",
-                      {
-                        task_id: task,
-                        task_revision: chosen!.revision,
-                        device_id: device,
-                        lifetime_seconds: 900,
-                      },
+                      `/v1/account-sessions/${session}/grants/${g.id}`,
+                      "DELETE",
                     )
                   }
                 >
-                  Grant 15-minute read access
+                  Revoke read grant
                 </button>
-                <h3>Existing grants</h3>
-                {grants.length === 0 && <p>No grants for this account.</p>}
-                {grants.map((g) => (
-                  <article key={g.id} aria-label={`Account grant ${g.id}`}>
-                    <p>
-                      Task{" "}
-                      {tasks.find((t) => t.id === g.task_id)?.title ||
-                        g.task_id}
-                      , revision {g.task_revision}; device{" "}
-                      {devices.find((d) => d.id === g.device_id)?.name ||
-                        g.device_id}
-                      . Expires {new Date(g.expires_at * 1000).toLocaleString()}
-                      . Authorization is rechecked on every read.
-                    </p>
-                    <button
-                      onClick={() =>
-                        void mutate(
-                          `/v1/account-sessions/${session}/grants/${g.id}`,
-                          "DELETE",
-                        )
-                      }
-                    >
-                      Revoke read grant
-                    </button>
-                  </article>
-                ))}
-              </>
-            )}
+              </article>
+            ))}
           </>
         )}
       </fieldset>

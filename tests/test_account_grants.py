@@ -89,6 +89,12 @@ def test_owner_grants_exact_task_device_and_read_scope_persistently(tmp_path):
             remote.post(read.replace(task, other_task), headers=bearer(device)).status_code == 403
         )
         assert seen == []
+        listing = f"/v1/work/tasks/{task}/account-grants"
+        assert remote.get(listing, headers=bearer(other)).json() == []
+        assert remote.get(listing.replace(task, other_task), headers=bearer(device)).json() == []
+        metadata, = remote.get(listing, headers=bearer(device)).json()
+        assert metadata["id"] == grant and metadata["task_revision"] == 1
+        assert "sealed_cookie" not in metadata and SECRET not in str(metadata)
         assert remote.post(read, headers=bearer(device)).json()["text"] == "Private fixture"
         assert seen == ["https://example.org/account"]
         local = TestClient(restarted, client=("127.0.0.1", 12346))

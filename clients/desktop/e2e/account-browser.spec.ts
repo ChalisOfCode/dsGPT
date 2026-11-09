@@ -48,6 +48,7 @@ test("private owner view sends input once, clears it on failure and explicitly s
       created = true;
       return route.fulfill({ status: 201, json: account });
     }
+    if (path.endsWith("/grants")) return route.fulfill({ json: [] });
     if (path.endsWith("/frame")) {
       if (holdFrame) {
         heldFrame = true;
@@ -169,7 +170,7 @@ test("private owner view sends input once, clears it on failure and explicitly s
   await panel.getByRole("button", { name: "Create browser account" }).click();
   await panel.getByLabel("Account session", { exact: true }).selectOption(sid);
   await expect(
-    panel.getByText("Work access for browser profiles is not available yet."),
+    panel.getByText("Save a signed-in browser profile before granting access."),
   ).toBeVisible();
   await panel.getByRole("button", { name: "Open private browser" }).click();
   const dialog = page.getByRole("dialog", { name: "Private account browser" });

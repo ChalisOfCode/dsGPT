@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from .account_browser_bridge import AccountBrowserBridge
 from .account_browser_network import AccountBrowserNetwork
 from .account_browser_profiles import AccountBrowserProfiles
+from .account_browser_read import AccountBrowserReadNetwork
 from .account_browser_writes import AccountBrowserWriteError, AccountBrowserWrites
 from .storage import uid
 
@@ -85,6 +86,7 @@ class AccountBrowserHandoffs:
         self.sessions, self.builds, self.bridge_factory = sessions, builds, bridge_factory
         self.active = None
         self.expiration = None
+        self.delegated = None
 
     def _owner(self, owner):
         if not self.sessions.store.one(
@@ -96,8 +98,8 @@ class AccountBrowserHandoffs:
         self._owner(owner)
         self.sessions._available()
         row = self.sessions._session(owner, session)
-        if self.active:
-            raise HTTPException(409, "Close or discard the existing account browser first")
+        if self.active or self.delegated:
+            raise HTTPException(409, "An account browser is already in use")
         sandbox = self.builds.sandbox
         if sandbox is None or not self.builds.ready:
             raise HTTPException(503, "Set up the isolated browser tools first")
@@ -138,6 +140,67 @@ class AccountBrowserHandoffs:
             if not handoff.stopping:
                 await self._discard(handoff)
             raise HTTPException(409, "Account browser could not start") from None
+
+    async def read_grant(self, authorize):
+        row = authorize()
+        session, owner = row["id"], row["owner"]
+        revision = row["profile_revision"]
+        if type(revision) is not int or revision < 1:
+            raise HTTPException(403, "Account grant is not bound to a saved profile")
+        if self.active or self.delegated:
+            raise HTTPException(409, "An account browser is already in use")
+        sandbox = self.builds.sandbox
+        if sandbox is None or not self.builds.ready:
+            raise HTTPException(503, "Set up the isolated browser tools first")
+
+        def live():
+            current = authorize()
+            if (current["id"], current["owner"], current["profile_revision"]) != (
+                session, owner, revision,
+            ):
+                raise HTTPException(403, "Account grant is no longer current")
+
+        vault = AccountBrowserProfiles(
+            self.sessions.store, session, owner, self.sessions.protection,
+        )
+        network = AccountBrowserReadNetwork(
+            row["origin"], row["read_path"], authorize=live,
+            transport_factory=self.sessions.transport_factory,
+        )
+        bridge = self.bridge_factory(sandbox, vault, network, live)
+
+        async def capture():
+            try:
+                await bridge.start()
+                if bridge.revision != revision:
+                    raise HTTPException(403, "Account grant is no longer current")
+                await bridge.navigate(network.target)
+            finally:
+                # A delegated read never saves browser state.
+                await bridge.abort()
+
+        self.delegated = asyncio.current_task()
+        operation = asyncio.create_task(capture())
+        try:
+            async with asyncio.timeout(45):
+                while not operation.done():
+                    await asyncio.wait({operation}, timeout=0.2)
+                    live()
+                await operation
+            live()
+            if network.result is None:
+                raise HTTPException(409, "Sign in and check the approved plain-text page")
+            return {"session_id": session, **network.result}
+        except HTTPException:
+            raise
+        except Exception:
+            live()
+            raise HTTPException(502, "Approved account page could not be read") from None
+        finally:
+            if not operation.done():
+                operation.cancel()
+            await asyncio.gather(operation, return_exceptions=True)
+            self.delegated = None
 
     def _schedule_expiration(self, handoff):
         self.expiration = asyncio.create_task(self._expire(handoff))
@@ -325,6 +388,9 @@ class AccountBrowserHandoffs:
             await self._discard(handoff)
 
     async def stop(self):
+        if self.delegated:
+            self.delegated.cancel()
+            await asyncio.gather(self.delegated, return_exceptions=True)
         if self.expiration:
             await self.expiration
         if self.active:

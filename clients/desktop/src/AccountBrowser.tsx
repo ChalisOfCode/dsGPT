@@ -8,6 +8,7 @@ export type BrowserAccount = {
   origin: string;
   read_path: string;
   browser_profile?: number;
+  profile_revision?: number | null;
 };
 
 export function BrowserSetup({
@@ -98,10 +99,12 @@ export function AccountBrowser({
   client,
   account,
   enabled,
+  onSaved,
 }: {
   client: Client;
   account: BrowserAccount;
   enabled: boolean;
+  onSaved: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -307,6 +310,7 @@ export function AccountBrowser({
         setText("");
         dialog.current?.close();
         trigger.current?.focus();
+        if (operation === "save") onSaved();
       }
     } catch {
       if (!context.disposed && !context.ended) {

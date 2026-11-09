@@ -24,6 +24,17 @@ COOKIE = re.compile(
 PATH = re.compile(r"/[A-Za-z0-9_./~-]{0,1000}")
 
 
+CURRENT_GRANT = (
+    "FROM account_grants g JOIN account_sessions s ON s.id=g.session_id "
+    "JOIN work_tasks t ON t.id=g.task_id JOIN devices d ON d.id=s.owner "
+    "LEFT JOIN account_browser_profiles p ON p.session_id=s.id "
+    "WHERE g.task_id=? AND g.device_id=? AND g.expires_at>? "
+    "AND g.task_revision=t.revision AND d.role='owner' AND d.revoked=0 "
+    "AND ((length(s.sealed_cookie)>0 AND g.profile_revision IS NULL) "
+    "OR (length(s.sealed_cookie)=0 AND g.profile_revision=p.revision)) "
+)
+
+
 class BrowserSessionCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -43,6 +54,7 @@ class AccountGrantCreate(BaseModel):
     task_revision: int = Field(ge=1)
     device_id: UUID
     lifetime_seconds: int = Field(ge=60, le=3600, default=900)
+    profile_revision: int | None = Field(default=None, strict=True, ge=1)
 
 
 class WindowsSessionProtection:
@@ -147,9 +159,10 @@ class AccountSessions:
         return {
             "available": self.protection.available,
             "sessions": self.store.all(
-                "SELECT id,label,origin,read_path,created_at,"
-                "(length(sealed_cookie)=0) AS browser_profile FROM account_sessions "
-                "WHERE owner=? ORDER BY created_at,id",
+                "SELECT s.id,s.label,s.origin,s.read_path,s.created_at,"
+                "(length(s.sealed_cookie)=0) AS browser_profile,p.revision AS profile_revision "
+                "FROM account_sessions s LEFT JOIN account_browser_profiles p "
+                "ON p.session_id=s.id WHERE s.owner=? ORDER BY s.created_at,s.id",
                 (owner,),
             ),
         }
@@ -213,7 +226,7 @@ class AccountSessions:
     def grants(self, owner, identifier):
         self._session(owner, identifier)
         return self.store.all(
-            "SELECT id,task_id,task_revision,device_id,created_at,expires_at "
+            "SELECT id,task_id,task_revision,device_id,created_at,expires_at,profile_revision "
             "FROM account_grants WHERE session_id=? ORDER BY created_at,id",
             (identifier,),
         )
@@ -234,8 +247,18 @@ class AccountSessions:
     async def grant(self, owner, identifier, body):
         self._available()
         async with self.lock:
-            if not self._session(owner, identifier)["sealed_cookie"]:
-                raise HTTPException(409, "Browser sessions do not support Work grants yet")
+            session = self._session(owner, identifier)
+            profile_revision = None
+            if not session["sealed_cookie"]:
+                profile = self.store.one(
+                    "SELECT revision FROM account_browser_profiles WHERE session_id=?",
+                    (identifier,)
+                )
+                if not profile or profile["revision"] != body.profile_revision:
+                    raise HTTPException(409, "Review the current saved browser profile first")
+                profile_revision = profile["revision"]
+            elif body.profile_revision is not None:
+                raise HTTPException(409, "This account uses a protected cookie, not a profile")
             self._work_device(str(body.device_id))
             task = self.store.one(
                 "SELECT revision FROM work_tasks WHERE id=?", (str(body.task_id),)
@@ -250,6 +273,7 @@ class AccountSessions:
                 "device_id": str(body.device_id),
                 "created_at": utcnow(),
                 "expires_at": now + body.lifetime_seconds,
+                "profile_revision": profile_revision,
             }
             with self.store.transaction() as db:
                 db.execute("DELETE FROM account_grants WHERE expires_at<=?", (now,))
@@ -262,8 +286,8 @@ class AccountSessions:
                     raise HTTPException(409, "Revoke an existing account grant first")
                 db.execute(
                     "INSERT INTO account_grants "
-                    "(session_id,id,task_id,task_revision,device_id,created_at,expires_at) "
-                    "VALUES(?,?,?,?,?,?,?)",
+                    "(session_id,id,task_id,task_revision,device_id,created_at,expires_at,"
+                    "profile_revision) VALUES(?,?,?,?,?,?,?,?)",
                     (identifier, *grant.values()),
                 )
             return grant
@@ -278,23 +302,35 @@ class AccountSessions:
             if not deleted:
                 raise HTTPException(404, "Account grant not found")
 
+    def task_grants(self, device_id, task_id):
+        self._work_device(device_id)
+        return self.store.all(
+            "SELECT g.id,g.task_revision,g.profile_revision,g.expires_at,"
+            "s.label,s.origin,s.read_path " + CURRENT_GRANT
+            + "ORDER BY g.expires_at DESC,g.id LIMIT 64",
+            (task_id, device_id, time.time()),
+        )
+
     def _grant_session(self, device_id, task_id, grant_id):
         self._work_device(device_id)
         row = self.store.one(
-            "SELECT s.* FROM account_grants g JOIN account_sessions s ON s.id=g.session_id "
-            "JOIN work_tasks t ON t.id=g.task_id JOIN devices d ON d.id=s.owner "
-            "WHERE g.id=? AND g.task_id=? AND g.device_id=? AND g.expires_at>? "
-            "AND g.task_revision=t.revision AND d.revoked=0",
-            (grant_id, task_id, device_id, time.time()),
+            "SELECT s.*,g.profile_revision " + CURRENT_GRANT + "AND g.id=?",
+            (task_id, device_id, time.time(), grant_id),
         )
         if not row:
             raise HTTPException(403, "Account grant is absent, expired or no longer current")
         return row
 
-    async def read_grant(self, device_id, task_id, grant_id):
+    async def read_grant(self, device_id, task_id, grant_id, *, browser_reader=None):
         def authorize():
             return self._grant_session(device_id, task_id, grant_id)
 
+        row = authorize()
+        if row["profile_revision"] is not None:
+            self._available()
+            if browser_reader is None:
+                raise HTTPException(503, "Isolated account reader is unavailable")
+            return await browser_reader(authorize)
         return await self._read(authorize)
 
     async def read(self, owner, identifier):

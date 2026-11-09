@@ -579,11 +579,18 @@ def create_app(settings: Settings, inference=None, managed=None):
         await account_sessions.revoke_grant(current["id"], str(session_id), str(grant_id))
         return Response(status_code=204)
 
+    @app.get("/v1/work/tasks/{task_id}/account-grants")
+    async def list_task_account_grants(task_id: UUID, current=Depends(work_device)):
+        return account_sessions.task_grants(current["id"], str(task_id))
+
     @app.post("/v1/work/tasks/{task_id}/account-grants/{grant_id}/read")
     async def read_granted_account(
         task_id: UUID, grant_id: UUID, current=Depends(work_device)
     ):
-        return await account_sessions.read_grant(current["id"], str(task_id), str(grant_id))
+        return await account_sessions.read_grant(
+            current["id"], str(task_id), str(grant_id),
+            browser_reader=account_browsers.read_grant,
+        )
 
     @app.get("/health")
     async def health():

@@ -10,6 +10,7 @@ import { DocumentPicker } from "./Documents";
 import { WorkUploads } from "./WorkUploads";
 import { WorkBuilds } from "./WorkBuilds";
 import { WorkSources } from "./WorkSources";
+import { WorkAccountReads } from "./WorkAccountReads";
 
 interface Task {
   web_mode?: string;
@@ -647,6 +648,14 @@ export function WorkPanel({
                       `${task.public_research.error_code}. Pause and retry failed sources after correcting the search service.`}
                   </p>
                 )}
+              {active && (
+                <WorkAccountReads
+                  key={task.id + ":" + task.revision}
+                  client={client}
+                  task={task.id}
+                  revision={task.revision}
+                />
+              )}
               <div className="work-actions">
                 {(actions[task.status] || []).map((a) => (
                   <button
