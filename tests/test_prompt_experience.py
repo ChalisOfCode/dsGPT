@@ -189,6 +189,7 @@ def test_v21_profile_upgrade_keeps_messages_and_makes_a_backup(tmp_path):
             ("keep-chat", "Keep my chat", utcnow(), utcnow()),
         )
         for table in (
+            "account_sessions",
             "device_presence",
             "work_uploads",
             "work_web_calls",
@@ -206,7 +207,7 @@ def test_v21_profile_upgrade_keeps_messages_and_makes_a_backup(tmp_path):
     )
     assert upgraded.one("PRAGMA user_version")["user_version"] == SCHEMA_VERSION
     assert upgraded.all("SELECT * FROM generation_options") == []
-    backups = list(tmp_path.glob("before-v21-to-v25-*.db"))
+    backups = list(tmp_path.glob(f"before-v21-to-v{SCHEMA_VERSION}-*.db"))
     assert len(backups) == 1
     with sqlite3.connect(backups[0]) as db:
         assert db.execute("PRAGMA user_version").fetchone()[0] == 21

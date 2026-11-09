@@ -13,7 +13,7 @@ from dsgpt import network_diagnostics
 from dsgpt.cli import load_settings
 from dsgpt.diagnostic_logs import redact
 from dsgpt.inference import InferenceError, LocalInference
-from dsgpt.storage import Store, canonical, uid, utcnow
+from dsgpt.storage import SCHEMA_VERSION, Store, canonical, uid, utcnow
 
 
 @pytest.mark.parametrize("streamed", [True, False])
@@ -207,6 +207,7 @@ def test_v20_upgrade_preserves_data_and_backups_before_creating_journal(tmp_path
     store = Store(tmp_path)
     with store.transaction() as db:
         for table in (
+            "account_sessions",
             "device_presence",
             "work_uploads",
             "work_web_calls",
@@ -219,7 +220,7 @@ def test_v20_upgrade_preserves_data_and_backups_before_creating_journal(tmp_path
         db.execute("DROP TABLE diagnostic_snapshots")
         db.execute("PRAGMA user_version=20")
     upgraded = Store(tmp_path)
-    assert upgraded.one("PRAGMA user_version")["user_version"] == 25
+    assert upgraded.one("PRAGMA user_version")["user_version"] == SCHEMA_VERSION
     (backup,) = tmp_path.glob("before-v20-*.db")
     with sqlite3.connect(backup) as db:
         assert db.execute("PRAGMA user_version").fetchone()[0] == 20

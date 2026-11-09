@@ -2433,3 +2433,13 @@ SHA256 dc7e623ca0f17e68a5505c57117445ca3c6c28e60587f7c083b3ffddebaa468a.
 The retry schema binds each editable path to its observed source hash, and
 validation rejects a mismatched pair without rewriting any response. The
 360-second cap and exact model, compilation, signing and native gates remain.
+
+The corrected bounded run 42637730273 passed the real 9B model edits, both
+independent Docker builds, exact-binary native launches on disposable Windows
+and Android, and evidence join. Inference totaled 106.684 seconds. The four
+original artifacts were individually hash-verified and preserved together:
+dsGPT-bounded-acceptance-42637730273.zip, 19365845 bytes, SHA256
+7e4690bb632b7b79270ff1d30451c1f2db668851d6e3552a05e3635d837d4f0a.
+The artifact scope is bounded smoke, not production installer acceptance.
+The ten-minute watcher 42638471588 observed success; the completion alert
+42639362081 posted issue 1. Item 1 passed; item 2 began.

@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import ipaddress
 import json
 import sqlite3
 import time
@@ -15,6 +16,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
+from .account_sessions import AccountSessionCreate, AccountSessions
 from .attachments import EXTENSIONS, MAX_FILE_BYTES, MAX_FILES, MAX_MESSAGE_BYTES
 from .builds import WorkBuilds
 from .catalog import CATALOG
@@ -417,6 +419,39 @@ def create_app(settings: Settings, inference=None, managed=None):
     app.state.search_configuration = search_configuration
     history = History(store)
     app.state.history = history
+
+    account_sessions = AccountSessions(store)
+    app.state.account_sessions = account_sessions
+
+    async def local_account_owner(request: Request, current=Depends(owner)):
+        try:
+            local = request.client is not None and ipaddress.ip_address(
+                request.client.host
+            ).is_loopback
+        except ValueError:
+            local = False
+        if not local:
+            raise HTTPException(403, "Account access requires the local desktop owner")
+        return current
+
+    @app.get("/v1/account-sessions")
+    async def list_account_sessions(current=Depends(local_account_owner)):
+        return account_sessions.list(current["id"])
+
+    @app.post("/v1/account-sessions", status_code=201)
+    async def create_account_session(
+        body: AccountSessionCreate, current=Depends(local_account_owner)
+    ):
+        return await account_sessions.create(current["id"], body)
+
+    @app.post("/v1/account-sessions/{session_id}/read")
+    async def read_account_session(session_id: UUID, current=Depends(local_account_owner)):
+        return await account_sessions.read(current["id"], str(session_id))
+
+    @app.delete("/v1/account-sessions/{session_id}", status_code=204)
+    async def revoke_account_session(session_id: UUID, current=Depends(local_account_owner)):
+        await account_sessions.revoke(current["id"], str(session_id))
+        return Response(status_code=204)
 
     @app.get("/health")
     async def health():

@@ -4,7 +4,7 @@ The owner requested these five items in order, with no next upgraded ZIP deliver
 until all five are complete. Latest delivered release: 0.9.2. This is an active
 engineering checkpoint, not a release or a claim of universal model reliability.
 
-## 1. Media evidence and bounded APK/EXE smoke — in progress
+## 1. Media evidence and bounded APK/EXE smoke — passed
 
 The owner reduced release testing on 2026-11-09. The multi-hour original
 Task Ledger scenario remains historical evidence and is no longer a release
@@ -25,12 +25,30 @@ gate. Do not dispatch another long run.
   production update continuity or arbitrary app reliability. The separate
   production upgrade and reconnect checks remain item 5.
 
-## 2. Signed-in website and account workflows — queued after 1
+The bounded acceptance passed on commit `0a995a8` in run `42637730273`.
+Both revisions were independently built and launched on Windows and Android.
+Actual model inference totaled 106.684 seconds. This is smoke-test evidence,
+not the final dsGPT installers or physical-device validation.
+
+## 2. Signed-in website and account workflows — in progress
 
 Implement explicit session setup, scoped permissions and durable account access
 without exposing credentials to the model. Validate read and allowed interaction
 flows, session persistence, revocation and observable failures. Account access,
 CAPTCHA/MFA and external writes require the owner's applicable authorization.
+
+The first backend slice is separate from public research and the model. A
+local desktop owner can provision, list, read, and revoke an explicitly
+scoped session. One opaque session cookie is encrypted under Windows DPAPI
+and bound to the owner, session, origin and exact read path. The broker
+sends only a bounded GET to that path over public HTTPS, never follows
+redirects, and returns plain text only to the owner. No cookie, page
+content or headers are retained in Work, diagnostics or model context.
+Local revocation does not sign the user out of the remote website.
+
+Remaining for item 2: owner-facing browser login/MFA handoff, task/device
+grants, user-approved writes with interrupted-write recovery, and controlled
+browser acceptance. The first slice is not a complete signed-in workflow.
 
 ## 3. Document layout and spreadsheet formula validation — queued after 2
 

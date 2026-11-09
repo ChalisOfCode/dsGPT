@@ -1,6 +1,43 @@
 {
   "components": {
     "schemas": {
+      "AccountSessionCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "origin": {
+            "maxLength": 512,
+            "title": "Origin",
+            "type": "string"
+          },
+          "read_path": {
+            "maxLength": 1001,
+            "title": "Read Path",
+            "type": "string"
+          },
+          "session_cookie": {
+            "format": "password",
+            "maxLength": 1617,
+            "minLength": 3,
+            "title": "Session Cookie",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "label",
+          "origin",
+          "read_path",
+          "session_cookie"
+        ],
+        "title": "AccountSessionCreate",
+        "type": "object"
+      },
       "ChatAttachmentInput": {
         "additionalProperties": false,
         "properties": {
@@ -1481,7 +1518,7 @@
   },
   "info": {
     "title": "dsGPT API",
-    "version": "0.9.0"
+    "version": "0.9.2"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1499,6 +1536,205 @@
           }
         },
         "summary": "Health"
+      }
+    },
+    "/v1/account-sessions": {
+      "get": {
+        "operationId": "list_account_sessions_v1_account_sessions_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Account Sessions"
+      },
+      "post": {
+        "operationId": "create_account_session_v1_account_sessions_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountSessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Account Session"
+      }
+    },
+    "/v1/account-sessions/{session_id}": {
+      "delete": {
+        "operationId": "revoke_account_session_v1_account_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Account Session"
+      }
+    },
+    "/v1/account-sessions/{session_id}/read": {
+      "post": {
+        "operationId": "read_account_session_v1_account_sessions__session_id__read_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Account Session"
       }
     },
     "/v1/attachments/search": {

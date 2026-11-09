@@ -16,7 +16,7 @@ from dsgpt.inference import LocalInference, ollama_input_estimate
 from dsgpt.project_tools import ProjectAction, ProjectTools
 from dsgpt.sandbox import SandboxError
 from dsgpt.scheduler import InferenceScheduler
-from dsgpt.storage import Store, canonical, utcnow
+from dsgpt.storage import SCHEMA_VERSION, Store, canonical, utcnow
 from dsgpt.work import WorkRegistry
 from dsgpt.work_specs import WorkSpecs, infer_target, sections
 
@@ -228,6 +228,7 @@ def test_real_v22_upgrade_keeps_profile_data_and_backup(tmp_path):
     store, _, task, _ = setup(tmp_path)
     with store.transaction() as db:
         for table in (
+            "account_sessions",
             "device_presence",
             "work_uploads",
             "work_web_calls",
@@ -251,7 +252,7 @@ def test_real_v22_upgrade_keeps_profile_data_and_backup(tmp_path):
         migrated.one("SELECT requirements FROM work_tasks")["requirements"] == task["requirements"]
     )
     assert not migrated.all("PRAGMA foreign_key_check")
-    assert len(list(tmp_path.glob("before-v22-to-v25-*.db"))) == 1
+    assert len(list(tmp_path.glob(f"before-v22-to-v{SCHEMA_VERSION}-*.db"))) == 1
 
 
 def artifact(path, content):

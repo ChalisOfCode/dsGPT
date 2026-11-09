@@ -513,3 +513,12 @@ CREATE TABLE device_presence (
 );
 """
 REQUIRED_TABLES[25] = {"work_uploads", "device_presence"}
+
+MIGRATIONS[26] = """
+CREATE TABLE account_sessions (
+ id TEXT PRIMARY KEY, owner TEXT NOT NULL REFERENCES devices(id),
+ label TEXT NOT NULL, origin TEXT NOT NULL, read_path TEXT NOT NULL,
+ created_at TEXT NOT NULL, sealed_cookie BLOB NOT NULL
+);
+"""
+REQUIRED_TABLES[26] = {"account_sessions"}
