@@ -1,0 +1,134 @@
+name: Acceptance completion alert
+on:
+  push:
+    branches: [monitor/acceptance-42637730273]
+    paths: [.github/workflows/acceptance-alert.yml]
+permissions:
+  actions: read
+concurrency:
+  group: alert-acceptance-42637730273
+  cancel-in-progress: false
+jobs:
+  result:
+    name: Wait for the existing monitor
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      conclusion: ${{ steps.result.outputs.conclusion }}
+      elapsed_minutes: ${{ steps.result.outputs.elapsed_minutes }}
+    steps:
+      - id: result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -u - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+          from datetime import datetime
+
+          assert os.environ["GITHUB_REPOSITORY"] == "ChalisOfCode/dsGPT"
+          base = "https://api.github.com/repos/ChalisOfCode/dsGPT/actions/runs/"
+          headers = {
+              "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "dsGPT-acceptance-alert",
+          }
+          def get(run_id):
+              request = urllib.request.Request(base + str(run_id), headers=headers)
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  return json.load(response)
+
+          deadline = time.monotonic() + 85 * 60
+          while time.monotonic() < deadline:
+              try:
+                  watcher = get(42638471588)
+                  if watcher.get("head_sha") != "f28daee0855bfb3803c6a4efacce7f0188f05b14":
+                      raise SystemExit("Unexpected monitor commit")
+                  if watcher["status"] == "completed":
+                      run = get(42637730273)
+                      if run.get("head_sha") != "0a995a8d0d6be3bd1a1d2e97f41507913be0f39e":
+                          raise SystemExit("Unexpected acceptance commit")
+                      if run["status"] == "completed":
+                          result = run.get("conclusion")
+                          if result not in {"success", "failure", "cancelled", "timed_out",
+                                            "neutral", "skipped", "stale", "action_required",
+                                            "startup_failure"}:
+                              raise SystemExit("Unexpected acceptance conclusion")
+                          start = datetime.fromisoformat(run["run_started_at"])
+                          end = datetime.fromisoformat(run["updated_at"])
+                          minutes = max(0, round((end - start).total_seconds() / 60))
+                          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+                              out.write(f"conclusion={result}\nelapsed_minutes={minutes}\n")
+                          print(f"Acceptance completed: {result}")
+                          break
+              except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+                  print(f"Temporary status lookup failure: {type(exc).__name__}", flush=True)
+              time.sleep(30)
+          else:
+              raise SystemExit("No final acceptance result available before the alert timeout")
+          PY
+
+  notify:
+    name: Notify the repository owner once
+    needs: result
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          CONCLUSION: ${{ needs.result.outputs.conclusion }}
+          ELAPSED_MINUTES: ${{ needs.result.outputs.elapsed_minutes }}
+        run: |
+          python3 -u - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          assert os.environ["GITHUB_REPOSITORY"] == "ChalisOfCode/dsGPT"
+          base = "https://api.github.com/repos/ChalisOfCode/dsGPT"
+          result = os.environ["CONCLUSION"]
+          minutes = int(os.environ["ELAPSED_MINUTES"])
+          title = "dsGPT acceptance finished — run 42637730273"
+          next_step = (
+              "The checks passed. Item 2 can start."
+              if result == "success"
+              else "The checks did not pass. Item 1 needs follow-up before item 2."
+          )
+          body = (
+              f"@ChalisOfCode the bounded Windows/Android acceptance run finished: **{result}**.\n\n"
+              f"Approximate workflow time: {minutes} minutes, including setup and builds. "
+              "The model inference budget was six minutes total. The monitor checked every "
+              "ten minutes while the run was active.\n\n"
+              f"{next_step}\n\n"
+              "[Acceptance result](https://github.com/ChalisOfCode/dsGPT/actions/runs/42637730273) · "
+              "[Monitor log](https://github.com/ChalisOfCode/dsGPT/actions/runs/42638471588)"
+          )
+          headers = {
+              "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+              "Accept": "application/vnd.github+json",
+              "Content-Type": "application/json",
+              "User-Agent": "dsGPT-acceptance-alert",
+          }
+          def api(path, data=None):
+              request = urllib.request.Request(
+                  base + path, headers=headers,
+                  data=json.dumps(data).encode() if data is not None else None,
+              )
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  return json.load(response)
+
+          # A job rerun should not send another mention for the same acceptance run.
+          existing = api("/issues?state=all&per_page=100")
+          if any(issue["title"] == title and "pull_request" not in issue for issue in existing):
+              print("Alert already posted for this acceptance run")
+          else:
+              issue = api("/issues", {"title": title, "body": body})
+              print("Completion alert posted: " + issue["html_url"])
+          PY
