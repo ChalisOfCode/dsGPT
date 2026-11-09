@@ -1,11 +1,14 @@
-"""Owner-only signed-in reads. Never use this broker for model or public browsing."""
+"""Explicitly granted signed-in reads, isolated from model and public browsing."""
 
 import asyncio
 import ctypes
 import hashlib
+import json
 import os
 import re
+import time
 from ctypes import wintypes
+from uuid import UUID
 
 import httpx
 from fastapi import HTTPException
@@ -28,6 +31,15 @@ class AccountSessionCreate(BaseModel):
     origin: str = Field(max_length=512)
     read_path: str = Field(max_length=1001)
     session_cookie: SecretStr = Field(min_length=3, max_length=1617)
+
+
+class AccountGrantCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    task_id: UUID
+    task_revision: int = Field(ge=1)
+    device_id: UUID
+    lifetime_seconds: int = Field(ge=60, le=3600, default=900)
 
 
 class WindowsSessionProtection:
@@ -122,6 +134,7 @@ class AccountSessions:
         self.protection = protection if protection is not None else WindowsSessionProtection()
         self.transport_factory = transport_factory or PublicHTTPS
         self.lock = asyncio.Lock()
+        self.read_lock = asyncio.Lock()
 
     def _available(self):
         if not self.protection.available:
@@ -181,14 +194,105 @@ class AccountSessions:
         if not count:
             raise HTTPException(404, "Account session not found")
 
-    async def read(self, owner, identifier):
+    def grants(self, owner, identifier):
+        self._session(owner, identifier)
+        return self.store.all(
+            "SELECT id,task_id,task_revision,device_id,created_at,expires_at "
+            "FROM account_grants WHERE session_id=? ORDER BY created_at,id",
+            (identifier,),
+        )
+
+    def _session(self, owner, identifier):
+        row = self.store.one(
+            "SELECT * FROM account_sessions WHERE id=? AND owner=?", (identifier, owner)
+        )
+        if not row:
+            raise HTTPException(404, "Account session not found")
+        return row
+
+    def _work_device(self, identifier):
+        row = self.store.one("SELECT * FROM devices WHERE id=? AND revoked=0", (identifier,))
+        if not row or "work" not in json.loads(row["scopes"]):
+            raise HTTPException(403, "Account grant requires an active Work device")
+
+    async def grant(self, owner, identifier, body):
         self._available()
         async with self.lock:
-            row = self.store.one(
-                "SELECT * FROM account_sessions WHERE id=? AND owner=?", (identifier, owner)
+            self._session(owner, identifier)
+            self._work_device(str(body.device_id))
+            task = self.store.one(
+                "SELECT revision FROM work_tasks WHERE id=?", (str(body.task_id),)
             )
-            if not row:
-                raise HTTPException(404, "Account session not found")
+            if not task or task["revision"] != body.task_revision:
+                raise HTTPException(409, "Review the current task before granting account access")
+            now = time.time()
+            grant = {
+                "id": uid(),
+                "task_id": str(body.task_id),
+                "task_revision": body.task_revision,
+                "device_id": str(body.device_id),
+                "created_at": utcnow(),
+                "expires_at": now + body.lifetime_seconds,
+            }
+            with self.store.transaction() as db:
+                db.execute("DELETE FROM account_grants WHERE expires_at<=?", (now,))
+                if (
+                    db.execute(
+                        "SELECT count(*) FROM account_grants WHERE session_id=?", (identifier,)
+                    ).fetchone()[0]
+                    >= 64
+                ):
+                    raise HTTPException(409, "Revoke an existing account grant first")
+                db.execute(
+                    "INSERT INTO account_grants "
+                    "(session_id,id,task_id,task_revision,device_id,created_at,expires_at) "
+                    "VALUES(?,?,?,?,?,?,?)",
+                    (identifier, *grant.values()),
+                )
+            return grant
+
+    async def revoke_grant(self, owner, identifier, grant_id):
+        async with self.lock:
+            self._session(owner, identifier)
+            with self.store.transaction() as db:
+                deleted = db.execute(
+                    "DELETE FROM account_grants WHERE id=? AND session_id=?", (grant_id, identifier)
+                ).rowcount
+            if not deleted:
+                raise HTTPException(404, "Account grant not found")
+
+    def _grant_session(self, device_id, task_id, grant_id):
+        self._work_device(device_id)
+        row = self.store.one(
+            "SELECT s.* FROM account_grants g JOIN account_sessions s ON s.id=g.session_id "
+            "JOIN work_tasks t ON t.id=g.task_id JOIN devices d ON d.id=s.owner "
+            "WHERE g.id=? AND g.task_id=? AND g.device_id=? AND g.expires_at>? "
+            "AND g.task_revision=t.revision AND d.revoked=0",
+            (grant_id, task_id, device_id, time.time()),
+        )
+        if not row:
+            raise HTTPException(403, "Account grant is absent, expired or no longer current")
+        return row
+
+    async def read_grant(self, device_id, task_id, grant_id):
+        def authorize():
+            return self._grant_session(device_id, task_id, grant_id)
+
+        return await self._read(authorize)
+
+    async def read(self, owner, identifier):
+        def authorize():
+            self._work_device(owner)
+            return self._session(owner, identifier)
+
+        return await self._read(authorize)
+
+    async def _read(self, authorize):
+        self._available()
+        if self.read_lock.locked():
+            raise HTTPException(409, "An account read is already in progress")
+        async with self.read_lock:
+            row = authorize()
             url = session_origin(row["origin"]) + session_path(row["read_path"])
             try:
                 cookie = self.protection.open(row["sealed_cookie"], binding(row)).decode("ascii")
@@ -198,6 +302,7 @@ class AccountSessions:
                 raise HTTPException(409, "Reconnect the protected account session") from None
 
             def validate(target):
+                authorize()
                 if str(target) != url:
                     raise DownloadError("account_destination_mismatch")
                 public_url(str(target))
@@ -238,7 +343,10 @@ class AccountSessions:
                             raw = " ".join(page.parts)
             except (httpx.HTTPError, DownloadError, ResearchError, TimeoutError, OSError):
                 raise HTTPException(502, "Approved account page could not be read") from None
-            # Only the authenticated owner sees the returned text. No Work/model,
-            # diagnostic or disk persistence of the page or its headers.
+            # Revocation is never held behind network I/O. Check again before
+            # releasing any text, including after device revocation or task edits.
+            authorize()
+            # Only the explicitly authorized caller sees text; no automatic
+            # Work/model, diagnostic or disk persistence of the page or headers.
             raw = raw.replace(cookie, "[redacted]").replace(cookie.split("=", 1)[1], "[redacted]")
-            return {"session_id": identifier, "text": raw[:12000], "truncated": len(raw) > 12000}
+            return {"session_id": row["id"], "text": raw[:12000], "truncated": len(raw) > 12000}

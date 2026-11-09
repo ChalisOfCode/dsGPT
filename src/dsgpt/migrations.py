@@ -522,3 +522,14 @@ CREATE TABLE account_sessions (
 );
 """
 REQUIRED_TABLES[26] = {"account_sessions"}
+
+MIGRATIONS[27] = """
+CREATE TABLE account_grants (
+ id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES account_sessions(id) ON DELETE CASCADE,
+ task_id TEXT NOT NULL REFERENCES work_tasks(id) ON DELETE CASCADE,
+ task_revision INTEGER NOT NULL, device_id TEXT NOT NULL REFERENCES devices(id),
+ created_at TEXT NOT NULL, expires_at REAL NOT NULL
+);
+CREATE INDEX account_grants_session ON account_grants(session_id);
+"""
+REQUIRED_TABLES[27] = {"account_grants"}

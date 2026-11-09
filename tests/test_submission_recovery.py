@@ -121,6 +121,7 @@ def test_version19_upgrade_verifies_legacy_hash_before_adding_receipt(
     # Exact v19 layout, with real accepted messages/documents/work input from the API.
     with sqlite3.connect(upgraded / "dsgpt.db") as db:
         for table in (
+            "account_grants",
             "account_sessions",
             "device_presence",
             "work_uploads",

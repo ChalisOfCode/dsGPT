@@ -42,13 +42,22 @@ local desktop owner can provision, list, read, and revoke an explicitly
 scoped session. One opaque session cookie is encrypted under Windows DPAPI
 and bound to the owner, session, origin and exact read path. The broker
 sends only a bounded GET to that path over public HTTPS, never follows
-redirects, and returns plain text only to the owner. No cookie, page
+redirects, and returns plain text to an explicitly authorized caller. No cookie, page
 content or headers are retained in Work, diagnostics or model context.
 Local revocation does not sign the user out of the remote website.
 
-Remaining for item 2: owner-facing browser login/MFA handoff, task/device
-grants, user-approved writes with interrupted-write recovery, and controlled
-browser acceptance. The first slice is not a complete signed-in workflow.
+The local owner can now issue and revoke read grants bound to an exact task
+revision and active device. Grants expire after at most one hour and survive
+backend restart. Every read checks current authorization before the request
+and before releasing text. Revocation no longer waits for network I/O; an
+in-flight response is discarded after revocation, expiry or task modification.
+Already-sent network requests cannot be undone. Account reads are serialized
+and overlapping requests are rejected, with the existing 12-second network cap.
+These are explicit API permissions, not automatic model access or write approval.
+
+Remaining for item 2: owner-facing browser login/MFA handoff and permission UI,
+user-approved writes with interrupted-write recovery, task tool integration and
+controlled browser acceptance. The backend slices are not a complete signed-in workflow.
 
 ## 3. Document layout and spreadsheet formula validation — queued after 2
 

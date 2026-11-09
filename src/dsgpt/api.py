@@ -16,7 +16,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
-from .account_sessions import AccountSessionCreate, AccountSessions
+from .account_sessions import AccountGrantCreate, AccountSessionCreate, AccountSessions
 from .attachments import EXTENSIONS, MAX_FILE_BYTES, MAX_FILES, MAX_MESSAGE_BYTES
 from .builds import WorkBuilds
 from .catalog import CATALOG
@@ -452,6 +452,29 @@ def create_app(settings: Settings, inference=None, managed=None):
     async def revoke_account_session(session_id: UUID, current=Depends(local_account_owner)):
         await account_sessions.revoke(current["id"], str(session_id))
         return Response(status_code=204)
+
+    @app.get("/v1/account-sessions/{session_id}/grants")
+    async def list_account_grants(session_id: UUID, current=Depends(local_account_owner)):
+        return account_sessions.grants(current["id"], str(session_id))
+
+    @app.post("/v1/account-sessions/{session_id}/grants", status_code=201)
+    async def create_account_grant(
+        session_id: UUID, body: AccountGrantCreate, current=Depends(local_account_owner)
+    ):
+        return await account_sessions.grant(current["id"], str(session_id), body)
+
+    @app.delete("/v1/account-sessions/{session_id}/grants/{grant_id}", status_code=204)
+    async def revoke_account_grant(
+        session_id: UUID, grant_id: UUID, current=Depends(local_account_owner)
+    ):
+        await account_sessions.revoke_grant(current["id"], str(session_id), str(grant_id))
+        return Response(status_code=204)
+
+    @app.post("/v1/work/tasks/{task_id}/account-grants/{grant_id}/read")
+    async def read_granted_account(
+        task_id: UUID, grant_id: UUID, current=Depends(work_device)
+    ):
+        return await account_sessions.read_grant(current["id"], str(task_id), str(grant_id))
 
     @app.get("/health")
     async def health():

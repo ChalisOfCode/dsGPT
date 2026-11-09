@@ -2443,3 +2443,41 @@ dsGPT-bounded-acceptance-42637730273.zip, 19365845 bytes, SHA256
 The artifact scope is bounded smoke, not production installer acceptance.
 The ten-minute watcher 42638471588 observed success; the completion alert
 42639362081 posted issue 1. Item 1 passed; item 2 began.
+
+## Item 2: task/device read grants
+
+The next backend slice binds an owner-issued account grant to one task revision,
+one active Work device and the session's exact HTTPS read destination. The
+default lifetime is 15 minutes, with a one-hour maximum and 64 grants per session.
+General Work authorization does not grant account access. There are no external
+write operations or model account tools in this slice.
+
+Revoking a session or grant does not wait for an outstanding network read.
+Authorization is checked before network dispatch and again before releasing text.
+Session/grant/device revocation, task revision changes and expiry discard an
+in-flight result. Revocation cannot retract an already-sent request or previously
+returned content. Overlapping reads are rejected; the 12-second network bound
+and bounded response size remain unchanged.
+
+Focused account, migration, API recovery and adjacent regressions: 92 passed,
+one Windows-only DPAPI test skipped on Linux, in 9.95 seconds. Tests use a fake
+transport/protector except the explicitly marked native protection check; they
+do not establish real-browser sign-in or item 2 completion. The schema-26 upgrade
+test preserves existing protected session bytes. Desktop type generation/build,
+Ruff, whitespace and static CI policy passed. Browser login/MFA handoff, permission
+UI, approved writes/recovery and controlled real-browser acceptance remain.
+
+Prior slice `60c6ef5`: routine CI 42644299735 passed all nine jobs. Backend XML
+contains 1261 cases including subtests, no failures/errors and one native-only
+skip. Windows XML contains 142 cases, no failures/errors and one POSIX-only
+skip; the native DPAPI encryption/binding check passed. Browser: 26 expected,
+zero unexpected/flaky/skipped. Android: 24 unit cases and lifecycle instrumentation
+OK (1 test). Installed Windows native UI/local reply, Credential Manager,
+scheduled restart and reinstall data preservation passed. The separate 1.7B
+installer fixture is not item 1 model acceptance or complete item 5 evidence;
+staged inference remains BLOCKED and production release remains REVIEW.
+Five original report ZIPs were individually size/digest verified and preserved
+as dsGPT-ci-test-evidence-60c6ef5.zip, 46297 bytes, SHA256
+726430011ae7555945fbca8f464eb0147884ba26aac387bd18636c6f4a3df5b7.
+Pinned tracked-source secret scanning and manual change review passed for the
+grant slice. No private archive, account, signing, billing or cache settings changed.

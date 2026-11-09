@@ -207,6 +207,7 @@ def test_v20_upgrade_preserves_data_and_backups_before_creating_journal(tmp_path
     store = Store(tmp_path)
     with store.transaction() as db:
         for table in (
+            "account_grants",
             "account_sessions",
             "device_presence",
             "work_uploads",
