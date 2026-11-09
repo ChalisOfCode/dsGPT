@@ -78,10 +78,14 @@ and storage tests do not count as browser acceptance.
 A separate internal profile vault now protects bounded regular-file snapshots with
 current-user Windows DPAPI. Session/owner/origin/revision binding and atomic
 revision checks prevent cross-session restoration and stale overwrites. Migration
-29 stores only the encrypted envelope; no plaintext profile is written to host
-files. This is not yet connected to Chromium. The controller must stop Chromium
-cleanly before collecting its dedicated profile, and restore only inside its
-networkless container. Synthetic storage tests are not browser restoration proof.
+29 stores only the encrypted envelope. A dedicated guest worker now restores
+selected profile files into a fresh directory and captures them only after
+Chromium acknowledges shutdown and exits cleanly. The worker uses private OS
+pipes for Chromium control and requires a loopback-only Linux namespace in
+production. A real Chromium fixture restored a persistent HttpOnly cookie,
+local storage and IndexedDB across a vault round trip. That fixture uses an
+injected test protector and intercepted synthetic responses; production Docker
+and the HTTPS broker, owner controls and task access are still unconnected.
 
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and

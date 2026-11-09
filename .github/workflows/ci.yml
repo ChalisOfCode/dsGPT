@@ -118,6 +118,11 @@ jobs:
           export DSGPT_TEST_PYTHON="$(command -v python)"
           export DSGPT_E2E_REPORT="$GITHUB_WORKSPACE/reports/browser.json"
           npm run test:e2e
+      - name: Verify real Chromium profile restart with synthetic state
+        run: |
+          export DSGPT_PROFILE_TEST_CHROMIUM="$(cd clients/desktop && node --input-type=module -e 'import { chromium } from "playwright"; console.log(chromium.executablePath())')"
+          test -x "$DSGPT_PROFILE_TEST_CHROMIUM"
+          python -m pytest -q tests/test_account_browser_worker.py
       - name: Check diagnostic storage
         id: diagnostics
         if: always() && hashFiles('reports/browser.json') != ''

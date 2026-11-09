@@ -2575,3 +2575,35 @@ preserved as dsGPT-ci-test-evidence-653ac68.zip, 48104 bytes, SHA256
 Routine installer fixtures remain separate from item 1 and complete item 5;
 owner hardware remains unverified. No final production release is authorized
 by these results. No model rerun or full local suite was performed.
+
+
+## Item 2: private Chromium profile lifecycle
+
+The guest driver launches Chromium against a fresh dedicated profile with
+private debugging pipes, no debugging listener and host resolution denied.
+It requires a loopback-only Linux namespace and an unprivileged guest UID;
+the enclosing Docker sandbox still needs to be connected by the controller.
+Restore accepts selected profile files only. Capture rejects links and special
+files, stays within the vault's byte and entry limits, and runs only after a
+successful browser close and process exit. Abrupt exit cannot save a snapshot.
+
+A real Chromium 141.0.7390.37 fixture exercised two separate browser processes.
+An intercepted synthetic HTTPS response set an HttpOnly persistent cookie;
+the page wrote local storage and IndexedDB. All three survived a clean snapshot,
+vault round trip and restoration into a fresh directory. The cookie remained
+invisible to page JavaScript. The fixture uses an injected test protector and
+explicitly bypasses only the guest namespace check; it does not exercise
+production Docker, DNS/TLS brokerage, login/MFA or owner/task authorization.
+No personal accounts or external sites were contacted. Existing browser CI
+now repeats the focused restart test using its already installed Chromium.
+
+Prior ad28f20 routine CI 42682748060 passed all nine jobs. Windows ran the native
+DPAPI profile test, including separate-process restore and ciphertext tampering.
+Windows XML: 171 cases, two expected platform skips, no failures/errors. Backend:
+1305 cases, two Windows-only skips, no failures/errors. Browser: 27 expected,
+zero unexpected/flaky/skipped; Android: 24 unit cases and lifecycle job passed.
+Five original report ZIPs were individually size/digest verified and preserved
+as dsGPT-ci-test-evidence-ad28f20.zip, 48443 bytes, SHA256
+ba53f0cef9b13c028cd7299f5ef7c68706103fff7fda290a6110241d55c1f8c8.
+Routine installer fixtures do not establish complete item 5 or owner hardware
+behavior. Item 2 remains in progress; no final installers were released.
