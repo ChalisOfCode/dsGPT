@@ -2246,3 +2246,55 @@ static CI policy and pinned tracked-source Gitleaks passed. Manual four-file rev
 found no private material or changed acceptance. Before retry: active, queued,
 waiting and pending all zero; 89 artifacts, 125350642 bytes, none expired. No
 artifact deletion needed. Archive settings, billing and signing remain untouched.
+
+## 554fd34 routine platform evidence
+
+CI 42556287281 passed all nine jobs on exact 554fd34d47359fcb657bb2ed4a08fbe24a67c22e.
+Backend: 1252 cases including subtests, no failures/errors/skips. Browser: 26
+expected, zero flaky/skipped/unexpected. Windows regressions: 139 cases, zero
+failures/errors and one POSIX fixture skip; separate Windows CLI acceptance passed.
+Android unit tests: 24 cases, zero failures/errors/skips. Android lifecycle
+instrumentation: OK (one test). Disposable Windows installed native UI, local
+reply, Credential Manager, scheduled restart, reinstall/data preservation and
+uninstall preserving data all passed. Separate qwen3:1.7b fixture is not actual9B
+acceptance or complete item 5. Staged inference remains BLOCKED, production REVIEW;
+physical owner hardware remains unverified.
+Five report ZIPs individually verified against GitHub size/digest/source commit
+were preserved in dsGPT-ci-test-evidence-554fd34.zip, 46701 bytes, SHA256
+28c6277afdce7dce4a43190b9054512e083937399a4d00fd6a2458a899189539.
+Actual9B run 42556287336, job 128962614111, remains in progress after exact model
+and production Docker setup succeeded. No final actual-model artifact yet; no
+additional acceptance run dispatched or cancelled.
+
+## Exact-model run 42556287336 and source-comparison retention (2026-11-09)
+
+- Source `554fd34d47359fcb657bb2ed4a08fbe24a67c22e`: pinned exact-model load
+  and production Docker setup passed. The unchanged original request failed at
+  initial step 53 with `no_progress` after 12497.692 seconds. Step 36 failed Kotlin
+  compilation; there was no subsequent build. Steps 40/45 changed then reverted
+  source; 49 proposed identical old/new text and was rejected. Reads 46/51/53
+  repeated the unchanged Task source, separated by other reads. Native and
+  follow-up acceptance were skipped; generated code remains incorrect/unverified.
+- Original artifact 13655022715: 167018 bytes, SHA-256
+  `d31966091ec742e6dac56f6dd58dafd65918e32a59f1e68cc61b257d6fb4e7e1`.
+  The original ZIP was verified and durably preserved without publishing raw logs.
+- Hash-checked diagnostic replay through step 52 reconstructs scaffold, edits,
+  reviewed requirements, latest summary and the failed execution snapshot. Baseline
+  retains the compiler diagnostic but drops previously inspected Task source while
+  adding an older requirement page during a different source-file read. Candidate
+  prevents that eviction during source inspection; requirement-comparison reads
+  retain their existing behavior. Exact Task source and latest MainActivity source
+  fit at 16025/16384 estimated tokens including the 4096 output reserve, versus
+  baseline 16177 with Task omitted. This replay is diagnostic, not actual acceptance.
+- The focused regression fails on baseline and passes candidate. Existing hash
+  validation, original request, grammar, model, runtime/context/output/loop limits
+  and acceptance checks are unchanged. No generated action or source is substituted.
+- Updated the prior eviction-expectation regression to require exact comparison
+  source retention across context sizes. This changes prompt-selection behavior,
+  not generated-application acceptance; corruption/staleness checks remain intact.
+- Before retry: active, queued, waiting and pending runs all zero; 89 public
+  artifacts total 125371039 bytes, none expired. No deletion was needed. Archive,
+  billing, signing and cache settings were untouched.
+- Final validation: 1247 tests plus six subtests passed in 88.11 seconds; focused
+  diagnostic/source/invalid-feedback checks passed. Ruff, whitespace, static CI
+  policy, pinned tracked-source Gitleaks and manual five-file privacy review passed.

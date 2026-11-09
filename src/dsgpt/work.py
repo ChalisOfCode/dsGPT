@@ -1977,7 +1977,7 @@ class WorkRegistry:
                                 section["note"] = (
                                     "Preview deferred; exact section remains readable.")
                                 fitted = fit_asset_context(messages, compact, [other] + pair, model)
-                                if not fitted:
+                                if not fitted and action.get("tool") == "read_requirements":
                                     # Prefer the latest observed comparison requirement over
                                     # older pages of unrelated files. Omitted pages stay readable.
                                     reduced = list(messages)

@@ -99,3 +99,37 @@ async def test_successful_current_execution_does_not_receive_failure_recovery(tm
     state = json.loads(prompt(store, work, tid)[1]["content"])["build_state"]
     assert state["completion_ready"]
     assert "recovery" not in state["latest"]
+
+
+def test_source_comparison_is_not_evicted_for_an_older_requirement(tmp_path):
+    from dsgpt.work import visible_source_reads
+
+    store, work, tid, _ = setup(tmp_path, target="apps")
+    original = "Implement the requested behavior and test it. " * 30
+    with store.transaction() as db:
+        db.execute("DELETE FROM work_inputs WHERE task_id=?", (tid,))
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    body = "value = 0\n" * 240
+    commit(work, tid, action(tool="write_file", path="model.py", content=body))
+    commit(work, tid, action(tool="write_file", path="view.py", content="# display\n" * 100))
+    with store.transaction() as db:
+        db.execute(
+            "INSERT INTO work_executions(id,task_id,step,action,snapshot_sha256,status,"
+            "result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)",
+            ("failed-build", tid, 0, '{}', "old", "failed",
+             canonical({"error": "command_failed", "stderr": "Compiler diagnostic. " * 100,
+                        "stdout": "Build progress. " * 100}), utcnow(), utcnow()),
+        )
+    commit(work, tid, action(tool="read_requirements", requirement_id=1))
+    commit(work, tid, action(tool="read_file", path="model.py"))
+    commit(work, tid, action(tool="read_file", path="view.py"))
+    hashes = {f['path']: f['sha256'] for f in store.all(
+        'SELECT path,sha256 FROM work_files WHERE task_id=?', (tid,))}
+    model = replace(work.models['local'], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    assert 'model.py' in visible_source_reads(messages, hashes)
+    assert 'view.py' in visible_source_reads(messages, hashes)
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+    assert json.loads(messages[1]['content'])['build_state']['latest']['status'] == 'failed'

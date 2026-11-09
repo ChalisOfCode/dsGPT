@@ -1,6 +1,6 @@
-Request: explain-invalid-project-path-2026-11-09
-Base source: e4b68603e17678497d745f7e622474f27bd919cd
-Prior run 42545441112 rejected malformed paths and stopped rereading requirement EOF.
-Guide the model to copy observed paths and distinguish requirement text from source.
+Request: preserve-source-comparison-2026-11-09
+Base source: 554fd34d47359fcb657bb2ed4a08fbe24a67c22e
+Prior run 42556287336 stopped after unchanged reads following Kotlin build failure.
+Retain inspected source during another file read instead of evicting it for older requirements.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

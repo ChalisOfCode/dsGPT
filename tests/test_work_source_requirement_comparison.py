@@ -46,7 +46,7 @@ def test_source_read_retains_only_verified_requirement(tmp_path, damage):
     assert visible_requirement_read(tight, original) is None
 
 
-def test_comparison_can_displace_unrelated_source_but_not_latest_result(tmp_path):
+def test_source_inspection_keeps_comparison_source_when_adding_requirement(tmp_path):
     store, work, tid, _ = setup(tmp_path)
     original = 'Implement persistent tasks with Unicode titles. ' * 20
     with store.transaction() as db:
@@ -60,7 +60,7 @@ def test_comparison_can_displace_unrelated_source_but_not_latest_result(tmp_path
     commit(work, tid, ProjectAction(tool='read_file', path='other.py', summary='Inspect'))
     commit(work, tid, ProjectAction(tool='read_requirements', requirement_id=1, summary='Compare'))
     commit(work, tid, ProjectAction(tool='read_file', path='current.py', summary='Inspect'))
-    observed_eviction = False
+    observed_comparison = False
     for size in range(7000, 15001, 100):
         model = replace(work.models['local'], context=size, output_tokens=512)
         messages = prompt(store, work, tid, model)
@@ -71,10 +71,12 @@ def test_comparison_can_displace_unrelated_source_but_not_latest_result(tmp_path
         assert ollama_input_estimate(messages) + model.output_tokens <= model.context
         sources = [x['content'] for x in messages
                    if x['content'].startswith('Previous source page')]
-        if not sources:
-            observed_eviction = True
-            break
-    assert observed_eviction
+        assert sources
+        page = json.loads(sources[0][sources[0].index('{'):])
+        assert page['path'] == 'other.py'
+        assert page['content'] == '# other.py\n' + 'x = 1\n' * 80
+        observed_comparison = True
+    assert observed_comparison
 
 
 @pytest.mark.parametrize('corrupt', [False, True])
