@@ -115,10 +115,13 @@ class Android:
             raise RuntimeError("Could not reset fixture data on the selected emulator")
         self.current_artifact = artifact
 
-    def launch(self):
+    def launch(self, smoke_label=None):
         result = self.command("shell", "am", "start", "-W", "-n", self.package + "/.MainActivity")
         if "Error" in result or "Exception" in result:
             raise RuntimeError("Activity launch failed: " + result[-1500:])
+        if smoke_label is not None:
+            wait_for(lambda: smoke_label in self.labels(), smoke_label)
+            return
         wait_for(
             lambda: expected_counts(0, 0) in self.labels() or self.has_counts(),
             "Task Ledger screen",
@@ -271,7 +274,7 @@ class Windows:
             raise RuntimeError("Close the prior application before choosing an update")
         self.current_artifact = Path(artifact).resolve()
 
-    def launch(self):
+    def launch(self, smoke_label=None):
         if self.current_artifact is None:
             raise RuntimeError("No Windows executable supplied")
         self.log = (self.directory / "windows-process.log").open("ab")
@@ -298,7 +301,7 @@ class Windows:
                 self.user.GetClassNameW(handle, name, len(name))
                 if (
                     process_id.value == self.process.pid
-                    and name.value == APP_CLASS
+                    and name.value == (APP_CLASS if smoke_label is None else "dsGPTGeneratedWindow")
                     and self.user.IsWindowVisible(handle)
                 ):
                     matches.append(handle)
@@ -308,6 +311,9 @@ class Windows:
             return matches[0] if len(matches) == 1 else None
 
         self.window = wait_for(find_window, "the launched process's Task Ledger window")
+        if smoke_label is not None:
+            wait_for(lambda: self.text(self.window) == smoke_label, smoke_label)
+            return
         for name in ("Title", "Notes", "Priority", "Search", "filter", "rows", "counts"):
             self.control(name)
 

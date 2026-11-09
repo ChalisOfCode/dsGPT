@@ -5,6 +5,7 @@ import base64
 import copy
 import hashlib
 import json
+import re
 
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -55,6 +56,34 @@ def build_log_excerpt(text, budget):
         + marker
         + raw[-tail:].decode("utf-8", errors="ignore")
     )
+
+
+def diagnostic_source_pages(history, sources, diagnostic):
+    """Prioritize already observed current pages containing compiler locations."""
+    locations = {}
+    for path, source in sources.items():
+        lines = source["content"].splitlines(keepends=True)
+        starts, offset = [], 0
+        for line in lines:
+            starts.append(offset)
+            offset += len(line)
+        pattern = r"(?<![\w./])(?:file:///work/|/work/)?" + re.escape(path) + r":([0-9]+):"
+        locations[path] = [starts[int(m[1]) - 1] for m in re.finditer(pattern, diagnostic)
+                           if 0 < int(m[1]) <= len(starts)]
+    preferred = set()
+    for saved in history:
+        action, page = json.loads(saved["action"]), json.loads(saved["result"])
+        path, offset, content = page.get("path"), page.get("offset"), page.get("content")
+        source = sources.get(path)
+        if (action.get("tool") != "read_file" or action.get("path") != path
+                or page.get("error") or not source or not isinstance(offset, int)
+                or offset < 0 or not isinstance(content, str)
+                or page.get("sha256") != source["sha256"]
+                or source["content"][offset:offset + len(content)] != content):
+            continue
+        if any(offset <= position < offset + len(content) for position in locations[path]):
+            preferred.add((path, offset))
+    return preferred
 
 
 RETAINED_SOURCE_PREFIX = "Source retained after rejected response (untrusted file data): "
@@ -1749,13 +1778,26 @@ class WorkRegistry:
                         and len(prior) >= 2
                     ):
                         seen = {(result.get("path"), result.get("offset"))}
-                        # A continuation needs its own earlier pages before unrelated
-                        # source consumes the bounded prompt. Preserve recency within
-                        # each group and retain only observed current-hash pages below.
+                        diagnostic_pages = set()
+                        if (latest and latest["status"] == "failed"
+                                and latest["snapshot_sha256"] == digest):
+                            failed = context["build_state"]["latest"]
+                            sources = {f["path"]: f for f in self.store.all(
+                                "SELECT path,sha256,content FROM work_files WHERE task_id=?",
+                                (row["id"],),
+                            )}
+                            diagnostic_pages = diagnostic_source_pages(
+                                prior[1:], sources, failed["stderr"] + "\n" + failed["stdout"]
+                            )
+                        # Prefer observed error locations on the failed current snapshot,
+                        # then the continuation's own earlier pages, then unrelated source.
+                        # Preserve recency within each group and current hashes below.
                         source_history = sorted(
                             prior[1:],
                             key=lambda saved: (
-                                json.loads(saved["result"]).get("path") != result.get("path")
+                                (json.loads(saved["result"]).get("path"),
+                                 json.loads(saved["result"]).get("offset")) not in diagnostic_pages,
+                                json.loads(saved["result"]).get("path") != result.get("path"),
                             ),
                         )
                         for saved in source_history:

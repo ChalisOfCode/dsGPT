@@ -133,3 +133,79 @@ def test_source_comparison_is_not_evicted_for_an_older_requirement(tmp_path):
     assert 'view.py' in visible_source_reads(messages, hashes)
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
     assert json.loads(messages[1]['content'])['build_state']['latest']['status'] == 'failed'
+
+
+def test_failed_build_keeps_observed_error_page_ahead_of_recent_suffixes(tmp_path):
+    store, work, tid, _ = setup(tmp_path, target="apps")
+    original = "Implement and test the complete application. " * 40
+    body = "// source line with Unicode αβ\n" * 260
+    with store.transaction() as db:
+        db.execute("DELETE FROM work_inputs WHERE task_id=?", (tid,))
+        db.execute("UPDATE work_tasks SET requirements=? WHERE id=?", (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, action(tool="write_file", path="src/model.kt", content=body))
+    files = store.all("SELECT path,sha256 FROM work_files WHERE task_id=?", (tid,))
+    result = {"error": "command_failed", "stderr":
+              "e: file:///work/src/model.kt:31:20 Invalid receiver\n" + "details\n" * 200}
+    with store.transaction() as db:
+        db.execute(
+            "INSERT INTO work_executions(id,task_id,step,action,snapshot_sha256,status,"
+            "result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)",
+            ("failure", tid, 2, '{"tool":"build_project"}', snapshot_hash(files), "failed",
+             canonical(result), utcnow(), utcnow()),
+        )
+    for offset in (0, 1800, 3600, 5400, 7200, 7200):
+        commit(work, tid, action(tool="read_file", path="src/model.kt", offset=offset))
+    found = False
+    for size in range(10000, 16385, 256):
+        model = replace(work.models['local'], context=size, output_tokens=4096)
+        messages = prompt(store, work, tid, model)
+        previous = [json.loads(m['content'][m['content'].index('{'):]) for m in messages
+                    if m['content'].startswith('Previous source page')]
+        if not previous:
+            continue
+        assert previous[0]['offset'] == 0
+        assert previous[0]['content'] == body.encode()[:3000].decode('utf-8', errors='ignore')
+        assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+        found = True
+    assert found
+    # An old snapshot or a successful execution must not prioritize this error.
+    for status, digest in [('failed', 'older'), ('completed', snapshot_hash(files))]:
+        with store.transaction() as db:
+            db.execute('UPDATE work_executions SET status=?,snapshot_sha256=? WHERE id=?',
+                       (status, digest, 'failure'))
+        messages = prompt(store, work, tid, replace(model, context=16384))
+        previous = [json.loads(m['content'][m['content'].index('{'):]) for m in messages
+                    if m['content'].startswith('Previous source page')]
+        assert previous and previous[0]['offset'] == 5400
+
+
+@pytest.mark.parametrize('damage', [None, 'hash', 'content', 'action', 'path', 'unseen'])
+def test_diagnostic_page_priority_requires_exact_observed_source(damage):
+    import hashlib
+
+    from dsgpt.work import diagnostic_source_pages
+
+    body = 'αβ\nsecond line\n'
+    source = {'content': body, 'sha256': hashlib.sha256(body.encode()).hexdigest()}
+    page = {'path': 'src/a.kt', 'offset': 3, 'content': 'second line\n',
+            'sha256': source['sha256']}
+    chosen = {'tool': 'read_file', 'path': 'src/a.kt'}
+    if damage == 'hash':
+        page['sha256'] = 'old'
+    elif damage == 'content':
+        page['content'] = 'fabricated'
+    elif damage == 'action':
+        chosen['tool'] = 'write_file'
+    elif damage == 'path':
+        chosen['path'] = 'other.kt'
+    history = [{'action': canonical(chosen), 'result': canonical(page)}]
+    if damage == 'unseen':
+        history = []
+    assert diagnostic_source_pages(history, {'src/a.kt': source},
+                                   'e: file:///work/src/a.kt:2:1 error') == (
+        {('src/a.kt', 3)} if damage is None else set())
+    for diagnostic in ['other/src/a.kt:2:1 error', 'src/a.kt:0:1 error',
+                       'src/a.kt:999:1 error', 'src/a.kt:2 without column']:
+        assert not diagnostic_source_pages(history, {'src/a.kt': source}, diagnostic)

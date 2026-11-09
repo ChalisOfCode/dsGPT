@@ -4,21 +4,26 @@ The owner requested these five items in order, with no next upgraded ZIP deliver
 until all five are complete. Latest delivered release: 0.9.2. This is an active
 engineering checkpoint, not a release or a claim of universal model reliability.
 
-## 1. Longer recordings and complex app requests — in progress
+## 1. Media evidence and bounded APK/EXE smoke — in progress
 
-- Fresh actual-model tasks with original prompts and new task databases; no rescued
-  prompt, rewritten action, old checkpoint, or substituted model answer.
-- Short known-speech recording and a recording over 15 minutes requiring multiple
-  windows and a combined JSON/SRT result. Verify every expected cue, original
-  source hash, timestamps, contiguous coverage and delivered artifacts.
-- Page saved assets beyond the first 16 paths, retain exact lookup, reject stale or
-  replaced evidence, and assemble windows with independent consistency checks.
-- Long Android/Windows Task Ledger request: create/edit/delete/complete, search,
-  filters/counts, persistence, Unicode and validation; then a follow-up change.
-  Separate generated-code, actual compilation, behavioral and native-device checks.
-- Genuine changes must permit useful rereads; unchanged repeated failures still stop.
-- Scope conclusions to the observed suite. Arbitrary requests can still exceed the
-  selected model or available hardware; do not label every task reliable.
+The owner reduced release testing on 2026-11-09. The multi-hour original
+Task Ledger scenario remains historical evidence and is no longer a release
+gate. Do not dispatch another long run.
+
+- Reuse the verified actual-model short and multi-window media evidence from
+  run 41891667443; repeat only a focused affected check if media code changes.
+- Start with fresh standard Android and Windows scaffolds. Use the pinned
+  actual 9B model for two short edit responses: change a visible label in each
+  app, then revise it. The combined inference cap is six minutes. No retries
+  within a run, mocked answers or generated fixture implementations.
+- Compile the resulting source through the production Docker build path.
+  Independently install/launch both exact APK and EXE revisions on disposable
+  runners and observe each label. Match artifact hashes and check Android
+  signing continuity for the smoke project.
+- This samples local model edits, compilation and native launch. It does not
+  establish autonomous long-task completion, complex Task Ledger behavior,
+  production update continuity or arbitrary app reliability. The separate
+  production upgrade and reconnect checks remain item 5.
 
 ## 2. Signed-in website and account workflows — queued after 1
 

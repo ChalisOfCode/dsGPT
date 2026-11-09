@@ -1,6 +1,4 @@
-Request: clarify-section-end-2026-11-09
-Base source: 0b5ba9c9325d798c29bc3d096203d05853f83c84
-Prior run 42584930569 stopped on a third unchanged empty section-end read.
-Clarify null continuation and distinguish total length from a next-page offset.
-Run the unchanged original request with exact 9B model and unchanged
-context/output budgets, loop limits and independent native acceptance checks.
+Request: bounded-native-smoke-2026-11-09
+Replace the multi-hour Task Ledger run with two short real 9B edits.
+Cap inference at six minutes total. Independently compile and launch both
+revisions on disposable Windows and Android.

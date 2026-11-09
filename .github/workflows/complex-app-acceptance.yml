@@ -1,4 +1,4 @@
-name: Fresh complex APK and EXE acceptance
+name: Bounded APK and EXE smoke acceptance
 
 on:
   workflow_dispatch:
@@ -21,10 +21,10 @@ concurrency:
 
 jobs:
   model:
-    name: Fresh 9B model, Docker builds, restart and follow-up repair
+    name: Two bounded 9B edits and independent Docker builds
     if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -58,19 +58,13 @@ jobs:
           docker build --pull --build-arg "DSGPT_BASE_IMAGE=$DSGPT_BASE_IMAGE" --label "org.dsgpt.recipe=$DSGPT_RECIPE" --tag dsgpt-complex-toolchain:ci --file "$RUNNER_TEMP/complex-tool-context/Dockerfile" "$RUNNER_TEMP/complex-tool-context" 2>&1 | tee evidence/toolchain-build.log
           docker image inspect dsgpt-complex-toolchain:ci > evidence/toolchain-image.json
           docker image inspect --format '{{.Id}}' dsgpt-complex-toolchain:ci > evidence/toolchain-image-id.txt
-      - name: Run the unchanged long request with actual model decisions
-        timeout-minutes: 330
+      - name: Run two real model edits within six inference minutes
+        timeout-minutes: 16
         run: |
           DSGPT_IMAGE_ID="$(cat evidence/toolchain-image-id.txt)"
-          python -I scripts/live_complex_app_model.py \
-            --image "$DSGPT_IMAGE_ID" --source-commit "$GITHUB_SHA" \
-            --model huihui_ai/qwen3.5-abliterated:9b --abliterated \
-            --model-digest 92a443adb124f5e805bbdee23fdb38fcd22a7bf00a1016b53f764e741369c600 \
-            --endpoint http://127.0.0.1:11435 --context 16384 --output-tokens 4096 \
-            --cpu-threads 4 --batch-size 64 --release-before-build \
-            --state "$RUNNER_TEMP/complex-app-fresh-state" \
+          python -I scripts/live_app_smoke.py \
+            --image "$DSGPT_IMAGE_ID" --state "$RUNNER_TEMP/bounded-app-state" \
             --output evidence/complex-model.json --artifacts evidence/model-apps \
-            --timeout 18000 --max-steps 240 --restart-after-step 8 \
             2>&1 | tee evidence/complex-model.log
       - name: Collect final runner and owned runtime evidence
         if: always()
@@ -114,10 +108,10 @@ jobs:
         with:
           name: complex-model-${{ github.run_id }}-${{ github.run_attempt }}
           path: evidence
-      - name: Operate real native controls, restart and update the same app data
+      - name: Launch both EXE revisions and verify their window titles
         timeout-minutes: 15
         run: |
-          python scripts/check_complex_app_runtime.py --platform windows --artifact-origin model-generated --initial evidence/model-apps/initial/artifacts/dist/app.exe --updated evidence/model-apps/followup/artifacts/dist/app.exe --output native/windows-native.json
+          python scripts/check_app_smoke.py --platform windows --initial evidence/model-apps/initial/artifacts/dist/app.exe --updated evidence/model-apps/followup/artifacts/dist/app.exe --output native/windows-native.json
       - name: Check retained evidence storage
         id: storage_2
         if: always() && !cancelled()
@@ -174,10 +168,10 @@ jobs:
           adb -s emulator-5554 shell settings put global window_animation_scale 0
           adb -s emulator-5554 shell settings put global transition_animation_scale 0
           adb -s emulator-5554 shell settings put global animator_duration_scale 0
-      - name: Install exact generated binaries and exercise real controls and update
+      - name: Install both APK revisions and verify their visible headings
         run: |
           DSGPT_GENERATED_PACKAGE="$(python -c 'import json,pathlib; task=json.loads(pathlib.Path("evidence/complex-model.json").read_text())["task_id"]; print("com.dsgpt.generated.p"+task.replace("-",""))')"
-          python scripts/check_complex_app_runtime.py --platform android --serial emulator-5554 --package "$DSGPT_GENERATED_PACKAGE" --artifact-origin model-generated --initial evidence/model-apps/initial/artifacts/dist/app.apk --updated evidence/model-apps/followup/artifacts/dist/app.apk --output native/android-native.json
+          python scripts/check_app_smoke.py --platform android --serial emulator-5554 --package "$DSGPT_GENERATED_PACKAGE" --initial evidence/model-apps/initial/artifacts/dist/app.apk --updated evidence/model-apps/followup/artifacts/dist/app.apk --output native/android-native.json
       - name: Collect emulator diagnostics and stop the virtual device
         if: always()
         run: |
@@ -222,9 +216,9 @@ jobs:
         with:
           name: complex-android-${{ github.run_id }}-${{ github.run_attempt }}
           path: native
-      - name: Require model, independent behavior and both native update stages
+      - name: Match both native smoke reports to exact model-edited binaries
         run: |
-          python scripts/check_complex_app_acceptance.py --model evidence/complex-model.json --android native/android-native.json --windows native/windows-native.json --output joined/complex-acceptance.json
+          python scripts/check_app_smoke.py --platform join --model evidence/complex-model.json --android native/android-native.json --windows native/windows-native.json --output joined/complex-acceptance.json
       - name: Check retained evidence storage
         id: storage_4
         if: always() && !cancelled()

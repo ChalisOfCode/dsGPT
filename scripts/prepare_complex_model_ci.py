@@ -21,6 +21,7 @@ import urllib.error
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
 
 import psutil
 
@@ -219,7 +220,7 @@ def download_archive(path, timeout):
             output.write(chunk)
         output.flush()
         os.fsync(output.fileno())
-        final_url = response.geturl()
+        redirect_host = urlsplit(response.geturl()).hostname
     require(
         received == ARCHIVE_BYTES and path.stat().st_size == ARCHIVE_BYTES,
         "Runtime download has the wrong size",
@@ -228,7 +229,7 @@ def download_archive(path, timeout):
     require(digest == ARCHIVE_SHA256, "Runtime download SHA256 differs from pin")
     return {
         "url": ARCHIVE_URL,
-        "final_url": final_url,
+        "redirect_host": redirect_host,
         "bytes": received,
         "sha256": digest,
         "verified_before_extraction": True,

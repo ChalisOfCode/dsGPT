@@ -2350,3 +2350,78 @@ additional acceptance run dispatched or cancelled.
   passed. Manual four-file review found only guidance/tests, public evidence notes
   and the narrow acceptance request trigger. Model/grammar/runtime/request/context/
   output/loop limits and all generated-application acceptance checks are unchanged.
+
+## 49ab25f routine platform evidence
+
+CI 42601516729 passed all nine jobs on exact
+49ab25f0b441510f271fc5191402b655cb5dee84. Backend: 1256 cases including
+subtests, no failures/errors/skips. Browser: 26 expected, zero flaky/skipped/
+unexpected. Windows regressions: 139 cases, zero failures/errors, one POSIX
+fixture skip. Android: 24 unit cases, no failures/errors/skips; lifecycle
+instrumentation OK (one test, 5.493 seconds).
+Disposable Windows installed native UI, local reply, Credential Manager,
+scheduled restart, reinstall/data preservation and uninstall preserving data
+passed. Separate qwen3:1.7b fixture is not actual9B acceptance or complete item 5.
+Staged inference remains BLOCKED and production REVIEW; physical owner hardware
+remains unverified.
+Five report ZIPs were individually checked against GitHub size/digest and exact
+source commit, then durably preserved as dsGPT-ci-test-evidence-49ab25f.zip,
+46685 bytes, SHA256
+0d89d386ea8f20cca0fd08f48b288fca4f06ba2c56e14c0b724981b5f8a452a5.
+Actual9B run 42601516703, job 129106880481, remains in progress after pinned
+model load and production Docker setup passed. No duplicate run dispatched,
+cancelled or substituted; no item 1 completion claim.
+
+## 49ab25f actual-model outcome and compiler-source retention
+
+- Original-request actual9B run 42601516703 completed with failure on exact
+  49ab25f0b441510f271fc5191402b655cb5dee84. Pinned exact-model loading and
+  production Docker setup passed. Initial phase stopped at step 34 with
+  no_progress after 7766.371 seconds. Step 27 build_project failed Kotlin
+  compilation; no later build or repair occurred. Steps 32/33/34 requested the
+  same unchanged source suffix at character offset 7200. Native/follow-up checks
+  were skipped. Generated source remains incorrect and unverified.
+- Original artifact 13676315116 was size/digest verified and durably preserved as
+  dsGPT-complex-evidence-42601516703.zip, 147823 bytes, SHA256
+  7ffd7243965ecb66422fd46304ee7b339b3ed29132e3fdf7aec280c774c03e44.
+- Saved-history reconstruction through step 33 verifies scaffold/write hashes and
+  the failed build snapshot, restores reviews/overview/latest summary, and uses
+  the unchanged 16384 context with 4096 output reserve. Baseline retains the
+  compiler diagnostic but drops the earlier source page containing its location,
+  favoring newer suffix pages. Candidate retains the exact previously inspected
+  first 3000 source characters and latest 143-character suffix. Baseline total
+  estimate is 16371; candidate is 15712. Replay is diagnostic, not acceptance.
+- Source retention now prioritizes observed, current-hash pages containing line
+  locations in the displayed failed-build diagnostic. It requires the failed
+  execution's current snapshot, exact path and observed bytes. Stale/successful
+  builds keep normal ordering. No uninspected source, source repair, model action,
+  new compiler invocation or acceptance result is substituted.
+- The new context-pressure regression fails on the pinned 49ab25f baseline and
+  passes on the candidate. Focused diagnostics tests: 13 passed, including stale
+  and successful executions, Unicode character offsets, altered bytes/hashes,
+  unrelated paths/actions, unseen source and invalid line locations.
+- Full local suite: 1257 tests plus six subtests passed in 87.04 seconds. Ruff,
+  whitespace and static CI policy passed; pinned tracked-source Gitleaks passed.
+  Manual four-file review covered source ordering, regressions, public validation
+  notes and the narrow retry trigger. Grammar, model, request, runtime, context,
+  output reserve, loop limits and acceptance criteria remain unchanged.
+- Before dispatch: in_progress/queued/waiting/pending all zero; 66 public artifacts
+  total 97763956 bytes, none expired. No deletion needed. Private archive, signing,
+  billing and cache settings untouched; prior platform evidence notes preserved.
+
+## Owner-directed acceptance scale reduction
+
+The original-request retry prepared after 42601516703 was not dispatched.
+On 2026-11-09 the owner replaced multi-hour acceptance with a representative
+smoke test. Keep the exact local 9B model and real Windows/Android outputs.
+Cap total inference at 360 seconds across two responses, versus the former
+18000-second budget. Production build and native setup time are separate and
+bounded. Record the actual elapsed times; a timeout does not count as a pass.
+The smoke scope is two visible label revisions, independent compilation and
+native observation on exact artifact hashes. It does not prove Task Ledger
+feature coverage or owner-device behavior. Production signing/data checks
+remain in item 5.
+The reduced harness passed 91 focused checks, static CI policy and lint.
+A local wiring check compiled the C++ source-label assertion and verified it
+rejects a wrong label; that check used a model test double and is not
+acceptance evidence. Actual 9B and native results require the bounded run.

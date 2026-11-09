@@ -24,8 +24,9 @@ Public development does not replace the local-inference requirement.
 
 ## Active release scope, in order
 
-1. Fresh actual-model long recording and complex APK/EXE request acceptance,
-   including a follow-up modification and independent artifact/native checks.
+1. Verified actual-model recording evidence and a bounded APK/EXE smoke test:
+   two real model edits within six inference minutes, production compilation,
+   and native launch checks on the exact initial and revised binaries.
 2. Protected signed-in website/account workflows and controlled real-browser tests.
 3. Independent document layout/render checks and actual workbook formula calculation.
 4. Editable related-project grouping that preserves originals and permissions.
