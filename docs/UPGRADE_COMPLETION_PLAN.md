@@ -94,7 +94,9 @@ broker approvals made outside the controller. Real Chromium tests exercise the
 actual guest/host pipe, cookie forwarding, profile restart, request denial and
 interrupted cleanup using a synthetic transport and explicit container fixture.
 Production Docker/HTTPS, owner controls, task access and page-bound write approval
-still require acceptance.
+still require acceptance. Startup and active exchanges are now cancelled and
+joined before abort cleanup completes. Aborted bridge instances cannot restart;
+concurrent close is rejected without terminating an already active operation.
 
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and

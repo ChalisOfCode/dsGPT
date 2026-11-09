@@ -2665,3 +2665,32 @@ rerun, no full local suite was run, and no final installers were released.
 Focused bridge/worker/profile/broker/receipt/sandbox checks: 82 passed and one
 Windows-only DPAPI check skipped locally in 3.45 seconds. Ruff, whitespace,
 static CI policy and the pinned tracked-source secret scan passed.
+
+
+## Item 2: quiescent browser lifecycle before owner controls
+
+Review found startup could outlive a simultaneous abort: abort had no startup
+task to cancel/join, so a later container/pipe could become live after cleanup.
+Close also ran abort in its finally block when another operation was merely busy.
+The bridge now latches stopped state, cancels and joins startup and active exchanges,
+rejects reuse after abort, and rejects concurrent close before its cleanup block.
+A closing flag prevents new input during clean shutdown/profile commit. Live
+checks also reject responses after abort. No owner API or write capability was
+added; owner login/MFA, task integration and production acceptance remain open.
+
+Five deterministic lifecycle regressions fail the prior 4d07981 implementation.
+Candidate bridge/lifecycle/profile checks passed 33 cases in 2.04 seconds with one
+Windows-only DPAPI skip. Real Chromium coverage also verifies external abort of
+an in-flight request discards the response and leaves the vault unchanged. These
+are synthetic transport/container fixtures, not production Docker/HTTPS evidence.
+
+Prior 4d07981 CI 42698303776 passed all nine jobs. Backend: 1326 XML cases including
+subtests, zero failures/errors, eight expected platform/browser skips. Windows:
+171 cases, zero failures/errors, two expected platform skips. Browser UI: 27
+expected, zero unexpected/flaky/skipped. Separate private-browser XML: 15 cases,
+zero failures/errors/skips. Android: 24 unit cases; lifecycle job passed.
+Five original report ZIPs were individually size/digest verified and preserved as
+dsGPT-ci-test-evidence-4d07981.zip, 48643 bytes, SHA256
+64ffe0da1f5d2dc6e2497744288bf789160e0669c54dd7abe808f4e6594c3126.
+Item 1 was not rerun, owner hardware remains unverified, and no final installers
+were released. Routine platform CI does not establish complete item 2 or item 5.

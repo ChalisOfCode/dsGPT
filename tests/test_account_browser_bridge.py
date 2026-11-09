@@ -243,7 +243,7 @@ async def test_profile_from_different_origin_never_reaches_guest(tmp_path):
 
 
 @needs_browser
-@pytest.mark.parametrize("failure", ["cancel", "revoke", "guest_exit"])
+@pytest.mark.parametrize("failure", ["cancel", "abort", "revoke", "guest_exit"])
 async def test_inflight_failure_discards_response_and_preserves_vault(tmp_path, failure):
     profile = vault(make_ledger(tmp_path / "store"))
     allowed = [True]
@@ -269,8 +269,11 @@ async def test_inflight_failure_discards_response_and_preserves_vault(tmp_path, 
             await started.wait()
         with pytest.raises(AccountBrowserBridgeError, match="busy"):
             await bridge.frame()
-        if failure == "cancel":
-            task.cancel()
+        if failure in {"cancel", "abort"}:
+            if failure == "abort":
+                await bridge.abort()
+            else:
+                task.cancel()
             with pytest.raises(asyncio.CancelledError):
                 await task
         else:

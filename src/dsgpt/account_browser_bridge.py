@@ -39,15 +39,21 @@ class AccountBrowserBridge:
         self.revision = None
         self.lock = asyncio.Lock()
         self.started = False
+        self.stopped = False
+        self.closing = False
+        self._startup_task = self._active_task = None
 
     def _authorize(self):
+        if self.stopped:
+            raise AccountBrowserBridgeError("account_browser_closed")
         self.authorize()
         self.vault.require_origin(self.network.origin)
 
     async def start(self):
-        if self.started:
+        if self.started or self.stopped:
             raise AccountBrowserBridgeError("account_browser_already_started")
         self.started = True
+        self._startup_task = asyncio.current_task()
         try:
             self._authorize()
             self.revision, files = self.vault.restore()
@@ -80,13 +86,18 @@ class AccountBrowserBridge:
         except Exception:
             await self.abort()
             raise AccountBrowserBridgeError("account_browser_start_failed") from None
+        finally:
+            self._startup_task = None
 
     async def _exchange(self, command, *, expected="result"):
+        if self.closing and expected != "closed":
+            raise AccountBrowserBridgeError("account_browser_closing")
         if self.lock.locked():
             raise AccountBrowserBridgeError("account_browser_busy")
         async with self.lock:
             if self.process is None:
                 raise AccountBrowserBridgeError("account_browser_closed")
+            self._active_task = asyncio.current_task()
             try:
                 async with asyncio.timeout(25):
                     self._authorize()
@@ -106,6 +117,8 @@ class AccountBrowserBridge:
             except Exception:
                 await self.abort()
                 raise AccountBrowserBridgeError("account_browser_operation_failed") from None
+            finally:
+                self._active_task = None
 
     async def _send(self, row):
         self.process.stdin.write(pack(row))
@@ -170,6 +183,9 @@ class AccountBrowserBridge:
     async def close(self):
         # Revoked/failed processes never save. Only clean Chromium shutdown AND
         # successful guest exit allow atomic vault replacement of this revision.
+        if self.lock.locked() or self._startup_task is not None or self.closing:
+            raise AccountBrowserBridgeError("account_browser_busy")
+        self.closing = True
         try:
             row = await self._exchange({"op": "close"}, expected="closed")
             async with asyncio.timeout(5):
@@ -185,6 +201,14 @@ class AccountBrowserBridge:
             await self.abort()
 
     async def abort(self):
+        self.stopped = True
+        current = asyncio.current_task()
+        pending = {t for t in (self._startup_task, self._active_task)
+                   if t is not None and t is not current and not t.done()}
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
         process, self.process = self.process, None
         try:
             if process is not None and process.returncode is None:
