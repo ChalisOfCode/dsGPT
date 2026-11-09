@@ -2481,3 +2481,23 @@ as dsGPT-ci-test-evidence-60c6ef5.zip, 46297 bytes, SHA256
 726430011ae7555945fbca8f464eb0147884ba26aac387bd18636c6f4a3df5b7.
 Pinned tracked-source secret scanning and manual change review passed for the
 grant slice. No private archive, account, signing, billing or cache settings changed.
+
+## Item 2: owner permission controls
+
+Routine CI 42647100427 on bc129d1 passed all nine jobs. This is backend/platform
+regression evidence, not completed account/browser acceptance.
+
+Settings now shows connected sessions and their exact approved page, task revision
+and device selection, explicit 15-minute read consent, and account/grant revocation.
+The panel refreshes authoritative permission state after uncertain mutation responses
+without automatically repeating mutations. Browser and native transports accept
+successful empty HTTP 204 responses. No password/cookie input or sign-in claim is
+added; secure owner browser handoff remains outstanding.
+
+Focused checks: nine backend account checks passed with one Windows-only skip;
+11 frontend unit tests passed; one real Chromium UI test with mocked account
+responses passed in 4.3 seconds including startup. The test verifies explicit
+consent, task-revision/device binding in requests, inert account labels, grant
+revocation and lost-response reconciliation. It is UI fixture evidence, not a
+real signed-in website test. Desktop build passed. Native transport compilation
+remains for the standard Windows CI job. Item 2 remains in progress.

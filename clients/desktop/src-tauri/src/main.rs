@@ -203,6 +203,7 @@ async fn api_request(
             .unwrap_or("Refresh the current state before retrying.");
         return Err(format!("Request failed ({}). {}", status, detail.chars().take(300).collect::<String>()));
     }
+    if response.status() == reqwest::StatusCode::NO_CONTENT { return Ok(Value::Null); }
     response
         .json()
         .await

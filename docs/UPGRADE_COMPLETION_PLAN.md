@@ -55,7 +55,12 @@ Already-sent network requests cannot be undone. Account reads are serialized
 and overlapping requests are rejected, with the existing 12-second network cap.
 These are explicit API permissions, not automatic model access or write approval.
 
-Remaining for item 2: owner-facing browser login/MFA handoff and permission UI,
+Settings now provides owner-facing account and grant revocation, task/device
+selection, explicit read consent and refreshed permission review after uncertain
+mutation responses. Browser sign-in remains unavailable; this interface never
+asks for pasted credentials. UI fixture coverage is separate from real sign-in.
+
+Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and
 controlled browser acceptance. The backend slices are not a complete signed-in workflow.
 

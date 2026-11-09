@@ -49,6 +49,7 @@ export class Client {
           : `Request failed (${response.status}). ${detail.slice(0, 300) || "Refresh the current state before retrying."}`,
       );
     }
+    if (response.status === 204) return null as T;
     return response.json();
   }
   async downloadDiagnostics(id: string, sha256: string) {

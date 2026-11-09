@@ -13,6 +13,7 @@ import { ToolSetupPanel } from "./ToolSetupPanel";
 import { RecallPanel } from "./RecallPanel";
 import { MemoryPanel } from "./MemoryPanel";
 import { ModelsPanel } from "./ModelsPanel";
+import { AccountPanel } from "./AccountPanel";
 import { DevicesPanel } from "./DevicesPanel";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import {
@@ -1430,6 +1431,7 @@ export function App() {
             </button>
           </section>
         ) : null}
+        {page === "settings" && <AccountPanel key={`accounts:${client.origin}`} client={client} />}
         <ToolSetupPanel
           key={`tools:${client.origin}`}
           client={client}
