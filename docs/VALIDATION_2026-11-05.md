@@ -2298,3 +2298,55 @@ additional acceptance run dispatched or cancelled.
 - Final validation: 1247 tests plus six subtests passed in 88.11 seconds; focused
   diagnostic/source/invalid-feedback checks passed. Ruff, whitespace, static CI
   policy, pinned tracked-source Gitleaks and manual five-file privacy review passed.
+
+## 0b5ba9c routine platform evidence
+
+CI 42584930443 passed all nine jobs on exact 0b5ba9c9325d798c29bc3d096203d05853f83c84.
+Backend: 1253 cases including subtests, no failures/errors/skips. Browser: 26
+expected, zero flaky/skipped/unexpected. Windows regressions: 139 cases, zero
+failures/errors and one POSIX fixture skip; separate Windows CLI acceptance passed.
+Android unit tests: 24 cases, zero failures/errors/skips. Android lifecycle
+instrumentation: OK (one test). Disposable Windows installed native UI, local
+reply, Credential Manager, scheduled restart, reinstall/data preservation and
+uninstall preserving data all passed. Separate qwen3:1.7b fixture is not actual9B
+acceptance or complete item 5. Staged inference remains BLOCKED, production REVIEW;
+physical owner hardware remains unverified.
+Five report ZIPs individually verified against GitHub size/digest/source commit
+were preserved in dsGPT-ci-test-evidence-0b5ba9c.zip, 45941 bytes, SHA256
+bd41a0afed97319cf863b9f98b26afe1ebaa7a76a5507e13b2e68e0a16740d2f.
+Actual9B run 42584930569, job 129052364526, remains in progress after exact model
+and production Docker setup succeeded. No final actual-model artifact yet; no
+additional acceptance run dispatched or cancelled.
+
+## 0b5ba9c actual-model outcome and section-end guidance
+
+- Actual9B run 42584930569 completed with initial step 28 `no_progress` after
+  5398.587 seconds. Pinned exact-model load and production Docker setup passed.
+  No build_project action occurred; generated native and follow-up checks skipped.
+- Section 7 offset 0 returned all 1596 characters at step 20 with has_more=false
+  and next_offset=null. Steps 21/24/28 nevertheless requested offset 1596, returning
+  empty text; the third unchanged read stopped. Steps 22/23 inspected DataStore
+  pages; steps 25/26 inspected section 8 suffix/end; step 27 read section 7 offset
+  15. Generated source remains incorrect/unverified, with no compilation evidence.
+- Original artifact 13663827518 was size/digest verified and durably preserved as
+  dsGPT-complex-evidence-42584930569.zip, 121903 bytes, SHA256
+  40e1df4336458ca76145595c243f947ef6de33c687eb283e5f89345accf9fcb5.
+- Section-end feedback now explicitly identifies next_offset=null as no next page
+  and explains that using total_characters as the next offset returns empty text.
+  It distinguishes reaching the end from having inspected an earlier prefix.
+  No automatic action repair, generated source substitution or acceptance change.
+- Three new prompt cases cover full-page, suffix and empty EOF results. They fail
+  baseline and pass candidate while preserving exact returned text and budget.
+  Nine source/requirement comparison cases passed. Hash-checked saved-history replay
+  through step 27 reconstructs scaffold, edits, review notes and latest summary.
+  Both versions retain inspected DataStore source and the latest section 7 suffix;
+  baseline uses 16155 and candidate 16372 of 16384 estimated tokens, including the
+  unchanged 4096 output reserve. Replay is diagnostic only, not model acceptance.
+- Before dispatch: in_progress/queued/waiting/pending all zero; 83 public artifacts
+  total 119761461 bytes, none expired. No deletion needed. Private archive, signing,
+  billing and cache settings untouched. Prior routine platform notes preserved.
+- Final local validation: 1250 tests plus six subtests passed in 86.07 seconds.
+  Ruff, whitespace and static CI policy passed; pinned tracked-source Gitleaks
+  passed. Manual four-file review found only guidance/tests, public evidence notes
+  and the narrow acceptance request trigger. Model/grammar/runtime/request/context/
+  output/loop limits and all generated-application acceptance checks are unchanged.

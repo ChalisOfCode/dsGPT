@@ -1711,7 +1711,11 @@ class WorkRegistry:
                         "Continue this requirement_id at its section-relative next_offset. "
                         "Start a different requirement_id at offset 0."
                         if clipped.get("has_more")
-                        else "This requirement page reached its end. Do not repeat the same read. "
+                        else "This read reached the end of this requirement section: "
+                        "has_more=false and next_offset=null means there is no next page. "
+                        "Do not use total_characters as a new offset; that returns empty text. "
+                        "A suffix read does not establish that earlier text was inspected. "
+                        "Do not repeat the same read. "
                         "Reuse retained exact requirement pages below; "
                         "do not alternate rereading them. "
                         "Read another section only for missing text, starting at offset 0. "

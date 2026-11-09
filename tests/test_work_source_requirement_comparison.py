@@ -111,3 +111,28 @@ def test_section_comparison_retains_verified_previous_section(tmp_path, corrupt)
     latest = json.loads(messages[-1]['content'].removeprefix('Recorded tool result: '))
     assert latest['requirement_id'] == 1
     assert ollama_input_estimate(messages) + model.output_tokens <= model.context
+
+
+@pytest.mark.parametrize('offset', [0, 15, 120])
+def test_requirement_end_guidance_does_not_offer_another_page(tmp_path, offset):
+    store, work, tid, _ = setup(tmp_path)
+    original = 'Required behavior. ' * 6 + 'Done. '
+    assert len(original) == 120
+    with store.transaction() as db:
+        db.execute('UPDATE work_tasks SET requirements=? WHERE id=?', (original, tid))
+        work.specs.initialize(db, tid, original)
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, ProjectAction(tool='write_file', path='a.py', content='x = 1\n',
+                                   summary='Create'))
+    commit(work, tid, ProjectAction(tool='read_requirements', requirement_id=1,
+                                   offset=offset, summary='Inspect'))
+    model = replace(work.models['local'], context=16384, output_tokens=4096)
+    messages = prompt(store, work, tid, model)
+    latest = json.loads(messages[-1]['content'].removeprefix('Recorded tool result: '))
+    assert latest['content'] == original[offset:]
+    assert latest['has_more'] is False and latest['next_offset'] is None
+    guidance = json.loads(messages[1]['content'])['next_step']
+    assert 'next_offset=null means there is no next page' in guidance
+    assert 'Do not use total_characters as a new offset' in guidance
+    assert 'earlier text' in guidance
+    assert ollama_input_estimate(messages) + model.output_tokens <= model.context

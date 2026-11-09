@@ -1,6 +1,6 @@
-Request: preserve-source-comparison-2026-11-09
-Base source: 554fd34d47359fcb657bb2ed4a08fbe24a67c22e
-Prior run 42556287336 stopped after unchanged reads following Kotlin build failure.
-Retain inspected source during another file read instead of evicting it for older requirements.
+Request: clarify-section-end-2026-11-09
+Base source: 0b5ba9c9325d798c29bc3d096203d05853f83c84
+Prior run 42584930569 stopped on a third unchanged empty section-end read.
+Clarify null continuation and distinguish total length from a next-page offset.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.
