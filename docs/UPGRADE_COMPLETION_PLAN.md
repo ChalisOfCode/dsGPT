@@ -60,6 +60,14 @@ selection, explicit read consent and refreshed permission review after uncertain
 mutation responses. Browser sign-in remains unavailable; this interface never
 asks for pasted credentials. UI fixture coverage is separate from real sign-in.
 
+The private browser network component now validates one public HTTPS origin,
+preserves browser cookie headers and security policy, and bounds requests and
+responses. It accepts form POSTs only with fresh, single-use approval for the
+exact destination and body. It does not follow redirects or retry submissions.
+This component is not exposed to the application yet: the isolated browser,
+owner handoff, encrypted profile and durable website write recovery still need
+integration. The focused transport tests do not count as browser acceptance.
+
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and
 controlled browser acceptance. The backend slices are not a complete signed-in workflow.
