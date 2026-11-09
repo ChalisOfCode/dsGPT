@@ -72,6 +72,115 @@
         "title": "AccountSessionCreate",
         "type": "object"
       },
+      "BrowserClick": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "click",
+            "title": "Op",
+            "type": "string"
+          },
+          "x": {
+            "exclusiveMaximum": 1024.0,
+            "minimum": 0.0,
+            "title": "X",
+            "type": "integer"
+          },
+          "y": {
+            "exclusiveMaximum": 768.0,
+            "minimum": 0.0,
+            "title": "Y",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "op",
+          "x",
+          "y"
+        ],
+        "title": "BrowserClick",
+        "type": "object"
+      },
+      "BrowserKey": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "enum": [
+              "Tab",
+              "Enter",
+              "Backspace",
+              "Escape",
+              "ArrowUp",
+              "ArrowDown"
+            ],
+            "title": "Key",
+            "type": "string"
+          },
+          "op": {
+            "const": "key",
+            "title": "Op",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "key"
+        ],
+        "title": "BrowserKey",
+        "type": "object"
+      },
+      "BrowserSessionCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "origin": {
+            "maxLength": 512,
+            "title": "Origin",
+            "type": "string"
+          },
+          "read_path": {
+            "maxLength": 1001,
+            "title": "Read Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "origin",
+          "read_path"
+        ],
+        "title": "BrowserSessionCreate",
+        "type": "object"
+      },
+      "BrowserText": {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "text",
+            "title": "Op",
+            "type": "string"
+          },
+          "text": {
+            "format": "password",
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "op",
+          "text"
+        ],
+        "title": "BrowserText",
+        "type": "object"
+      },
       "ChatAttachmentInput": {
         "additionalProperties": false,
         "properties": {
@@ -1668,6 +1777,60 @@
         "summary": "Create Account Session"
       }
     },
+    "/v1/account-sessions/browser": {
+      "post": {
+        "operationId": "create_browser_account_v1_account_sessions_browser_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserSessionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Browser Account"
+      }
+    },
     "/v1/account-sessions/{session_id}": {
       "delete": {
         "operationId": "revoke_account_session_v1_account_sessions__session_id__delete",
@@ -1715,6 +1878,328 @@
           }
         },
         "summary": "Revoke Account Session"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser": {
+      "post": {
+        "operationId": "start_account_browser_v1_account_sessions__session_id__browser_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Account Browser"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}": {
+      "delete": {
+        "operationId": "discard_account_browser_v1_account_sessions__session_id__browser__handoff_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Discard Account Browser"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/frame": {
+      "post": {
+        "operationId": "account_browser_frame_v1_account_sessions__session_id__browser__handoff_id__frame_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Account Browser Frame"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/input": {
+      "post": {
+        "operationId": "account_browser_input_v1_account_sessions__session_id__browser__handoff_id__input_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "discriminator": {
+                  "mapping": {
+                    "click": "#/components/schemas/BrowserClick",
+                    "key": "#/components/schemas/BrowserKey",
+                    "text": "#/components/schemas/BrowserText"
+                  },
+                  "propertyName": "op"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BrowserClick"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BrowserText"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BrowserKey"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Account Browser Input"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/save": {
+      "post": {
+        "operationId": "save_account_browser_v1_account_sessions__session_id__browser__handoff_id__save_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Account Browser"
       }
     },
     "/v1/account-sessions/{session_id}/grants": {

@@ -2694,3 +2694,33 @@ dsGPT-ci-test-evidence-4d07981.zip, 48643 bytes, SHA256
 64ffe0da1f5d2dc6e2497744288bf789160e0669c54dd7abe808f4e6594c3126.
 Item 1 was not rerun, owner hardware remains unverified, and no final installers
 were released. Routine platform CI does not establish complete item 2 or item 5.
+
+
+## Item 2: authenticated local owner handoff API
+
+Browser enrollment requires no pasted cookie. The owner-only loopback API
+starts a single five-minute handoff against the exact configured HTTPS origin
+and page using the prepared isolated tool runtime. An opaque handoff identifier
+gates private no-store PNG frames, bounded clicks, text and keys, save and
+discard. Old identifiers cannot operate a reopened browser. Expiry, revocation
+and backend shutdown discard the active browser. Secret input is not part of
+session rows or Work tools. Legacy cookie sessions retain their existing
+behavior; new browser sessions reject legacy reads and Work grants.
+
+Focused API, session, lifecycle and real Chromium fixture checks: 23 passed,
+one native Windows-only skip, in 2.71 seconds. The API tests use an injected
+bridge and verify loopback/owner restrictions, no-store frames, typed input,
+save/reopen, stale IDs and revocation. The separate Chromium tests still use
+the documented synthetic transport/container. Neither is end-to-end login or
+production Docker/HTTPS acceptance. The desktop pop-out and page-bound form
+approval are not yet wired; the browser continues to block POSTs.
+
+Prior d9468e5 CI 42705120389 passed all nine jobs. Backend: 1332 cases including
+subtests, no failures/errors, nine expected platform/browser skips. Windows:
+171 cases, no failures/errors, two expected platform skips. Desktop browser:
+27 expected, zero flaky/unexpected/skipped. Private browser: 21 cases, zero
+failures/errors/skips. Android unit and lifecycle jobs passed. Five original
+report ZIPs were individually size/digest verified and preserved as
+dsGPT-ci-test-evidence-d9468e5.zip, 48900 bytes, SHA256
+859a32c0ac4c388f4eb6ee3b8fdc69855f537354b3ea00376c40ed4670705ff4.
+No owner hardware was tested and no final installers were released.

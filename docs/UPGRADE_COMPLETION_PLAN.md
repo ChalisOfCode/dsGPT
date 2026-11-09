@@ -98,6 +98,14 @@ still require acceptance. Startup and active exchanges are now cancelled and
 joined before abort cleanup completes. Aborted bridge instances cannot restart;
 concurrent close is rejected without terminating an already active operation.
 
+The local owner API can enroll a browser account without a pasted cookie,
+start one five-minute handoff on the exact configured origin and page, and
+request a no-store PNG, send bounded input, save or discard. Handoff identifiers
+are replaced on reopen. Revocation discards the running browser; paired and
+non-loopback clients cannot use these endpoints. Browser sessions do not expose
+legacy cookie reads or Work grants. The desktop pop-out and approval for
+login/form POSTs are not yet connected.
+
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and
 controlled browser acceptance. The backend slices are not a complete signed-in workflow.

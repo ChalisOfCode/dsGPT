@@ -39,6 +39,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/account-sessions/browser": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Browser Account */
+        post: operations["create_browser_account_v1_account_sessions_browser_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/account-sessions/{session_id}": {
         parameters: {
             query?: never;
@@ -51,6 +68,91 @@ export interface paths {
         post?: never;
         /** Revoke Account Session */
         delete: operations["revoke_account_session_v1_account_sessions__session_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Account Browser */
+        post: operations["start_account_browser_v1_account_sessions__session_id__browser_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Discard Account Browser */
+        delete: operations["discard_account_browser_v1_account_sessions__session_id__browser__handoff_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/frame": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Account Browser Frame */
+        post: operations["account_browser_frame_v1_account_sessions__session_id__browser__handoff_id__frame_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/input": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Account Browser Input */
+        post: operations["account_browser_input_v1_account_sessions__session_id__browser__handoff_id__input_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Account Browser */
+        post: operations["save_account_browser_v1_account_sessions__session_id__browser__handoff_id__save_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1608,6 +1710,53 @@ export interface components {
              */
             session_cookie: string;
         };
+        /** BrowserClick */
+        BrowserClick: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "click";
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /** BrowserKey */
+        BrowserKey: {
+            /**
+             * Key
+             * @enum {string}
+             */
+            key: "Tab" | "Enter" | "Backspace" | "Escape" | "ArrowUp" | "ArrowDown";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "key";
+        };
+        /** BrowserSessionCreate */
+        BrowserSessionCreate: {
+            /** Label */
+            label: string;
+            /** Origin */
+            origin: string;
+            /** Read Path */
+            read_path: string;
+        };
+        /** BrowserText */
+        BrowserText: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            op: "text";
+            /**
+             * Text
+             * Format: password
+             */
+            text: string;
+        };
         /** ChatAttachmentInput */
         ChatAttachmentInput: {
             /** Name */
@@ -2228,6 +2377,41 @@ export interface operations {
             };
         };
     };
+    create_browser_account_v1_account_sessions_browser_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserSessionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     revoke_account_session_v1_account_sessions__session_id__delete: {
         parameters: {
             query?: never;
@@ -2236,6 +2420,173 @@ export interface operations {
             };
             path: {
                 session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_account_browser_v1_account_sessions__session_id__browser_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_account_browser_v1_account_sessions__session_id__browser__handoff_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    account_browser_frame_v1_account_sessions__session_id__browser__handoff_id__frame_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    account_browser_input_v1_account_sessions__session_id__browser__handoff_id__input_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserClick"] | components["schemas"]["BrowserText"] | components["schemas"]["BrowserKey"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_account_browser_v1_account_sessions__session_id__browser__handoff_id__save_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
             };
             cookie?: never;
         };

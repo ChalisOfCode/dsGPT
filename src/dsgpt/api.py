@@ -16,7 +16,18 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
-from .account_sessions import AccountGrantCreate, AccountSessionCreate, AccountSessions
+from .account_browser_handoff import (
+    AccountBrowserHandoffs,
+    BrowserClick,
+    BrowserKey,
+    BrowserText,
+)
+from .account_sessions import (
+    AccountGrantCreate,
+    AccountSessionCreate,
+    AccountSessions,
+    BrowserSessionCreate,
+)
 from .attachments import EXTENSIONS, MAX_FILE_BYTES, MAX_FILES, MAX_MESSAGE_BYTES
 from .builds import WorkBuilds
 from .catalog import CATALOG
@@ -339,6 +350,10 @@ def create_app(settings: Settings, inference=None, managed=None):
             yield
         finally:
             try:
+                try:
+                    await account_browsers.stop()
+                except HTTPException:
+                    store.log("account_browser_cleanup_pending")
                 await search_service.stop_worker()
                 await tool_setup.stop()
                 await runs.stop()
@@ -422,6 +437,8 @@ def create_app(settings: Settings, inference=None, managed=None):
 
     account_sessions = AccountSessions(store)
     app.state.account_sessions = account_sessions
+    account_browsers = AccountBrowserHandoffs(account_sessions, builds)
+    app.state.account_browsers = account_browsers
 
     async def local_account_owner(request: Request, current=Depends(owner)):
         try:
@@ -430,7 +447,7 @@ def create_app(settings: Settings, inference=None, managed=None):
             ).is_loopback
         except ValueError:
             local = False
-        if not local:
+        if not local or current["role"] != "owner":
             raise HTTPException(403, "Account access requires the local desktop owner")
         return current
 
@@ -444,6 +461,54 @@ def create_app(settings: Settings, inference=None, managed=None):
     ):
         return await account_sessions.create(current["id"], body)
 
+    @app.post("/v1/account-sessions/browser", status_code=201)
+    async def create_browser_account(
+        body: BrowserSessionCreate, current=Depends(local_account_owner)
+    ):
+        return await account_sessions.create_browser(current["id"], body)
+
+    @app.post("/v1/account-sessions/{session_id}/browser")
+    async def start_account_browser(session_id: UUID, current=Depends(local_account_owner)):
+        return await account_browsers.start(current["id"], str(session_id))
+
+    @app.post(
+        "/v1/account-sessions/{session_id}/browser/{handoff_id}/frame",
+        response_class=Response,
+        responses={200: {"content": {"image/png": {}}}},
+    )
+    async def account_browser_frame(
+        session_id: UUID, handoff_id: UUID, current=Depends(local_account_owner)
+    ):
+        png = await account_browsers.operate(
+            current["id"], str(session_id), str(handoff_id), "frame"
+        )
+        return Response(png, media_type="image/png")
+
+    @app.post("/v1/account-sessions/{session_id}/browser/{handoff_id}/input", status_code=204)
+    async def account_browser_input(
+        session_id: UUID, handoff_id: UUID,
+        body: Annotated[BrowserClick | BrowserText | BrowserKey, Field(discriminator="op")],
+        current=Depends(local_account_owner),
+    ):
+        await account_browsers.operate(
+            current["id"], str(session_id), str(handoff_id), "input", body
+        )
+        return Response(status_code=204)
+
+    @app.post("/v1/account-sessions/{session_id}/browser/{handoff_id}/save", status_code=204)
+    async def save_account_browser(
+        session_id: UUID, handoff_id: UUID, current=Depends(local_account_owner)
+    ):
+        await account_browsers.operate(current["id"], str(session_id), str(handoff_id), "save")
+        return Response(status_code=204)
+
+    @app.delete("/v1/account-sessions/{session_id}/browser/{handoff_id}", status_code=204)
+    async def discard_account_browser(
+        session_id: UUID, handoff_id: UUID, current=Depends(local_account_owner)
+    ):
+        await account_browsers.discard(current["id"], str(session_id), str(handoff_id))
+        return Response(status_code=204)
+
     @app.post("/v1/account-sessions/{session_id}/read")
     async def read_account_session(session_id: UUID, current=Depends(local_account_owner)):
         return await account_sessions.read(current["id"], str(session_id))
@@ -451,6 +516,7 @@ def create_app(settings: Settings, inference=None, managed=None):
     @app.delete("/v1/account-sessions/{session_id}", status_code=204)
     async def revoke_account_session(session_id: UUID, current=Depends(local_account_owner)):
         await account_sessions.revoke(current["id"], str(session_id))
+        await account_browsers.revoke(current["id"], str(session_id))
         return Response(status_code=204)
 
     @app.get("/v1/account-sessions/{session_id}/grants")

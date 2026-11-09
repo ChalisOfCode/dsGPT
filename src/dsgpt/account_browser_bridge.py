@@ -1,8 +1,8 @@
 """Internal owner-browser bridge, separate from Work projects and diagnostics.
 
-No application API uses this yet. A future owner controller must supply live
-authority checks and explicit page/task-bound write approval; this bridge never
-approves a POST. Private frames/input/profile bytes must not enter model tools.
+The local owner controller supplies live authority checks. The bridge never
+approves a POST; page/task-bound approval remains unimplemented. Private
+frames/input/profile bytes must not enter model tools.
 """
 
 import asyncio

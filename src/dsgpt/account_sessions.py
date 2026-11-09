@@ -24,12 +24,15 @@ COOKIE = re.compile(
 PATH = re.compile(r"/[A-Za-z0-9_./~-]{0,1000}")
 
 
-class AccountSessionCreate(BaseModel):
+class BrowserSessionCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     label: str = Field(min_length=1, max_length=80)
     origin: str = Field(max_length=512)
     read_path: str = Field(max_length=1001)
+
+
+class AccountSessionCreate(BrowserSessionCreate):
     session_cookie: SecretStr = Field(min_length=3, max_length=1617)
 
 
@@ -151,10 +154,19 @@ class AccountSessions:
         }
 
     async def create(self, owner, body):
+        return await self._create(owner, body, body.session_cookie.get_secret_value())
+
+    async def create_browser(self, owner, body):
+        return await self._create(owner, body, None)
+
+    async def _create(self, owner, body, cookie):
         self._available()
         origin, path = session_origin(body.origin), session_path(body.read_path)
-        label, cookie = body.label.strip(), body.session_cookie.get_secret_value()
-        if not label or any(ord(c) < 32 for c in label) or not COOKIE.fullmatch(cookie):
+        label = body.label.strip()
+        if (
+            not label or any(ord(c) < 32 for c in label)
+            or (cookie is not None and not COOKIE.fullmatch(cookie))
+        ):
             raise HTTPException(422, "Invalid session label or session cookie")
         row = {
             "id": uid(),
@@ -175,7 +187,10 @@ class AccountSessions:
                 ):
                     raise HTTPException(409, "Revoke an existing account session first")
                 try:
-                    sealed = self.protection.seal(cookie.encode("ascii"), binding(row))
+                    sealed = (
+                        b"" if cookie is None
+                        else self.protection.seal(cookie.encode("ascii"), binding(row))
+                    )
                 except OSError:
                     raise HTTPException(503, "Could not protect the account session") from None
                 db.execute(
@@ -218,7 +233,8 @@ class AccountSessions:
     async def grant(self, owner, identifier, body):
         self._available()
         async with self.lock:
-            self._session(owner, identifier)
+            if not self._session(owner, identifier)["sealed_cookie"]:
+                raise HTTPException(409, "Browser sessions do not support Work grants yet")
             self._work_device(str(body.device_id))
             task = self.store.one(
                 "SELECT revision FROM work_tasks WHERE id=?", (str(body.task_id),)
@@ -293,6 +309,8 @@ class AccountSessions:
             raise HTTPException(409, "An account read is already in progress")
         async with self.read_lock:
             row = authorize()
+            if not row["sealed_cookie"]:
+                raise HTTPException(409, "Use the owner browser for this account session")
             url = session_origin(row["origin"]) + session_path(row["read_path"])
             try:
                 cookie = self.protection.open(row["sealed_cookie"], binding(row)).decode("ascii")
