@@ -2544,3 +2544,34 @@ REVIEW, and owner hardware is unverified. Five original report ZIPs were
 individually size/digest verified and preserved as
 `dsGPT-ci-test-evidence-1beb55b.zip`, 47483 bytes, SHA256
 `594d6cd37aad0b7bc2c5a81f4151b8a725f88261a7ecea6593d13bbf45511f61`.
+
+
+## Item 2: protected browser profile storage
+
+Internal profile vault added with current-user Windows DPAPI and explicit
+owner/session/origin/revision binding. It accepts at most 512 regular-file entries
+and 8 MiB of decoded data, rejects unsafe paths and parent/file collisions,
+atomically replaces only the expected revision, and retains previous encrypted
+state on protection failure. The host never extracts or writes plaintext profile
+files. Migration 29 retains existing sessions and write receipts; revocation
+cascades removal of the encrypted profile. No API, model or browser controller
+uses the vault yet. Clean Chromium stop, isolated restore, persistent cookies,
+local storage and IndexedDB require real-browser acceptance before completion.
+
+Focused account/profile/receipt/migration checks: 111 passed, one native Windows
+profile protection test skipped locally, in 10.19 seconds. Additional local
+fail-closed coverage checks that unavailable Windows protection cannot write a
+plaintext fallback. Native DPAPI profile save, separate-process restore and
+ciphertext tampering tests are in the existing Windows CI selection. Linux
+storage fixtures are explicitly not production encryption evidence.
+
+Prior `653ac68` routine CI 42676620327 passed all nine jobs. Backend report has
+1290 cases including subtests, no failures/errors and one Windows-only skip;
+Windows has 156 cases, no failures/errors and one POSIX-only skip. Browser: 27
+expected, zero flaky/unexpected/skipped. Android: 24 unit cases and the lifecycle
+job passed. Five original report ZIPs were individually size/digest verified and
+preserved as dsGPT-ci-test-evidence-653ac68.zip, 48104 bytes, SHA256
+1fa92fccdcf5c6370a2a2051b122ba5c2e3d7d0db8067f2906264ded38a75613.
+Routine installer fixtures remain separate from item 1 and complete item 5;
+owner hardware remains unverified. No final production release is authorized
+by these results. No model rerun or full local suite was performed.

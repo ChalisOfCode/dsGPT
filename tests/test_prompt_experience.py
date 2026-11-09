@@ -189,6 +189,7 @@ def test_v21_profile_upgrade_keeps_messages_and_makes_a_backup(tmp_path):
             ("keep-chat", "Keep my chat", utcnow(), utcnow()),
         )
         for table in (
+            "account_browser_profiles",
             "account_browser_writes",
             "account_grants",
             "account_sessions",

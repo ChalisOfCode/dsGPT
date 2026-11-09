@@ -545,3 +545,11 @@ CREATE TABLE account_browser_writes (
 CREATE INDEX account_browser_writes_session ON account_browser_writes(session_id,status);
 """
 REQUIRED_TABLES[28] = {"account_browser_writes"}
+
+MIGRATIONS[29] = """
+CREATE TABLE account_browser_profiles (
+ session_id TEXT PRIMARY KEY REFERENCES account_sessions(id) ON DELETE CASCADE,
+ revision INTEGER NOT NULL CHECK(revision > 0), sealed_profile BLOB NOT NULL
+);
+"""
+REQUIRED_TABLES[29] = {"account_browser_profiles"}

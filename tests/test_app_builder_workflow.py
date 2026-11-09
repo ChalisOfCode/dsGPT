@@ -228,6 +228,7 @@ def test_real_v22_upgrade_keeps_profile_data_and_backup(tmp_path):
     store, _, task, _ = setup(tmp_path)
     with store.transaction() as db:
         for table in (
+            "account_browser_profiles",
             "account_browser_writes",
             "account_grants",
             "account_sessions",

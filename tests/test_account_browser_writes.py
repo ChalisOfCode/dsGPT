@@ -200,12 +200,13 @@ def test_v27_upgrade_preserves_session_bytes(tmp_path):
     ledger = make_ledger(tmp_path)
     before = ledger.store.all("SELECT * FROM account_sessions")
     with sqlite3.connect(ledger.store.path) as db:
+        db.execute("DROP TABLE account_browser_profiles")
         db.execute("DROP TABLE account_browser_writes")
         db.execute("PRAGMA user_version=27")
     store = Store(tmp_path)
     assert store.all("SELECT * FROM account_sessions") == before
     assert store.all("SELECT * FROM account_browser_writes") == []
-    assert len(list(tmp_path.glob("before-v27-to-v28-*.db"))) == 1
+    assert len(list(tmp_path.glob("before-v27-to-v29-*.db"))) == 1
 
 
 def test_abrupt_process_exit_leaves_action_blocked(tmp_path):

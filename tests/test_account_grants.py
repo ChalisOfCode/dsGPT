@@ -185,6 +185,7 @@ def test_v26_upgrade_preserves_protected_sessions(tmp_path):
         )
     before = store.all("SELECT * FROM account_sessions")
     with sqlite3.connect(store.path) as db:
+        db.execute("DROP TABLE account_browser_profiles")
         db.execute("DROP TABLE account_browser_writes")
         db.execute("DROP TABLE account_grants")
         db.execute("PRAGMA user_version=26")
