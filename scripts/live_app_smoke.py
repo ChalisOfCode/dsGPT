@@ -38,28 +38,28 @@ async def edits(inference, model, files, label, budget):
                 "minItems": 2,
                 "maxItems": 2,
                 "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {
-                        "tool": {"const": "edit_file"},
-                        **{
-                            key: {"type": "string"}
-                            for key in (
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "properties": {
+                                "tool": {"const": "edit_file"},
+                                "path": {"const": f["path"]},
+                                "expected_sha256": {"const": f["sha256"]},
+                                "old_text": {"type": "string"},
+                                "new_text": {"type": "string"},
+                                "summary": {"type": "string"},
+                            },
+                            "required": [
+                                "tool",
                                 "path",
                                 "expected_sha256",
                                 "old_text",
                                 "new_text",
                                 "summary",
-                            )
-                        },
-                    },
-                    "required": [
-                        "tool",
-                        "path",
-                        "expected_sha256",
-                        "old_text",
-                        "new_text",
-                        "summary",
+                            ],
+                        }
+                        for f in files
                     ],
                 },
             },
@@ -87,10 +87,11 @@ async def edits(inference, model, files, label, budget):
                 raise ValueError("Incomplete model response")
     payload = json.loads("".join(fragments))
     actions = [ProjectAction.model_validate(item) for item in payload["edits"]]
+    hashes = {f["path"]: f["sha256"] for f in files}
     if (
         len(actions) != 2
-        or {a.path for a in actions} != {f["path"] for f in files}
-        or any(a.tool != "edit_file" or not a.expected_sha256 for a in actions)
+        or {a.path for a in actions} != hashes.keys()
+        or any(a.tool != "edit_file" or a.expected_sha256 != hashes[a.path] for a in actions)
     ):
         raise ValueError("Model did not return one targeted edit per platform")
     return actions

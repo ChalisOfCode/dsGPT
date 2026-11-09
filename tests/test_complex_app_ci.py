@@ -173,3 +173,36 @@ def test_explicit_acceptance_request_trigger_is_main_only_and_preserves_active_r
     assert workflow["concurrency"]["cancel-in-progress"] == "false"
     assert set(workflow["permissions"]) == {"contents", "actions"}
     assert set(workflow["permissions"].values()) == {"read"}
+
+
+@pytest.mark.asyncio
+async def test_bounded_smoke_binds_model_edits_to_each_file_hash():
+    spec = importlib.util.spec_from_file_location(
+        "live_app_smoke", ROOT / "scripts/live_app_smoke.py"
+    )
+    smoke = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(smoke)
+    files = [
+        {"path": "MainActivity.kt", "sha256": "a" * 64, "content": '"Before"'},
+        {"path": "main.cpp", "sha256": "b" * 64, "content": '"Before"'},
+    ]
+
+    class Stream:
+        def __init__(self, swap):
+            self.swap = swap
+
+        async def stream(self, model, messages, response_schema):
+            items = response_schema["properties"]["edits"]["items"]["oneOf"]
+            assert [(x["properties"]["path"]["const"], x["properties"]["expected_sha256"]["const"])
+                    for x in items] == [(f["path"], f["sha256"]) for f in files]
+            yield {"kind": "delta", "data": {"text": json.dumps({"edits": [
+                {"tool": "edit_file", "path": f["path"],
+                 "expected_sha256": files[1 - i]["sha256"] if self.swap else f["sha256"],
+                 "old_text": '"Before"', "new_text": '"After"', "summary": "Edit label"}
+                for i, f in enumerate(files)
+            ]})}}
+
+    actions = await smoke.edits(Stream(False), None, files, "After", 5)
+    assert [a.expected_sha256 for a in actions] == [f["sha256"] for f in files]
+    with pytest.raises(ValueError, match="one targeted edit per platform"):
+        await smoke.edits(Stream(True), None, files, "After", 5)

@@ -2425,3 +2425,11 @@ The reduced harness passed 91 focused checks, static CI policy and lint.
 A local wiring check compiled the C++ source-label assertion and verified it
 rejects a wrong label; that check used a model test double and is not
 acceptance evidence. Actual 9B and native results require the bounded run.
+
+Run 42635618525 loaded the pinned model and built the production Docker toolchain.
+The first model response failed hash validation at 113.065 inference seconds.
+No app build or native check ran. Evidence artifact 13682818266 (76059 bytes),
+SHA256 dc7e623ca0f17e68a5505c57117445ca3c6c28e60587f7c083b3ffddebaa468a.
+The retry schema binds each editable path to its observed source hash, and
+validation rejects a mismatched pair without rewriting any response. The
+360-second cap and exact model, compilation, signing and native gates remain.
