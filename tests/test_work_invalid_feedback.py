@@ -295,3 +295,31 @@ def test_rejected_edit_retains_source_under_context_pressure(tmp_path, stale):
     if not stale:
         page = json.loads(retained[0]['content'][len(RETAINED_SOURCE_PREFIX):])
         assert page['content'] == body and page['sha256'] == digest
+
+
+@pytest.mark.parametrize('path', ['a.py}**', 'a.py} '])
+def test_invalid_path_feedback_identifies_path_without_repairing_action(tmp_path, path):
+    store, work, tid, _ = setup(tmp_path, target='source')
+    with store.transaction() as db:
+        work.specs.initialize(db, tid, 'Implement the requested behavior')
+        db.execute("UPDATE work_spec_sections SET notes='Reviewed' WHERE task_id=?", (tid,))
+    commit(work, tid, action(tool='write_file', path='a.py', content='value = 0\n'))
+    commit(work, tid, action(tool='read_file', path='a.py'))
+    raw = json.dumps({'tool': 'write_file', 'path': path, 'content': 'REJECTED',
+                      'summary': 'Invalid path fixture'})
+    with pytest.raises(ValidationError) as caught:
+        parse_model_action(raw)
+    with store.transaction() as db:
+        db.execute("UPDATE work_tasks SET status='running' WHERE id=?", (tid,))
+    work._invalid_action(tid, store.one('SELECT * FROM work_sessions WHERE task_id=?', (tid,)),
+                         raw, caught.value)
+    messages = prompt(store, work, tid, replace(work.models['local'], context=16384,
+                                               output_tokens=4096))
+    context = json.loads(messages[1]['content'])
+    assert 'invalid_project_path' in context['next_step']
+    assert 'Copy the exact path' in context['next_step']
+    assert 'Requirement text is not source old_text' in context['next_step']
+    assert raw not in '\n'.join(m['content'] for m in messages)
+    assert ollama_input_estimate(messages) + 4096 <= 16384
+    files = store.all('SELECT path,content FROM work_files WHERE task_id=?', (tid,))
+    assert [(f['path'], f['content']) for f in files] == [('a.py', 'value = 0\n')]

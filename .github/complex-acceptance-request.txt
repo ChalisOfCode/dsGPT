@@ -1,6 +1,6 @@
-Request: reuse-visible-requirements-after-eof-2026-11-09
-Base source: c74fa73b6adb25bc208a768b425f1de3e437e558
-Prior run 42528136541 stopped alternating already visible requirement sections.
-Correct EOF guidance to reuse retained exact text and read only missing sections.
+Request: explain-invalid-project-path-2026-11-09
+Base source: e4b68603e17678497d745f7e622474f27bd919cd
+Prior run 42545441112 rejected malformed paths and stopped rereading requirement EOF.
+Guide the model to copy observed paths and distinguish requirement text from source.
 Run the unchanged original request with exact 9B model and unchanged
 context/output budgets, loop limits and independent native acceptance checks.

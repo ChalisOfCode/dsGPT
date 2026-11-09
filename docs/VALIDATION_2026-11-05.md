@@ -2197,3 +2197,52 @@ found no private data or acceptance changes. Before dispatch: active, queued,
 waiting and pending all zero; 89 public artifacts, 125329318 bytes, none expired.
 Local disk has 50 GiB available; no artifact deletion needed. Private archive,
 billing, cache settings and signing material remain untouched.
+
+## e4b6860 routine platform evidence
+
+CI 42545441117 passed all nine jobs on exact e4b68603e17678497d745f7e622474f27bd919cd.
+Backend: 1250 cases including subtests, no failures/errors/skips. Browser: 26
+expected, zero flaky/skipped/unexpected. Windows regressions: 139 cases, zero
+failures/errors and one POSIX fixture skip; separate Windows CLI acceptance passed.
+Android unit tests: 24 cases, zero failures/errors/skips. Android lifecycle
+instrumentation: OK (one test). Disposable Windows installed native UI, local
+reply, Credential Manager, scheduled restart, reinstall/data preservation and
+uninstall preserving data all passed. Separate qwen3:1.7b fixture is not actual9B
+acceptance or complete item 5. Staged inference remains BLOCKED, production REVIEW;
+physical owner hardware remains unverified.
+Five report ZIPs individually verified against GitHub size/digest/source commit
+were preserved in dsGPT-ci-test-evidence-e4b6860.zip, 45990 bytes, SHA256
+4a1a4f3de0b1646f4693f37394fb3af5e0b17a10e1a42f342b3f96c491b04b4b.
+Actual9B run 42545441112, job 128929305804, remains in progress after exact model
+and production Docker setup succeeded. No final actual-model artifact yet; no
+additional acceptance run dispatched or cancelled.
+
+## e4b6860 actual-model failure and path-error guidance
+
+Actual9B run 42545441112 passed pinned model and production Docker setup, then
+failed initial step 26 with no_progress after 4916.596 seconds. No build_project
+occurred; generated native checks and follow-up were skipped. Rejected writes
+used paths with appended formatting or trailing whitespace. Steps 21/24 read
+section 2 at EOF (offset 869); step 26 attempted the same empty page again.
+Step 22 had read the unchanged scaffold source; no generated implementation was
+verified. Original artifact 13645694988 was size/digest checked and durably
+preserved as dsGPT-complex-evidence-42545441112.zip (128029 bytes), SHA256
+2bdbc194c7122e7b56924f41b9b6653cfb9a426b7730793d7ab44b8f5cdbdf41.
+
+The validation result identified invalid_project_path, but next-step guidance
+emphasized incomplete JSON. Candidate guidance specifically directs copying the
+observed path without appended formatting, using edit_file for existing files,
+and distinguishes requirement text from source old_text. It neither repairs nor
+executes rejected actions. Path validation, grammar, model, original request,
+runtime/context/output budgets, loop limits and acceptance remain unchanged.
+Two regression cases fail on baseline and pass candidate; focused suite: 35 passed.
+Hash-checked saved-history replay through step 25 reconstructs scaffold, actions,
+review notes, cumulative overview and latest valid session summary. Baseline and
+candidate both retain the exact source and requirement section 2 at offset 0.
+Baseline uses 15864/16384 estimated tokens including 4096 output reserve; candidate
+uses 15924. Replay is diagnostic only, not actual-model acceptance.
+Full suite: 1246 tests plus six subtests passed in 82.37 seconds. Ruff, whitespace,
+static CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+found no private material or changed acceptance. Before retry: active, queued,
+waiting and pending all zero; 89 artifacts, 125350642 bytes, none expired. No
+artifact deletion needed. Archive settings, billing and signing remain untouched.

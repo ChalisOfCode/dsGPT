@@ -1676,6 +1676,19 @@ class WorkRegistry:
                         "Existing files require edit_file, not write_file. Copy old_text and "
                         "expected_sha256 from the intended file, not another file."
                     )
+                    if any(
+                        field.get("message") == "Value error, invalid_project_path"
+                        for field in clipped.get("fields", []) if isinstance(field, dict)
+                    ):
+                        context["next_step"] = (
+                            "The response was rejected: invalid_project_path; NO action was "
+                            "executed. Copy the exact path from the file inventory or retained "
+                            "source, without appended formatting or whitespace. Do not invent "
+                            "a corrected filename. Existing files require edit_file with their "
+                            "current sha256 and exact unique old_text. Requirement text is not "
+                            "source old_text; rereading requirements cannot fix a path error. "
+                            "Reuse retained source; read_file only for missing or stale source."
+                        )
                     messages[1]["content"] = canonical(context)
                 if (
                     clipped.get("error") == "existing_file_requires_targeted_edit"
