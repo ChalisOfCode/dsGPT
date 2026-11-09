@@ -49,20 +49,37 @@ export function AccountPanel({ client }: { client: Client }) {
           available: boolean;
           sessions: Session[];
         }>("/v1/account-sessions");
+        if (
+          typeof result?.available !== "boolean" ||
+          !Array.isArray(result.sessions)
+        ) {
+          throw new Error(
+            "Account permissions are unavailable on this backend.",
+          );
+        }
+        const hasSession = result.sessions.some((s) => s.id === session);
         const [ts, ds, gs] = await Promise.all([
-          session
+          hasSession
             ? client.request<Task[]>("/v1/work/tasks?limit=20")
             : Promise.resolve([]),
-          client.request<Device[]>("/v1/devices?limit=200"),
-          session && result.sessions.some((s) => s.id === session)
+          hasSession
+            ? client.request<Device[]>("/v1/devices?limit=200")
+            : Promise.resolve([]),
+          hasSession
             ? client.request<Grant[]>(`/v1/account-sessions/${session}/grants`)
             : Promise.resolve([]),
         ]);
+        if (!Array.isArray(ts) || !Array.isArray(ds) || !Array.isArray(gs)) {
+          throw new Error("Account permissions could not be loaded.");
+        }
         if (cancelled || own !== epoch.current) return;
+        const workDevices = ds.filter(
+          (d) => !d.revoked && d.scopes.includes("work"),
+        );
         setSessions(result.sessions);
         setAvailable(result.available);
         setTasks(ts);
-        setDevices(ds.filter((d) => !d.revoked && d.scopes.includes("work")));
+        setDevices(workDevices);
         setGrants(gs);
         setReady(true);
       } catch (e) {
