@@ -147,7 +147,8 @@ class AccountSessions:
         return {
             "available": self.protection.available,
             "sessions": self.store.all(
-                "SELECT id,label,origin,read_path,created_at FROM account_sessions "
+                "SELECT id,label,origin,read_path,created_at,"
+                "(length(sealed_cookie)=0) AS browser_profile FROM account_sessions "
                 "WHERE owner=? ORDER BY created_at,id",
                 (owner,),
             ),

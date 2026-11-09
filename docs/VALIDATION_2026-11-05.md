@@ -2724,3 +2724,45 @@ report ZIPs were individually size/digest verified and preserved as
 dsGPT-ci-test-evidence-d9468e5.zip, 48900 bytes, SHA256
 859a32c0ac4c388f4eb6ee3b8fdc69855f537354b3ea00376c40ed4670705ff4.
 No owner hardware was tested and no final installers were released.
+
+## Item 2: desktop private browser view
+
+The desktop can now enroll a cookie-free browser account and open an owner-only
+modal view. A dedicated native binary command authenticates using the stored
+backend connection, accepts only loopback origins and UUID-bound frame endpoints,
+rejects redirects and non-PNG/non-no-store responses, and caps decoded frames at
+1.5 MiB with a fixed 1024 by 768 IHDR. The frontend repeats the byte/dimension
+checks and renders only an in-memory image; no remote page enters the webview.
+The guest bridge now checks the same PNG dimensions before releasing a frame.
+
+The view serializes clicks, a fixed key allowlist, masked text submission and
+refresh. Text clears before sending and errors do not retry input. Expiry removes
+images and text and prevents a late response restoring an expired image. Closing
+or navigating away discards; saving explicitly requests a clean encrypted profile
+snapshot. Stale discard is idempotent without touching a newer handoff. Browser
+profiles are identified in account metadata so the UI does not offer incompatible
+legacy Work grants. No website POST is enabled: login/form approval, remote-state
+verification, task integration and real production acceptance remain outstanding.
+
+Focused checks cover native-command selection, MIME/cache/size/dimension rejection,
+UI enrollment, scaled clicks, key input, interrupted text without replay, explicit
+save/discard and expiry. Backend fixture checks include stale discard, profile
+metadata and malformed PNG rejection; real Chromium pipe/restore fixtures still
+use synthetic transport and container isolation. Native Rust tests are included
+in the existing Windows CI selection; local native compilation was unavailable.
+Local results: 20 focused backend cases passed in 2.50 seconds, with one native
+Windows-only skip; four transport checks passed in 0.212 seconds. Two focused
+browser UI scenarios passed; the handoff scenario also checks delayed frames
+arriving after simulated expiry. Desktop production build, Ruff and CI policy
+checks passed. These are not production Docker/HTTPS/login/MFA or item 2 acceptance.
+
+Prior 6f29277 routine CI 42708371935 passed all nine jobs. Backend: 1334 cases
+including subtests, zero failures/errors, nine expected platform/browser skips.
+Windows: 171 cases, zero failures/errors, two expected platform skips. Desktop
+browser: 27 expected, zero flaky/unexpected/skipped. Private browser: 21 cases,
+zero failures/errors/skips. Android: 24 unit cases and lifecycle OK (1 test).
+Five original ZIP reports were separately size/digest verified and privately
+preserved as dsGPT-ci-test-evidence-6f29277.zip, 49855 bytes, SHA256
+17557757c15fd0d61fc012d69717457ee6dbe8804e58c7fd5a727f9025fff7ce.
+The separate installer fixture does not complete item 5; owner hardware remains
+unverified. Item 1 was not rerun. No final installers were released.

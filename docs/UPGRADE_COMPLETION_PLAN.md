@@ -57,8 +57,8 @@ These are explicit API permissions, not automatic model access or write approval
 
 Settings now provides owner-facing account and grant revocation, task/device
 selection, explicit read consent and refreshed permission review after uncertain
-mutation responses. Browser sign-in remains unavailable; this interface never
-asks for pasted credentials. UI fixture coverage is separate from real sign-in.
+mutation responses. Browser form submission remains unavailable; the settings
+interface never asks for pasted credentials. UI fixture coverage is separate from real sign-in.
 
 The private browser network component now validates one public HTTPS origin,
 preserves browser cookie headers and security policy, and bounds requests and
@@ -103,8 +103,12 @@ start one five-minute handoff on the exact configured origin and page, and
 request a no-store PNG, send bounded input, save or discard. Handoff identifiers
 are replaced on reopen. Revocation discards the running browser; paired and
 non-loopback clients cannot use these endpoints. Browser sessions do not expose
-legacy cookie reads or Work grants. The desktop pop-out and approval for
-login/form POSTs are not yet connected.
+legacy cookie reads or Work grants. The desktop now provides a private modal
+screenshot/input view, cookie-free enrollment and explicit save/discard. Its native binary transport caps PNG bytes
+and dimensions and never writes frames to disk. Text clears before input dispatch;
+errors do not retry, expiry removes images and stale discard cannot close a newer
+handoff. Browser profiles do not offer incompatible legacy Work grants. Approval
+for login/form POSTs is still not connected; all website POSTs remain blocked.
 
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and

@@ -59,6 +59,7 @@ def test_owner_handoff_revocation_and_fresh_generation(app):
     with TestClient(app, client=("127.0.0.1", 12345)) as client:
         created = client.post(PATH + "/browser", json=ENROLL, headers=headers)
         assert created.status_code == 201
+        assert client.get(PATH, headers=headers).json()["sessions"][0]["browser_profile"] == 1
         session = PATH + "/" + created.json()["id"]
         assert client.post(session + "/read", headers=headers).status_code == 409
         browser = session + "/browser"
@@ -89,9 +90,13 @@ def test_owner_handoff_revocation_and_fresh_generation(app):
         replacement = browser + "/" + opened.json()["handoff_id"]
         assert replacement != handoff
         bridge = app.state.account_browsers.active.bridge
+        assert client.delete(handoff, headers=headers).status_code == 204
+        assert bridge.events == ["start"]
+        assert client.post(replacement + "/frame", headers=headers).status_code == 200
         assert client.delete(session, headers=headers).status_code == 204
         assert bridge.events == ["start", "abort"]
         assert client.post(replacement + "/frame", headers=headers).status_code == 404
+        assert client.delete(replacement, headers=headers).status_code == 204
         assert not app.state.store.all("SELECT * FROM account_sessions")
         for file in app.state.store.directory.glob("*.db*"):
             assert TYPED.encode() not in file.read_bytes()

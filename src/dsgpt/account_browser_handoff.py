@@ -171,7 +171,15 @@ class AccountBrowserHandoffs:
             handoff.stopping = False
 
     async def discard(self, owner, session, generation):
-        await self._discard(self._find(owner, session, generation))
+        try:
+            handoff = self._find(owner, session, generation)
+        except HTTPException as exc:
+            # A lost discard/save response or timer expiry must not trap the
+            # owner in a stale view. Never touch a newer handoff generation.
+            if exc.status_code == 404:
+                return
+            raise
+        await self._discard(handoff)
 
     async def revoke(self, owner, session):
         handoff = self.active

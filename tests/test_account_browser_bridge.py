@@ -293,3 +293,17 @@ async def test_inflight_failure_discards_response_and_preserves_vault(tmp_path, 
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
         await bridge.abort()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("data", [b"\x89PNG\r\n\x1a\n", b"\x89PNG\r\n\x1a\n" + b"\xff" * 32])
+async def test_frame_rejects_invalid_header_and_dimensions(data):
+    import base64
+    from unittest.mock import AsyncMock
+
+    bridge = object.__new__(AccountBrowserBridge)
+    bridge._exchange = AsyncMock(return_value={"value": {"png": base64.b64encode(data).decode()}})
+    bridge.abort = AsyncMock()
+    with pytest.raises(AccountBrowserBridgeError, match="account_browser_frame_invalid"):
+        await bridge.frame()
+    bridge.abort.assert_awaited_once()

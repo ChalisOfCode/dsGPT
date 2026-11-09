@@ -1423,3 +1423,8 @@ main > header {
 .phone-dot.paired {
   background: var(--muted);
 }
+
+.account-browser-dialog { width: min(1060px, 94vw); max-height: 92vh; overflow: auto; }
+.account-browser-image { display: block; padding: 0; border: 0; width: 100%; background: transparent; }
+.account-browser-image img { display: block; width: 100%; height: auto; }
+.account-browser-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }

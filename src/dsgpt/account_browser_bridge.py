@@ -164,7 +164,13 @@ class AccountBrowserBridge:
             if type(png) is not str or len(png) > 2 * 1024**2:
                 raise ValueError
             decoded = base64.b64decode(png, validate=True)
-            if not decoded.startswith(b"\x89PNG\r\n\x1a\n"):
+            if (
+                len(decoded) < 33
+                or decoded[:24] != (
+                    b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR"
+                    b"\0\0\x04\0\0\0\x03\0"
+                )
+            ):
                 raise ValueError
             return decoded
         except Exception:

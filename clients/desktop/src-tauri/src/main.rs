@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod history_ui;
+mod account_frame;
 mod phone_setup;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -153,6 +154,42 @@ fn open_public_source(url: String) -> Result<(), String> {
     #[cfg(not(windows))]
     { let _ = validated; Err("This native client requires Windows".into()) }
 }
+#[tauri::command]
+async fn account_browser_frame(
+    session_id: String,
+    handoff_id: String,
+    state: State<'_, Session>,
+) -> Result<tauri::ipc::Response, String> {
+    if !account_frame::valid_id(&session_id) || !account_frame::valid_id(&handoff_id) {
+        return Err("Invalid account browser identity".into());
+    }
+    let c = state.0.lock().map_err(|_| "Session unavailable")?
+        .clone().ok_or("Connect first")?;
+    let url = url::Url::parse(&c.origin).map_err(|_| "Invalid backend address")?;
+    if url.scheme() != "http" || !["127.0.0.1", "[::1]", "localhost"].contains(&url.host_str().unwrap_or("")) {
+        return Err("Account browser requires the local desktop owner".into());
+    }
+    let mut response = http()?.post(format!(
+        "{}/v1/account-sessions/{}/browser/{}/frame", c.origin, session_id, handoff_id
+    )).bearer_auth(&c.token).header("Cache-Control", "no-store")
+        .send().await.map_err(|_| "Account browser frame unavailable")?;
+    if response.status() != reqwest::StatusCode::OK
+        || response.headers().get("content-type").and_then(|v| v.to_str().ok()) != Some("image/png")
+        || response.headers().get("cache-control").and_then(|v| v.to_str().ok()) != Some("no-store")
+    {
+        return Err("Account browser frame unavailable".into());
+    }
+    let mut data = Vec::new();
+    while let Some(chunk) = response.chunk().await.map_err(|_| "Account browser frame interrupted")? {
+        if data.len() + chunk.len() > account_frame::MAX_PNG {
+            return Err("Account browser frame exceeds limit".into());
+        }
+        data.extend_from_slice(&chunk);
+    }
+    if !account_frame::valid_png(&data) { return Err("Invalid account browser frame".into()); }
+    Ok(tauri::ipc::Response::new(data))
+}
+
 #[tauri::command]
 async fn api_request(
     path: String,
@@ -419,6 +456,7 @@ fn main() {
             restore_connection,
             disconnect,
             api_request,
+            account_browser_frame,
             open_public_source,
             download_work,
             download_artifact,

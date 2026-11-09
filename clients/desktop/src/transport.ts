@@ -1,6 +1,7 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { backendURL, EventParser, type StreamEvent } from "./protocol";
 import { publicSourceURL } from "./research";
+import { accountFrame, accountId, frameLimit } from "./account-frame";
 // Browser development mode keeps tokens only in memory. Production uses native storage.
 export class Client {
   constructor(
@@ -8,6 +9,57 @@ export class Client {
     private token: string,
   ) {
     this.origin = backendURL(origin);
+  }
+  async accountFrame(sessionId: string, handoffId: string): Promise<string> {
+    if (![sessionId, handoffId].every((id) => accountId.test(id)))
+      throw new Error("Invalid account browser identity");
+    if (isTauri()) {
+      const data = await invoke<ArrayBuffer>("account_browser_frame", {
+        sessionId,
+        handoffId,
+      });
+      return accountFrame(new Uint8Array(data));
+    }
+    const response = await fetch(
+      `${this.origin}/v1/account-sessions/${sessionId}/browser/${handoffId}/frame`,
+      {
+        method: "POST",
+        signal: AbortSignal.timeout(30000),
+        headers: { Authorization: `Bearer ${this.token}` },
+        cache: "no-store",
+        redirect: "error",
+      },
+    );
+    if (
+      response.status !== 200 ||
+      response.headers.get("content-type") !== "image/png" ||
+      response.headers.get("cache-control") !== "no-store" ||
+      !response.body
+    )
+      throw new Error("Account browser frame unavailable");
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.length;
+        if (size > frameLimit)
+          throw new Error("Account browser frame exceeds limit");
+        chunks.push(value);
+      }
+    } finally {
+      await reader.cancel();
+      reader.releaseLock();
+    }
+    const data = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      data.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return accountFrame(data);
   }
   async request<T>(
     path: string,
