@@ -158,6 +158,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Account Browser Submissions */
+        get: operations["account_browser_submissions_v1_account_sessions__session_id__browser__handoff_id__submissions_get"];
+        put?: never;
+        /** Start Account Browser Submission */
+        post: operations["start_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__submissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions/{submission_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide Account Browser Submission */
+        post: operations["decide_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__submissions__submission_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Account Browser Submission */
+        post: operations["verify_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__verification_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/account-sessions/{session_id}/grants": {
         parameters: {
             query?: never;
@@ -1722,6 +1774,16 @@ export interface components {
             /** Y */
             y: number;
         };
+        /** BrowserDecision */
+        BrowserDecision: {
+            /** Approve */
+            approve: boolean;
+            /**
+             * Review Id
+             * Format: uuid
+             */
+            review_id: string;
+        };
         /** BrowserKey */
         BrowserKey: {
             /**
@@ -1756,6 +1818,21 @@ export interface components {
              * Format: password
              */
             text: string;
+        };
+        /** BrowserVerification */
+        BrowserVerification: {
+            /**
+             * Action Id
+             * Format: uuid
+             */
+            action_id: string;
+            /** Applied */
+            applied: boolean;
+            /**
+             * Observation Id
+             * Format: uuid
+             */
+            observation_id: string;
         };
         /** ChatAttachmentInput */
         ChatAttachmentInput: {
@@ -2591,6 +2668,153 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    account_browser_submissions_v1_account_sessions__session_id__browser__handoff_id__submissions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__submissions_post: {
+        parameters: {
+            query: {
+                observation_id: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserClick"] | components["schemas"]["BrowserKey"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__submissions__submission_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+                submission_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__verification_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                session_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserVerification"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             204: {

@@ -242,6 +242,30 @@ class PrivateChromium:
             self._replies.pop(identifier, None)
         raise AccountBrowserWorkerError("account_browser_command_timeout")
 
+    def drain_events(self, events, *, seconds):
+        """Read delayed navigation events after a completed input command."""
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            split = self._buffer.find(0)
+            if split >= 0:
+                raw = bytes(self._buffer[:split])
+                del self._buffer[:split + 1]
+                reply = json.loads(raw)
+                if "method" in reply:
+                    events(reply)
+                continue
+            ready, _, _ = select.select(
+                [self._recv], [], [], max(0, deadline - time.monotonic())
+            )
+            if not ready:
+                return
+            block = os.read(self._recv, 65536)
+            if not block:
+                raise AccountBrowserWorkerError("account_browser_pipe_failed")
+            self._buffer.extend(block)
+            if len(self._buffer) > MAX_CDP_BYTES:
+                raise AccountBrowserWorkerError("account_browser_reply_limit")
+
     def close_and_snapshot(self):
         if self._send is None:
             raise AccountBrowserWorkerError("account_browser_closed")

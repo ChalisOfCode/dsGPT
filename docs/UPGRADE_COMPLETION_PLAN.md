@@ -89,8 +89,8 @@ now connects the guest to a dedicated validated Docker sandbox, the host request
 broker and the vault, using bounded private pipes. It exposes only navigation,
 screenshots and a small input allowlist, never raw CDP or evaluation. The bridge
 rechecks live origin and owner authority, requires logging disabled, and saves
-only after clean browser and guest exits. It currently denies all POSTs, including
-broker approvals made outside the controller. Real Chromium tests exercise the
+only after clean browser and guest exits. It denies POSTs outside an exact
+local owner review, including broker approvals made outside the controller. Real Chromium tests exercise the
 actual guest/host pipe, cookie forwarding, profile restart, request denial and
 interrupted cleanup using a synthetic transport and explicit container fixture.
 Production Docker/HTTPS, owner controls, task access and page-bound write approval
@@ -107,12 +107,21 @@ legacy cookie reads or Work grants. The desktop now provides a private modal
 screenshot/input view, cookie-free enrollment and explicit save/discard. Its native binary transport caps PNG bytes
 and dimensions and never writes frames to disk. Text clears before input dispatch;
 errors do not retry, expiry removes images and stale discard cannot close a newer
-handoff. Browser profiles do not offer incompatible legacy Work grants. Approval
-for login/form POSTs is still not connected; all website POSTs remain blocked.
+handoff. Browser profiles do not offer incompatible legacy Work grants.
 
-Remaining for item 2: owner-facing browser login/MFA handoff,
-user-approved writes with interrupted-write recovery, task tool integration and
-controlled browser acceptance. The backend slices are not a complete signed-in workflow.
+The owner can now opt in to reviewing a form triggered by the next click or
+Enter. Only a supported top-level, same-origin form can pause for review.
+A fresh single-use observation binds the input to the current browser handoff
+and document; the review identifies the exact paused request. Review and
+dispatch are bounded, and ordinary inputs cannot send a form. Approving does
+not establish the outcome. A durable receipt blocks further submissions until
+the owner inspects a fresh page and confirms whether the remote change applied.
+Credential fields and cookies do not appear in receipts or review metadata.
+
+Remaining for item 2: task/device-scoped authenticated access, controlled
+production Docker/HTTPS and native Windows acceptance, including login/MFA,
+profile restart, revocation and interrupted writes. Chromium with synthetic
+transport and desktop UI fixtures establish their separate boundaries only.
 
 ## 3. Document layout and spreadsheet formula validation — queued after 2
 

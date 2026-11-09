@@ -101,6 +101,26 @@
         "title": "BrowserClick",
         "type": "object"
       },
+      "BrowserDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "approve": {
+            "title": "Approve",
+            "type": "boolean"
+          },
+          "review_id": {
+            "format": "uuid",
+            "title": "Review Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "review_id",
+          "approve"
+        ],
+        "title": "BrowserDecision",
+        "type": "object"
+      },
       "BrowserKey": {
         "additionalProperties": false,
         "properties": {
@@ -179,6 +199,32 @@
           "text"
         ],
         "title": "BrowserText",
+        "type": "object"
+      },
+      "BrowserVerification": {
+        "additionalProperties": false,
+        "properties": {
+          "action_id": {
+            "format": "uuid",
+            "title": "Action Id",
+            "type": "string"
+          },
+          "applied": {
+            "title": "Applied",
+            "type": "boolean"
+          },
+          "observation_id": {
+            "format": "uuid",
+            "title": "Observation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "observation_id",
+          "action_id",
+          "applied"
+        ],
+        "title": "BrowserVerification",
         "type": "object"
       },
       "ChatAttachmentInput": {
@@ -2200,6 +2246,315 @@
           }
         },
         "summary": "Save Account Browser"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions": {
+      "get": {
+        "operationId": "account_browser_submissions_v1_account_sessions__session_id__browser__handoff_id__submissions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Account Browser Submissions"
+      },
+      "post": {
+        "operationId": "start_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__submissions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "observation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Observation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "discriminator": {
+                  "mapping": {
+                    "click": "#/components/schemas/BrowserClick",
+                    "key": "#/components/schemas/BrowserKey"
+                  },
+                  "propertyName": "op"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/BrowserClick"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BrowserKey"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Account Browser Submission"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions/{submission_id}/decision": {
+      "post": {
+        "operationId": "decide_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__submissions__submission_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "submission_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Submission Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserDecision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide Account Browser Submission"
+      }
+    },
+    "/v1/account-sessions/{session_id}/browser/{handoff_id}/verification": {
+      "post": {
+        "operationId": "verify_account_browser_submission_v1_account_sessions__session_id__browser__handoff_id__verification_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "handoff_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Handoff Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserVerification"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Account Browser Submission"
       }
     },
     "/v1/account-sessions/{session_id}/grants": {

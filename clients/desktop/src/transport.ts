@@ -10,7 +10,7 @@ export class Client {
   ) {
     this.origin = backendURL(origin);
   }
-  async accountFrame(sessionId: string, handoffId: string): Promise<string> {
+  async accountFrame(sessionId: string, handoffId: string) {
     if (![sessionId, handoffId].every((id) => accountId.test(id)))
       throw new Error("Invalid account browser identity");
     if (isTauri()) {
@@ -18,7 +18,11 @@ export class Client {
         sessionId,
         handoffId,
       });
-      return accountFrame(new Uint8Array(data));
+      const bytes = new Uint8Array(data);
+      const observation = new TextDecoder().decode(bytes.subarray(0, 36));
+      if (!accountId.test(observation))
+        throw new Error("Invalid account browser observation");
+      return { image: accountFrame(bytes.subarray(36)), observation };
     }
     const response = await fetch(
       `${this.origin}/v1/account-sessions/${sessionId}/browser/${handoffId}/frame`,
@@ -37,6 +41,9 @@ export class Client {
       !response.body
     )
       throw new Error("Account browser frame unavailable");
+    const observation = response.headers.get("x-dsgpt-observation");
+    if (!observation || !accountId.test(observation))
+      throw new Error("Invalid account browser observation");
     const reader = response.body.getReader();
     const chunks: Uint8Array[] = [];
     let size = 0;
@@ -59,7 +66,7 @@ export class Client {
       data.set(chunk, offset);
       offset += chunk.length;
     }
-    return accountFrame(data);
+    return { image: accountFrame(data), observation };
   }
   async request<T>(
     path: string,

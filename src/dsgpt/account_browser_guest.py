@@ -16,11 +16,14 @@ class AccountBrowserGuest:
     def __init__(self, browser, origin, exchange):
         self.browser, self.origin, self.exchange = browser, origin, exchange
         self.requests = 0
+        self.reviewing = self.submitting = False
+        self.observed_document = None
         target = browser._call("Target.createTarget", {"url": "about:blank"})["targetId"]
         self.session = browser._call(
             "Target.attachToTarget", {"targetId": target, "flatten": True}
         )["sessionId"]
         self.call("Page.enable")
+        self.main_frame = self.call("Page.getFrameTree")["frameTree"]["frame"]["id"]
         self.call("Network.enable")
         self.call("Network.setBypassServiceWorker", {"bypass": True})
         self.call("Emulation.setDeviceMetricsOverride", {
@@ -32,7 +35,8 @@ class AccountBrowserGuest:
 
     def call(self, method, params=None):
         return self.browser._call(
-            method, params, session=self.session, events=self.event, timeout=20,
+            method, params, session=self.session, events=self.event,
+            timeout=55 if self.reviewing else 20,
         )
 
     def allowed(self, url):
@@ -72,6 +76,10 @@ class AccountBrowserGuest:
                     "kind": "request", "url": request["url"],
                     "method": request["method"], "headers": headers,
                     "body": base64.b64encode(body).decode("ascii"),
+                    "document_form": (
+                        self.submitting and params.get("resourceType") == "Document"
+                        and params.get("frameId") == self.main_frame
+                    ),
                 })
         if result is None or result.get("kind") != "response":
             self.call("Fetch.failRequest", {
@@ -84,18 +92,30 @@ class AccountBrowserGuest:
                 "body": result["body"],
             })
 
+    def document(self):
+        frame = self.call("Page.getFrameTree")["frameTree"]["frame"]
+        return frame["id"], frame["loaderId"], frame["url"]
+
     def command(self, value):
+        observation, self.observed_document = self.observed_document, None
+        if self.reviewing:
+            if observation is None or observation != self.document():
+                raise AccountBrowserWorkerError("account_browser_stale_document")
+            self.submitting = True
         op = value.get("op")
         if op == "navigate" and set(value) == {"op", "url"} and self.allowed(value["url"]):
             result = self.call("Page.navigate", {"url": value["url"]})
             if "errorText" in result:
                 raise AccountBrowserWorkerError("account_browser_navigation_failed")
         elif op == "frame" and set(value) == {"op"}:
+            document = self.document()
             png = self.call("Page.captureScreenshot", {
                 "format": "png", "captureBeyondViewport": False,
             })["data"]
             if len(png) > 2 * 1024**2:
                 raise AccountBrowserWorkerError("account_browser_frame_limit")
+            if document == self.document():
+                self.observed_document = document
             return {"png": png}
         elif op == "click" and set(value) == {"op", "x", "y"} and all(
             type(value[k]) is int and 0 <= value[k] < bound
@@ -147,7 +167,16 @@ def main():
                 files = browser.close_and_snapshot()
                 send({"kind": "closed", "files": encode_files(files)})
                 return
-            send({"kind": "result", "value": guest.command(command)})
+            guest.reviewing = command.pop("review_form", False) is True
+            try:
+                value = guest.command(command)
+                if guest.reviewing:
+                    # Give Chromium a chance to deliver the navigation event
+                    # in the same input exchange. Delayed requests fail closed.
+                    browser.drain_events(guest.event, seconds=0.5)
+                send({"kind": "result", "value": value})
+            finally:
+                guest.reviewing = guest.submitting = False
         raise AccountBrowserWorkerError("account_browser_command_limit")
     except Exception:
         # Neither exception text nor a traceback may cross the private boundary.

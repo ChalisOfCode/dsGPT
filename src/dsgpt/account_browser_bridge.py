@@ -1,8 +1,7 @@
 """Internal owner-browser bridge, separate from Work projects and diagnostics.
 
-The local owner controller supplies live authority checks. The bridge never
-approves a POST; page/task-bound approval remains unimplemented. Private
-frames/input/profile bytes must not enter model tools.
+The local owner controller supplies live authority and one-shot form review.
+Private frames/input/profile bytes must not enter model tools.
 """
 
 import asyncio
@@ -10,10 +9,12 @@ import base64
 import hashlib
 import json
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import uuid4
 
-from .account_browser_network import AccountBrowserNetworkError
+from .account_browser_network import MAX_BODY, AccountBrowserNetworkError
 from .account_browser_wire import decode_files, encode_files, pack, size
+from .account_sessions import session_path
 from .sandbox import source_archive
 
 BOOT = (
@@ -89,7 +90,7 @@ class AccountBrowserBridge:
         finally:
             self._startup_task = None
 
-    async def _exchange(self, command, *, expected="result"):
+    async def _exchange(self, command, *, expected="result", review=None):
         if self.closing and expected != "closed":
             raise AccountBrowserBridgeError("account_browser_closing")
         if self.lock.locked():
@@ -99,7 +100,7 @@ class AccountBrowserBridge:
                 raise AccountBrowserBridgeError("account_browser_closed")
             self._active_task = asyncio.current_task()
             try:
-                async with asyncio.timeout(25):
+                async with asyncio.timeout(65 if review is not None else 25):
                     self._authorize()
                     await self._send(command)
                     for _ in range(65):
@@ -109,7 +110,7 @@ class AccountBrowserBridge:
                             return row
                         if row.get("kind") != "request":
                             raise AccountBrowserBridgeError("account_browser_protocol_failed")
-                        await self._resource(row)
+                        await self._resource(row, review=review)
                     raise AccountBrowserBridgeError("account_browser_request_limit")
             except asyncio.CancelledError:
                 await self.abort()
@@ -131,18 +132,40 @@ class AccountBrowserBridge:
             raise AccountBrowserBridgeError("account_browser_protocol_failed")
         return row
 
-    async def _resource(self, row):
-        # Task/page-bound approval UI is not wired yet. Even an out-of-band
-        # approval on the broker must not enable a write through this bridge.
-        if row.get("method") not in {"GET", "HEAD"}:
-            self._authorize()
+    async def _resource(self, row, *, review=None):
+        self._authorize()
+        method = row.get("method")
+        if method not in {"GET", "HEAD", "POST"}:
             await self._send({"kind": "denied"})
             return
         try:
-            response = await self.network.fetch(
-                row["url"], row["method"], row["headers"],
-                base64.b64decode(row["body"], validate=True),
-            )
+            body = base64.b64decode(row["body"], validate=True)
+            if method == "POST":
+                if review is None or row.get("document_form") is not True:
+                    raise AccountBrowserNetworkError("account_browser_form_not_approved")
+                target = self.network._url(row["url"])
+                parts = urlsplit(target)
+                try:
+                    path = session_path(parts.path)
+                except Exception:
+                    raise AccountBrowserNetworkError("account_browser_form_path_denied") from None
+                headers = row["headers"]
+                # Do not even offer review for cross-origin or unsupported forms.
+                if (
+                    "?" in target or "#" in target or not 0 < len(body) <= MAX_BODY
+                    or type(headers) is not dict
+                    or [v for k, v in headers.items() if k.lower() == "origin"]
+                    != [self.network.origin]
+                    or [v.lower() for k, v in headers.items() if k.lower() == "content-type"]
+                    != ["application/x-www-form-urlencoded"]
+                ):
+                    raise AccountBrowserNetworkError("account_browser_form_not_supported")
+                action_id = await review(path)
+                self._authorize()
+                if action_id is None:
+                    raise AccountBrowserNetworkError("account_browser_form_not_approved")
+                self.network.approve_form(target, body, action_id=action_id)
+            response = await self.network.fetch(row["url"], method, row["headers"], body)
             self._authorize()
             await self._send({
                 "kind": "response", "status": response.status, "headers": response.headers,
@@ -151,6 +174,10 @@ class AccountBrowserBridge:
         except AccountBrowserNetworkError:
             self._authorize()
             await self._send({"kind": "denied"})
+
+    async def submit(self, command, review):
+        # The guest only gets a timing allowance, never permission to dispatch.
+        await self._exchange({**command, "review_form": True}, review=review)
 
     async def navigate(self, url):
         # Host validation precedes any guest input, including malformed URLs.

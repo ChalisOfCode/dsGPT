@@ -179,14 +179,17 @@ async fn account_browser_frame(
     {
         return Err("Account browser frame unavailable".into());
     }
-    let mut data = Vec::new();
+    let observation = response.headers().get("x-dsgpt-observation")
+        .and_then(|v| v.to_str().ok()).filter(|id| account_frame::valid_id(id))
+        .ok_or("Invalid account browser observation")?.to_owned();
+    let mut data = observation.into_bytes();
     while let Some(chunk) = response.chunk().await.map_err(|_| "Account browser frame interrupted")? {
-        if data.len() + chunk.len() > account_frame::MAX_PNG {
+        if data.len() + chunk.len() > 36 + account_frame::MAX_PNG {
             return Err("Account browser frame exceeds limit".into());
         }
         data.extend_from_slice(&chunk);
     }
-    if !account_frame::valid_png(&data) { return Err("Invalid account browser frame".into()); }
+    if !account_frame::valid_png(&data[36..]) { return Err("Invalid account browser frame".into()); }
     Ok(tauri::ipc::Response::new(data))
 }
 

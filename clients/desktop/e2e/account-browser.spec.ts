@@ -15,6 +15,12 @@ test("private owner view sends input once, clears it on failure and explicitly s
     inputs = 0,
     saves = 0,
     discards = 0;
+  const submission = "00000000-0000-4000-8000-000000000013";
+  const review = "00000000-0000-4000-8000-000000000014";
+  let reviewState = "idle",
+    submissions = 0,
+    decisions = 0,
+    verifications = 0;
   let image: Buffer;
   let holdFrame = false,
     heldFrame = false;
@@ -52,8 +58,55 @@ test("private owner view sends input once, clears it on failure and explicitly s
       return route.fulfill({
         body: image,
         contentType: "image/png",
-        headers: { "cache-control": "no-store" },
+        headers: {
+          "cache-control": "no-store",
+          "x-dsgpt-observation": hid,
+          "access-control-expose-headers": "X-dsGPT-Observation",
+        },
       });
+    }
+    if (path.endsWith("/submissions")) {
+      if (req.method() === "POST") {
+        expect(new URL(req.url()).searchParams.get("observation_id")).toBe(hid);
+        expect(req.postDataJSON()).toEqual({ op: "key", key: "Enter" });
+        submissions++;
+        reviewState = "running";
+        return route.fulfill({
+          status: 202,
+          json: { submission_id: submission },
+        });
+      }
+      return route.fulfill({
+        json: {
+          state: reviewState === "verified" ? "finished" : reviewState,
+          submission_id: reviewState === "idle" ? null : submission,
+          review:
+            reviewState === "running"
+              ? { review_id: review, path: "/login" }
+              : null,
+          unverified:
+            reviewState === "finished"
+              ? [{ id: review, status: "response_received" }]
+              : [],
+        },
+      });
+    }
+    if (path.endsWith("/decision")) {
+      expect(path).toContain("/submissions/" + submission + "/decision");
+      expect(req.postDataJSON()).toEqual({ review_id: review, approve: true });
+      decisions++;
+      reviewState = "finished";
+      return route.fulfill({ status: 204 });
+    }
+    if (path.endsWith("/verification")) {
+      expect(req.postDataJSON()).toEqual({
+        action_id: review,
+        observation_id: hid,
+        applied: true,
+      });
+      verifications++;
+      reviewState = "verified";
+      return route.fulfill({ status: 204 });
     }
     if (path.endsWith("/input")) {
       inputs++;
@@ -138,6 +191,30 @@ test("private owner view sends input once, clears it on failure and explicitly s
   await dialog.getByRole("button", { name: "Send Tab", exact: true }).click();
   await expect(input).toBeEnabled();
   expect(inputs).toBe(3);
+  const optIn = dialog.getByRole("checkbox", {
+    name: "Review the next page click or Enter for a form submission",
+  });
+  await optIn.check();
+  await dialog.getByRole("button", { name: "Send Enter", exact: true }).click();
+  await expect(
+    dialog.getByText("Send this form once to https://example.org/login?"),
+  ).toBeVisible();
+  expect(submissions).toBe(1);
+  expect(decisions).toBe(0);
+  await expect(frame).toBeDisabled();
+  await dialog.getByRole("button", { name: "Approve form submission" }).click();
+  await expect(
+    dialog.getByText(
+      "The website responded, but its outcome has not been verified.",
+      { exact: false },
+    ),
+  ).toBeVisible();
+  await expect(optIn).toBeDisabled();
+  expect(decisions).toBe(1);
+  await dialog.getByRole("button", { name: "I checked: applied" }).click();
+  await expect(optIn).toBeEnabled();
+  expect(verifications).toBe(1);
+  expect(submissions).toBe(1);
   await dialog.getByRole("button", { name: "Save profile and close" }).click();
   await expect(dialog).not.toBeVisible();
   expect(saves).toBe(1);

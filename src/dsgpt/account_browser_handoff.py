@@ -4,6 +4,7 @@ import asyncio
 import time
 from dataclasses import dataclass
 from typing import Literal
+from uuid import UUID
 
 from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
@@ -11,9 +12,12 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from .account_browser_bridge import AccountBrowserBridge
 from .account_browser_network import AccountBrowserNetwork
 from .account_browser_profiles import AccountBrowserProfiles
+from .account_browser_writes import AccountBrowserWriteError, AccountBrowserWrites
 from .storage import uid
 
 HANDOFF_SECONDS = 300
+OBSERVATION_SECONDS = 30
+REVIEW_SECONDS = 30
 
 
 class BrowserClick(BaseModel):
@@ -35,6 +39,30 @@ class BrowserKey(BaseModel):
     key: Literal["Tab", "Enter", "Backspace", "Escape", "ArrowUp", "ArrowDown"]
 
 
+class BrowserDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    review_id: UUID
+    approve: bool = Field(strict=True)
+
+
+class BrowserVerification(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    observation_id: UUID
+    action_id: UUID
+    applied: bool = Field(strict=True)
+
+
+@dataclass(repr=False)
+class Submission:
+    identifier: str
+    task: asyncio.Task | None = None
+    review_id: str | None = None
+    path: str | None = None
+    decision: asyncio.Future | None = None
+    offered: bool = False
+    result: str = "running"
+
+
 @dataclass(repr=False)
 class Handoff:
     owner: str
@@ -42,9 +70,14 @@ class Handoff:
     generation: str
     expires: float
     bridge: AccountBrowserBridge
+    writes: AccountBrowserWrites
     timer: asyncio.TimerHandle | None = None
     ready: bool = False
     stopping: bool = False
+    operating: bool = False
+    observation: str | None = None
+    observation_expires: float = 0
+    submission: Submission | None = None
 
 
 class AccountBrowserHandoffs:
@@ -83,10 +116,10 @@ class AccountBrowserHandoffs:
         vault = AccountBrowserProfiles(
             self.sessions.store, session, owner, self.sessions.protection
         )
-        bridge = self.bridge_factory(
-            sandbox, vault, AccountBrowserNetwork(origin, authorize=authorize), authorize
-        )
-        handoff = self.active = Handoff(owner, session, uid(), expires, bridge)
+        writes = AccountBrowserWrites(self.sessions.store, session, owner)
+        network = AccountBrowserNetwork(origin, authorize=authorize, writes=writes)
+        bridge = self.bridge_factory(sandbox, vault, network, authorize)
+        handoff = self.active = Handoff(owner, session, uid(), expires, bridge, writes)
         handoff.timer = asyncio.get_running_loop().call_later(
             HANDOFF_SECONDS, self._schedule_expiration, handoff
         )
@@ -126,15 +159,37 @@ class AccountBrowserHandoffs:
             raise HTTPException(404, "Account browser handoff not found")
         return handoff
 
-    async def operate(self, owner, session, generation, operation, body=None):
+    def _live(self, owner, session, generation):
         handoff = self._find(owner, session, generation)
         if not handoff.ready or handoff.stopping or time.monotonic() >= handoff.expires:
             raise HTTPException(409, "Account browser handoff is unavailable")
         self.sessions._session(owner, session)
+        return handoff
+
+    @staticmethod
+    def _idle(handoff):
+        if handoff.operating or (handoff.submission and not handoff.submission.task.done()):
+            raise HTTPException(409, "Account browser operation in progress")
+
+    @staticmethod
+    def _consume(handoff, observation):
+        if handoff.observation != observation or time.monotonic() >= handoff.observation_expires:
+            raise HTTPException(409, "Refresh the private page before continuing")
+        handoff.observation = None
+
+    async def operate(self, owner, session, generation, operation, body=None):
+        handoff = self._live(owner, session, generation)
+        self._idle(handoff)
+        handoff.observation = None
+        handoff.operating = True
         bridge = handoff.bridge
         try:
             if operation == "frame":
-                return await bridge.frame()
+                png = await bridge.frame()
+                self._live(owner, session, generation)
+                handoff.observation = uid()
+                handoff.observation_expires = time.monotonic() + OBSERVATION_SECONDS
+                return png, handoff.observation
             if operation == "save":
                 await bridge.close()
                 self._clear(handoff)
@@ -148,6 +203,85 @@ class AccountBrowserHandoffs:
                 raise ValueError
         except Exception:
             raise HTTPException(409, "Account browser operation unavailable") from None
+        finally:
+            handoff.operating = False
+
+    def submit(self, owner, session, generation, observation, body):
+        handoff = self._live(owner, session, generation)
+        self._idle(handoff)
+        if not isinstance(body, BrowserClick) and not (
+            isinstance(body, BrowserKey) and body.key == "Enter"
+        ):
+            raise HTTPException(422, "Use a page click or Enter for form review")
+        if handoff.writes.pending():
+            raise HTTPException(409, "Inspect and verify the previous form outcome first")
+        self._consume(handoff, observation)
+        submission = handoff.submission = Submission(uid())
+        submission.task = asyncio.create_task(self._submit(handoff, submission, body))
+        return {"submission_id": submission.identifier}
+
+    async def _submit(self, handoff, submission, body):
+        def live():
+            self._live(handoff.owner, handoff.session, handoff.generation)
+
+        async def review(path):
+            live()
+            if submission.offered:
+                return None
+            submission.offered = True
+            submission.review_id, submission.path = uid(), path
+            submission.decision = asyncio.get_running_loop().create_future()
+            try:
+                async with asyncio.timeout(REVIEW_SECONDS):
+                    approved = await submission.decision
+                live()
+                return submission.review_id if approved else None
+            except TimeoutError:
+                return None
+            finally:
+                submission.decision = None
+                submission.review_id = submission.path = None
+
+        try:
+            await handoff.bridge.submit(body.model_dump(), review)
+            submission.result = "finished"
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            submission.result = "interrupted"
+
+    def submission_status(self, owner, session, generation):
+        handoff = self._live(owner, session, generation)
+        submission = handoff.submission
+        review = None
+        if submission and submission.decision and not submission.decision.done():
+            review = {"review_id": submission.review_id, "path": submission.path}
+        return {
+            "submission_id": submission.identifier if submission else None,
+            "state": submission.result if submission else "idle",
+            "review": review,
+            "unverified": handoff.writes.pending(),
+        }
+
+    def decide(self, owner, session, generation, submission_id, body):
+        handoff = self._live(owner, session, generation)
+        submission = handoff.submission
+        if (
+            not submission or submission.identifier != submission_id
+            or submission.review_id != str(body.review_id)
+            or not submission.decision or submission.decision.done()
+        ):
+            raise HTTPException(409, "Form review is no longer available")
+        submission.decision.set_result(body.approve)
+
+    def verify(self, owner, session, generation, body):
+        handoff = self._live(owner, session, generation)
+        self._idle(handoff)
+        self._consume(handoff, str(body.observation_id))
+        try:
+            handoff.writes.verify(str(body.action_id), applied=body.applied)
+        except AccountBrowserWriteError:
+            raise HTTPException(409, "Form outcome is no longer awaiting verification") from None
 
     def _clear(self, handoff):
         if handoff.timer:
@@ -162,6 +296,10 @@ class AccountBrowserHandoffs:
             raise HTTPException(409, "Account browser cleanup is in progress")
         handoff.stopping, handoff.ready = True, False
         try:
+            task = handoff.submission.task if handoff.submission else None
+            if task is not None and not task.done():
+                task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
             await handoff.bridge.abort()
         except Exception:
             raise HTTPException(503, "Account browser cleanup needs retry") from None

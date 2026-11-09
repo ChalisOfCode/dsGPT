@@ -19,8 +19,10 @@ from . import __version__
 from .account_browser_handoff import (
     AccountBrowserHandoffs,
     BrowserClick,
+    BrowserDecision,
     BrowserKey,
     BrowserText,
+    BrowserVerification,
 )
 from .account_sessions import (
     AccountGrantCreate,
@@ -379,6 +381,7 @@ def create_app(settings: Settings, inference=None, managed=None):
             allow_origins=list(settings.allowed_origins),
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
             allow_headers=["Authorization", "Content-Type", "Last-Event-ID"],
+            expose_headers=["X-dsGPT-Observation"],
         )
     app.add_middleware(RequestBoundary, settings=settings)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
@@ -479,10 +482,11 @@ def create_app(settings: Settings, inference=None, managed=None):
     async def account_browser_frame(
         session_id: UUID, handoff_id: UUID, current=Depends(local_account_owner)
     ):
-        png = await account_browsers.operate(
+        png, observation = await account_browsers.operate(
             current["id"], str(session_id), str(handoff_id), "frame"
         )
-        return Response(png, media_type="image/png")
+        return Response(png, media_type="image/png",
+                        headers={"X-dsGPT-Observation": observation})
 
     @app.post("/v1/account-sessions/{session_id}/browser/{handoff_id}/input", status_code=204)
     async def account_browser_input(
@@ -493,6 +497,45 @@ def create_app(settings: Settings, inference=None, managed=None):
         await account_browsers.operate(
             current["id"], str(session_id), str(handoff_id), "input", body
         )
+        return Response(status_code=204)
+
+    @app.post("/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions",
+              status_code=202)
+    async def start_account_browser_submission(
+        session_id: UUID, handoff_id: UUID, observation_id: UUID,
+        body: Annotated[BrowserClick | BrowserKey, Field(discriminator="op")],
+        current=Depends(local_account_owner),
+    ):
+        return account_browsers.submit(
+            current["id"], str(session_id), str(handoff_id), str(observation_id), body
+        )
+
+    @app.get("/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions")
+    async def account_browser_submissions(
+        session_id: UUID, handoff_id: UUID, current=Depends(local_account_owner)
+    ):
+        return account_browsers.submission_status(current["id"], str(session_id), str(handoff_id))
+
+    @app.post(
+        "/v1/account-sessions/{session_id}/browser/{handoff_id}/submissions/{submission_id}/decision",
+        status_code=204,
+    )
+    async def decide_account_browser_submission(
+        session_id: UUID, handoff_id: UUID, submission_id: UUID,
+        body: BrowserDecision, current=Depends(local_account_owner),
+    ):
+        account_browsers.decide(
+            current["id"], str(session_id), str(handoff_id), str(submission_id), body
+        )
+        return Response(status_code=204)
+
+    @app.post("/v1/account-sessions/{session_id}/browser/{handoff_id}/verification",
+              status_code=204)
+    async def verify_account_browser_submission(
+        session_id: UUID, handoff_id: UUID, body: BrowserVerification,
+        current=Depends(local_account_owner),
+    ):
+        account_browsers.verify(current["id"], str(session_id), str(handoff_id), body)
         return Response(status_code=204)
 
     @app.post("/v1/account-sessions/{session_id}/browser/{handoff_id}/save", status_code=204)

@@ -85,6 +85,15 @@ export function BrowserSetup({
   );
 }
 
+type Receipt = { id: string; status: "uncertain" | "response_received" };
+type Review = { review_id: string; path: string };
+type SubmissionStatus = {
+  submission_id: string | null;
+  state: "idle" | "running" | "finished" | "interrupted";
+  review: Review | null;
+  unverified: Receipt[];
+};
+
 export function AccountBrowser({
   client,
   account,
@@ -108,6 +117,15 @@ export function AccountBrowser({
   const [text, setText] = useState(""),
     [notice, setNotice] = useState("");
   const [expired, setExpired] = useState(false);
+  const [observation, setObservation] = useState("");
+  const [reviewNext, setReviewNext] = useState(false);
+  const [receipts, setReceipts] = useState<Receipt[] | null>(null);
+  const [approval, setApproval] = useState<{
+    submission: string;
+    review: Review;
+  } | null>(null);
+  const decisionSent = useRef("");
+
   useEffect(() => {
     context.disposed = false;
     return () => {
@@ -121,12 +139,21 @@ export function AccountBrowser({
   async function refresh(path: string) {
     setUsable(false);
     setFrame("");
+    setObservation("");
+    setReviewNext(false);
+    setReceipts(null);
     const value = await client.accountFrame(
       account.id,
       path.split("/").at(-1)!,
     );
-    if (!context.disposed && !context.ended && context.path === path)
-      setFrame(value);
+    const status = await client
+      .request<SubmissionStatus>(path + "/submissions")
+      .catch(() => null);
+    if (!context.disposed && !context.ended && context.path === path) {
+      setFrame(value.image);
+      setObservation(value.observation);
+      if (Array.isArray(status?.unverified)) setReceipts(status.unverified);
+    }
   }
   async function start() {
     if (!enabled || lock.current || context.disposed || context.path) return;
@@ -160,6 +187,8 @@ export function AccountBrowser({
           context.ended = true;
           setExpired(true);
           setFrame("");
+          setObservation("");
+          setApproval(null);
           setText("");
           setUsable(false);
           setNotice(
@@ -179,8 +208,75 @@ export function AccountBrowser({
       if (!context.disposed) setBusy(false);
     }
   }
+  async function reviewedInput(path: string, body: unknown) {
+    const base = path + "/submissions";
+    const started = await client.request<{ submission_id: string }>(
+      base + "?observation_id=" + observation,
+      "POST",
+      body,
+    );
+    if (!accountId.test(started?.submission_id))
+      throw new Error("Invalid submission");
+    const deadline = Date.now() + 68_000;
+    while (!context.disposed && !context.ended && Date.now() < deadline) {
+      const value = await client.request<SubmissionStatus>(
+        base,
+        "GET",
+        undefined,
+        AbortSignal.timeout(5000),
+      );
+      if (value.submission_id !== started.submission_id)
+        throw new Error("Stale submission");
+      if (context.disposed || context.ended) break;
+      if (value.state === "finished") {
+        setNotice(
+          value.unverified.length
+            ? "Inspect the website before marking the form outcome."
+            : "No form outcome was recorded. Review the current page.",
+        );
+        return;
+      }
+      if (value.state !== "running") throw new Error("Submission interrupted");
+      const review = value.review;
+      setApproval(
+        review &&
+          accountId.test(review.review_id) &&
+          review.review_id !== decisionSent.current &&
+          /^\/[A-Za-z0-9_./~-]{0,1000}$/.test(review.path)
+          ? { submission: started.submission_id, review }
+          : null,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    }
+    throw new Error("Submission review ended");
+  }
+
+  async function decide(approve: boolean) {
+    if (
+      !approval ||
+      context.disposed ||
+      context.ended ||
+      decisionSent.current === approval.review.review_id
+    )
+      return;
+    decisionSent.current = approval.review.review_id;
+    setApproval(null);
+    try {
+      await client.request(
+        context.path + "/submissions/" + approval.submission + "/decision",
+        "POST",
+        { review_id: approval.review.review_id, approve },
+      );
+    } catch {
+      if (!context.disposed && !context.ended)
+        setNotice(
+          "The decision response was lost or rejected. It was not sent again.",
+        );
+    }
+  }
+
   async function operate(
-    operation: "input" | "refresh" | "save" | "discard",
+    operation: "input" | "review" | "verify" | "refresh" | "save" | "discard",
     body?: unknown,
   ) {
     if (lock.current || context.disposed || !context.path) return;
@@ -188,14 +284,19 @@ export function AccountBrowser({
     lock.current = true;
     setBusy(true);
     setUsable(false);
-    setFrame("");
+    if (operation !== "review") setFrame("");
+    setReviewNext(false);
     setNotice("");
     const path = context.path;
     try {
       if (operation === "input")
         await client.request(path + "/input", "POST", body);
-      if (operation === "input" || operation === "refresh") await refresh(path);
-      else {
+      if (operation === "review") await reviewedInput(path, body);
+      if (operation === "verify")
+        await client.request(path + "/verification", "POST", body);
+      if (["input", "review", "verify", "refresh"].includes(operation)) {
+        if (!context.ended && !context.disposed) await refresh(path);
+      } else {
         await client.request(
           path + (operation === "save" ? "/save" : ""),
           operation === "save" ? "POST" : "DELETE",
@@ -208,12 +309,16 @@ export function AccountBrowser({
         trigger.current?.focus();
       }
     } catch {
-      if (!context.disposed)
+      if (!context.disposed && !context.ended) {
+        setFrame("");
+        setObservation("");
         setNotice(
           "The operation was interrupted or rejected. Input was not retried. Refresh to review the page, or discard. A lost save response does not establish that the profile was saved.",
         );
+      }
     } finally {
       lock.current = false;
+      if (!context.disposed) setApproval(null);
       if (!context.disposed) setBusy(false);
     }
   }
@@ -245,11 +350,25 @@ export function AccountBrowser({
         </p>
         <p>
           Private owner view. Page images and typed input are not sent to Work
-          or the model. Form submissions, including login, are currently
-          blocked. The browser closes after five minutes.
+          or the model. A supported form waits for your approval before it is
+          sent. The browser closes after five minutes.
         </p>
         {notice && <p role="alert">{notice}</p>}
         {busy && <p role="status">Updating private browser…</p>}
+        {approval && !expired && (
+          <section aria-label="Pending website submission">
+            <p>
+              Send this form once to {account.origin}
+              {approval.review.path}?
+            </p>
+            <button onClick={() => void decide(true)}>
+              Approve form submission
+            </button>
+            <button onClick={() => void decide(false)}>
+              Reject form submission
+            </button>
+          </section>
+        )}
         {frame && (
           <button
             className="account-browser-image"
@@ -268,7 +387,11 @@ export function AccountBrowser({
                 ((event.clientY - box.top) * 768) / box.height,
               );
               if (x >= 0 && x < 1024 && y >= 0 && y < 768)
-                void operate("input", { op: "click", x, y });
+                void operate(reviewNext ? "review" : "input", {
+                  op: "click",
+                  x,
+                  y,
+                });
             }}
           >
             <img
@@ -322,13 +445,62 @@ export function AccountBrowser({
             Send text once
           </button>
         </form>
+        <label>
+          <input
+            type="checkbox"
+            checked={reviewNext}
+            onChange={(e) => setReviewNext(e.target.checked)}
+            disabled={
+              !usable ||
+              busy ||
+              expired ||
+              !observation ||
+              receipts?.length !== 0
+            }
+          />
+          Review the next page click or Enter for a form submission
+        </label>
+        {receipts?.map(
+          (receipt) =>
+            accountId.test(receipt.id) && (
+              <section key={receipt.id} aria-label="Unverified website outcome">
+                <p>
+                  {receipt.status === "uncertain"
+                    ? "The previous request may have reached the website."
+                    : "The website responded, but its outcome has not been verified."}{" "}
+                  Inspect the current website state before confirming. This will
+                  not resend the form.
+                </p>
+                {[true, false].map((applied) => (
+                  <button
+                    key={String(applied)}
+                    disabled={!usable || busy || expired || !observation}
+                    onClick={() =>
+                      void operate("verify", {
+                        action_id: receipt.id,
+                        observation_id: observation,
+                        applied,
+                      })
+                    }
+                  >
+                    {applied ? "I checked: applied" : "I checked: not applied"}
+                  </button>
+                ))}
+              </section>
+            ),
+        )}
         <div className="account-browser-controls">
           {["Tab", "Enter", "Backspace", "Escape", "ArrowUp", "ArrowDown"].map(
             (key) => (
               <button
                 key={key}
                 disabled={!usable || busy || expired}
-                onClick={() => void operate("input", { op: "key", key })}
+                onClick={() =>
+                  void operate(
+                    reviewNext && key === "Enter" ? "review" : "input",
+                    { op: "key", key },
+                  )
+                }
               >
                 Send {key}
               </button>

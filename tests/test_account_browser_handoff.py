@@ -114,3 +114,90 @@ def test_handoff_requires_local_owner(app):
     client = TestClient(app, client=("192.0.2.1", 12345))
     assert client.post(PATH + "/browser", json=ENROLL, headers=headers).status_code == 403
     assert not app.state.store.all("SELECT * FROM account_sessions")
+
+
+def test_form_review_is_single_use_and_recovery_requires_fresh_observation(app):
+    import time
+
+    from dsgpt.storage import uid
+
+    effects = []
+
+    class FormBridge(BridgeFixture):
+        def __init__(self, sandbox, vault, network, authorize):
+            super().__init__(sandbox, vault, network, authorize)
+            self.network = network
+
+        async def submit(self, command, review):
+            self.authorize()
+            action = await review("/sign-in")
+            if action:
+                self.network._writes.begin(action, origin=self.network.origin)
+                effects.append(command)
+                self.network._writes.response_received(action)
+            assert await review("/second-form") is None
+
+    app.state.account_browsers.bridge_factory = FormBridge
+    headers = owner_headers(app)
+    paired = app.state.auth.redeem(app.state.auth.create_pairing(["work"])["code"], "Fixture")
+    paired_headers = {"Authorization": "Bearer " + paired["token"]}
+    with TestClient(app, client=("127.0.0.1", 12345)) as client:
+        def post(path, body=None):
+            return client.post(path, json=body, headers=headers)
+
+        def status():
+            return client.get(submissions, headers=headers).json()
+
+        def until(condition):
+            for _ in range(100):
+                value = status()
+                if condition(value):
+                    return value
+                time.sleep(0.01)
+            pytest.fail("Submission did not reach expected fixture state")
+
+        created = post(PATH + "/browser", ENROLL)
+        app.state.builds.sandbox = object()
+        app.state.builds.ready = True
+        base = PATH + "/" + created.json()["id"] + "/browser"
+        handoff = base + "/" + post(base).json()["handoff_id"]
+        submissions = handoff + "/submissions"
+        frame = post(handoff + "/frame")
+        observation = frame.headers["x-dsgpt-observation"]
+        click = {"op": "click", "x": 50, "y": 60}
+        assert post(submissions + "?observation_id=" + uid(), click).status_code == 409
+        started = post(submissions + "?observation_id=" + observation, click)
+        assert started.status_code == 202
+        pending = until(lambda value: value["review"])
+        assert pending["review"]["path"] == "/sign-in"
+        assert effects == []
+        assert post(handoff + "/frame").status_code == 409
+        assert post(handoff + "/save").status_code == 409
+        decision = submissions + "/" + started.json()["submission_id"] + "/decision"
+        body = {"review_id": pending["review"]["review_id"], "approve": True}
+        assert client.post(decision, json=body, headers=paired_headers).status_code == 403
+        assert post(decision, {**body, "review_id": uid()}).status_code == 409
+        assert post(decision, body).status_code == 204
+        assert post(decision, body).status_code == 409
+        done = until(lambda value: value["state"] == "finished")
+        assert effects == [click]
+        assert done["review"] is None
+        receipt, = done["unverified"]
+        assert receipt["status"] == "response_received"
+        verify = {"observation_id": observation, "action_id": receipt["id"], "applied": True}
+        assert post(handoff + "/verification", verify).status_code == 409
+        observation = post(handoff + "/frame").headers["x-dsgpt-observation"]
+        assert post(submissions + "?observation_id=" + observation, click).status_code == 409
+        assert post(handoff + "/verification", {
+            **verify, "observation_id": observation,
+        }).status_code == 204
+        assert status()["unverified"] == []
+        assert post(submissions + "?observation_id=" + observation, click).status_code == 409
+        observation = post(handoff + "/frame").headers["x-dsgpt-observation"]
+        started = post(submissions + "?observation_id=" + observation, click)
+        pending = until(lambda value: value["review"])
+        decision = submissions + "/" + started.json()["submission_id"] + "/decision"
+        assert post(decision, {"review_id": pending["review"]["review_id"],
+                               "approve": False}).status_code == 204
+        assert until(lambda value: value["state"] == "finished")["unverified"] == []
+        assert effects == [click]

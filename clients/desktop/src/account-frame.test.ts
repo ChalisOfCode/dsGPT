@@ -48,9 +48,16 @@ test("private frame fetch authenticates and rejects type, cache policy, overflow
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   const client = new Client("http://127.0.0.1:18765", "fixture");
-  const headers = { "content-type": "image/png", "cache-control": "no-store" };
+  const headers = {
+    "content-type": "image/png",
+    "cache-control": "no-store",
+    "x-dsgpt-observation": id,
+  };
   fetch.mockResolvedValueOnce(new Response(valid(), { headers }));
-  expect(await client.accountFrame(id, id)).toMatch(/^data:image\/png;base64,/);
+  expect(await client.accountFrame(id, id)).toEqual({
+    image: expect.stringMatching(/^data:image\/png;base64,/),
+    observation: id,
+  });
   expect(fetch.mock.calls[0][1]).toMatchObject({
     method: "POST",
     redirect: "error",

@@ -307,3 +307,71 @@ async def test_frame_rejects_invalid_header_and_dimensions(data):
     with pytest.raises(AccountBrowserBridgeError, match="account_browser_frame_invalid"):
         await bridge.frame()
     bridge.abort.assert_awaited_once()
+
+
+@needs_browser
+@pytest.mark.parametrize("outcome", ["approve", "reject", "interrupt"])
+async def test_real_chromium_form_waits_for_exact_review_and_records_outcome(tmp_path, outcome):
+    from dsgpt.storage import uid
+
+    ledger = make_ledger(tmp_path / "store")
+    paused, allow, dispatched = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    action = uid()
+    sent = []
+
+    async def respond(request):
+        if request.method == "POST":
+            assert ledger.pending()[0]["status"] == "uncertain"
+            sent.append((request.url.path, await request.aread()))
+            dispatched.set()
+            if outcome == "interrupt":
+                await asyncio.Future()
+            return httpx.Response(303, headers={"location": "/welcome"})
+        return httpx.Response(
+            200, headers={"content-type": "text/html"},
+            stream=Bytes(b'<form method="post" action="/login">'
+                         b'<input type="hidden" name="challenge" value="fixture-only">'
+                         b'<button style="width:100px;height:100px">Sign in</button></form>'),
+        )
+
+    async def review(path):
+        assert path == "/login"
+        paused.set()
+        await allow.wait()
+        return action if outcome != "reject" else None
+
+    bridge = AccountBrowserBridge(
+        FixtureSandbox(tmp_path), vault(ledger), network(respond, writes=ledger), lambda: None
+    )
+    task = None
+    try:
+        await bridge.start()
+        await bridge.navigate("https://example.org/login")
+        await bridge.frame()
+        task = asyncio.create_task(bridge.submit({"op": "click", "x": 40, "y": 40}, review))
+        async with asyncio.timeout(5):
+            await paused.wait()
+            assert sent == ledger.pending() == []
+            with pytest.raises(AccountBrowserBridgeError, match="busy"):
+                await bridge.frame()
+            allow.set()
+            if outcome == "interrupt":
+                await dispatched.wait()
+                await bridge.abort()
+                with pytest.raises(asyncio.CancelledError):
+                    await task
+                assert bridge.vault.restore() == (0, None)
+            else:
+                await task
+        if outcome == "reject":
+            assert sent == ledger.pending() == []
+        else:
+            assert sent == [("/login", b"challenge=fixture-only")]
+            assert ledger.pending()[0]["id"] == action
+            expected = "uncertain" if outcome == "interrupt" else "response_received"
+            assert ledger.pending()[0]["status"] == expected
+    finally:
+        if task and not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        await bridge.abort()

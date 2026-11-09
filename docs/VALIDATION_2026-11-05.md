@@ -2766,3 +2766,36 @@ preserved as dsGPT-ci-test-evidence-6f29277.zip, 49855 bytes, SHA256
 17557757c15fd0d61fc012d69717457ee6dbe8804e58c7fd5a727f9025fff7ce.
 The separate installer fixture does not complete item 5; owner hardware remains
 unverified. Item 1 was not rerun. No final installers were released.
+
+### Owner form review and interrupted submission
+
+The local owner's explicit opt-in allows one click or Enter to pause a supported
+same-origin top-level form. A fresh single-use screenshot observation and the
+Chromium document identity bind the input. The view shows the destination and
+requires a separate approve or reject decision for the exact paused request.
+The deadline is bounded; ordinary input, delayed requests outside the reviewed
+exchange, and unsupported forms cannot send a POST. The native transport adds
+only the observation UUID to its bounded binary frame response.
+
+A dispatch creates an opaque durable receipt before network I/O. If an approved
+request is interrupted, the receipt remains uncertain and blocks another
+submission. Even after a website response, the owner must inspect the current
+page and explicitly record the outcome. Verification consumes a fresh
+observation after the operation has quiesced and cannot replay the old form.
+
+Focused Linux backend checks: 67 passed and two native Windows checks skipped.
+Real Chromium with synthetic network/container fixtures covers approval,
+rejection and interruption after dispatch; two desktop browser fixture
+scenarios and four transport unit checks passed. The desktop production bundle
+built locally. This is not production website login/MFA, native Windows execution
+of this revision, or full item 2 acceptance. Work grants remain unavailable for
+browser profiles.
+
+Prior exact 83b174b run 42714023491: six jobs passed. Windows native compiled
+and its frame unit test passed, but the unchanged 300 MiB artifact guard blocked
+the Windows client upload; installer acceptance was skipped and the aggregate
+check failed. Four available report ZIPs were individually checked against
+their Actions sizes and SHA256 digests. Private evidence bundle:
+dsGPT-ci-test-evidence-83b174b.zip, 43,125 bytes, SHA256
+5183dcd26a66a853df0a4405c23855d49cd2c490eec14abe64be35a0d241afe8.
+No guard change, artifact deletion, paid runner, or final installer release.

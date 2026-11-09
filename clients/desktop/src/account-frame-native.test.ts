@@ -34,15 +34,22 @@ test("native frame uses only the private bounded binary command and validates re
     ...new Array(9).fill(0),
   ]);
   const id = "00000000-0000-4000-8000-000000000001";
-  vi.mocked(invoke).mockResolvedValueOnce(data.buffer);
+  const wire = new Uint8Array(36 + data.length);
+  wire.set(new TextEncoder().encode(id));
+  wire.set(data, 36);
+  vi.mocked(invoke).mockResolvedValueOnce(wire.buffer);
   const client = new Client("http://127.0.0.1:18765", "unused-js-token");
-  expect(await client.accountFrame(id, id)).toMatch(/^data:image\/png;base64,/);
+  expect(await client.accountFrame(id, id)).toEqual({
+    image: expect.stringMatching(/^data:image\/png;base64,/),
+    observation: id,
+  });
   expect(invoke).toHaveBeenCalledWith("account_browser_frame", {
     sessionId: id,
     handoffId: id,
   });
   data[20] = 255;
-  vi.mocked(invoke).mockResolvedValueOnce(data.buffer);
+  wire.set(data, 36);
+  vi.mocked(invoke).mockResolvedValueOnce(wire.buffer);
   await expect(client.accountFrame(id, id)).rejects.toThrow(
     "Invalid account browser frame",
   );
