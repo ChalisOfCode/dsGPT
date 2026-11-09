@@ -2501,3 +2501,46 @@ consent, task-revision/device binding in requests, inert account labels, grant
 revocation and lost-response reconciliation. It is UI fixture evidence, not a
 real signed-in website test. Desktop build passed. Native transport compilation
 remains for the standard Windows CI job. Item 2 remains in progress.
+
+
+## Item 2: durable private submission receipts
+
+The isolated account-browser transport now requires a receipt committed before
+form dispatch. Receipts contain only opaque operation/session IDs, timestamps and
+state. Uncertain and response-received operations block further forms in that
+session until trusted owner verification of remote state; neither verification
+nor restart rearms an operation ID. The transport still requires a single-use
+30-second approval of the exact origin, destination and form body. The ledger
+checks session ownership, active owner status and origin, serializes competing
+submissions transactionally, and limits receipts to 128 per session. Session
+revocation removes its receipts; it does not undo remote effects.
+
+Migration 28 preserves protected session bytes and existing grants. Focused
+transport, receipt, account and affected migration checks: 108 passed, one
+Windows-only protection check skipped locally, in 10.66 seconds. Cases include
+remote-effect fixtures followed by timeout/cancellation/revocation, a rejected
+redirect, successful HTTP response without semantic-success claims, failed receipt
+storage, a real subprocess abrupt exit, concurrent dispatch attempts, wrong-owner
+and wrong-origin denial, tamper-free migration preservation and credential/URL
+sentinels absent from SQLite/WAL and captured logs. The receipt tests are included
+in the disposable Windows regression selection. Ruff, whitespace, static CI policy
+and the pinned tracked-source secret scan passed. No full local/model rerun.
+
+This is internal transport/storage behavior, not completed browser acceptance.
+No browser worker, owner handoff/control route or model tool invokes this yet.
+The owner controller must quiesce dispatch and independently inspect remote state
+before verifying a receipt; HTTP status alone is insufficient. Page-generation
+and task/device binding, encrypted browser-profile restoration, controlled real
+browser acceptance and the user-facing verification flow remain outstanding.
+
+Prior source `1beb55b`: routine CI 42674663998 passed all nine jobs, including
+Windows installer and required join. Backend XML has 1276 cases including subtests,
+no failures/errors and one Windows-only skip. Browser has 27 expected, zero
+unexpected/flaky/skipped. Android has 24 unit cases. Windows XML has 142 cases,
+no failures/errors and one POSIX-only skip. This remains regression evidence;
+the separate installer inference fixture is not item 1 acceptance or complete
+item 5 evidence. Staged inference remains BLOCKED, production review remains
+REVIEW, and owner hardware is unverified. Five original report ZIPs were
+individually size/digest verified and preserved as
+`dsGPT-ci-test-evidence-1beb55b.zip`, 47483 bytes, SHA256
+`594d6cd37aad0b7bc2c5a81f4151b8a725f88261a7ecea6593d13bbf45511f61`.

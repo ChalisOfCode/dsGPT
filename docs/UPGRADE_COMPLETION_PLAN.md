@@ -65,8 +65,15 @@ preserves browser cookie headers and security policy, and bounds requests and
 responses. It accepts form POSTs only with fresh, single-use approval for the
 exact destination and body. It does not follow redirects or retry submissions.
 This component is not exposed to the application yet: the isolated browser,
-owner handoff, encrypted profile and durable website write recovery still need
-integration. The focused transport tests do not count as browser acceptance.
+owner handoff and encrypted profile still need integration. Form dispatch now
+requires a durable receipt committed before network I/O. An interrupted request
+remains uncertain after restart; even a received HTTP response requires remote
+state verification before another form submission in that session. Receipt IDs
+cannot be replayed within the session. These internal receipts store only opaque
+identifiers, status and timestamps, never URLs, request hashes, credentials or
+response content. Owner verification controls and page/task binding still need
+integration; this is not yet an end-to-end recovery workflow. Focused transport
+and storage tests do not count as browser acceptance.
 
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and

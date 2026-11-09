@@ -46,7 +46,7 @@ foreach ($name in @('Kit file integrity','Start isolated backend','Chat, restart
     if (($report.checks | Where-Object name -eq $name).status -ne 'PASS') { throw "Required check did not pass: $name" }
 }
 $env:PYTHONPATH = "$PWD/dist/dsGPT-Acceptance/python/Lib/site-packages"
-python -m pytest -q tests/test_acceptance_harness.py tests/test_acceptance_setup.py tests/test_acceptance_ollama_runtime.py tests/test_sandbox_transport.py tests/test_inference.py tests/test_conversations_runs.py tests/test_application_setup.py tests/test_managed.py tests/test_account_sessions.py --junitxml=reports/windows/regressions.xml
+python -m pytest -q tests/test_acceptance_harness.py tests/test_acceptance_setup.py tests/test_acceptance_ollama_runtime.py tests/test_sandbox_transport.py tests/test_inference.py tests/test_conversations_runs.py tests/test_application_setup.py tests/test_managed.py tests/test_account_sessions.py tests/test_account_browser_writes.py --junitxml=reports/windows/regressions.xml
 Remove-Item Env:PYTHONPATH
 
 # Both tests run on this disposable GitHub account; no owner machine/phone is used.

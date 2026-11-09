@@ -1,6 +1,6 @@
 """Private transport for a future isolated, owner-controlled account browser.
 
-No browser worker, API route, model tool or durable approval ledger uses this yet.
+No browser worker, API route or model tool uses this yet.
 The caller must check the live owner handoff before issuing one-time form approval.
 Bodies, cookies and response headers are private bridge data, never receipts.
 """
@@ -11,9 +11,11 @@ import time
 from contextlib import aclosing
 from dataclasses import dataclass
 from urllib.parse import urljoin
+from uuid import UUID
 
 import httpx
 
+from .account_browser_writes import AccountBrowserWriteError
 from .account_sessions import session_origin
 from .downloads import DownloadError, PublicHTTPS
 from .web_retrieval import ResearchError, limited_body, public_url
@@ -71,11 +73,20 @@ class BrowserResponse:
 
 
 class AccountBrowserNetwork:
-    def __init__(self, origin, *, authorize, transport_factory=PublicHTTPS, clock=time.monotonic):
+    def __init__(
+        self,
+        origin,
+        *,
+        authorize,
+        writes=None,
+        transport_factory=PublicHTTPS,
+        clock=time.monotonic,
+    ):
         self.origin = session_origin(origin)
         self._authorize = authorize
         self._transport = transport_factory
         self._clock = clock
+        self._writes = writes
         self._requests = self._total = 0
         self._approval = None
         self._lock = asyncio.Lock()
@@ -89,13 +100,24 @@ class AccountBrowserNetwork:
         except (ValueError, ResearchError):
             raise AccountBrowserNetworkError("account_browser_origin_denied") from None
 
-    def approve_form(self, raw, body):
+    def approve_form(self, raw, body, *, action_id):
         """Called only by the trusted owner controller, for one paused request."""
         self._approval = None
         self._authorize()
+        if self._writes is None:
+            raise AccountBrowserNetworkError("account_browser_write_tracking_required")
         if type(body) is not bytes or not 0 < len(body) <= MAX_BODY:
             raise AccountBrowserNetworkError("account_browser_body_denied")
-        self._approval = (self._url(raw), hashlib.sha256(body).digest(), self._clock() + 30)
+        try:
+            action_id = str(UUID(action_id))
+        except (ValueError, TypeError, AttributeError):
+            raise AccountBrowserNetworkError("account_browser_action_invalid") from None
+        self._approval = (
+            self._url(raw),
+            hashlib.sha256(body).digest(),
+            self._clock() + 30,
+            action_id,
+        )
 
     async def fetch(self, raw, method, headers, body=b""):
         if self._lock.locked():
@@ -138,10 +160,22 @@ class AccountBrowserNetwork:
                     or forwarded.get("origin") != self.origin
                 ):
                     raise AccountBrowserNetworkError("account_browser_form_not_approved")
+                try:
+                    self._writes.begin(approval[3], origin=self.origin)
+                except AccountBrowserWriteError:
+                    raise AccountBrowserNetworkError(
+                        "account_browser_write_review_required"
+                    ) from None
+                except Exception:
+                    raise AccountBrowserNetworkError(
+                        "account_browser_write_tracking_failed"
+                    ) from None
             self._requests += 1
 
             def validate(target):
                 self._authorize()
+                if method == "POST" and approval[2] <= self._clock():
+                    raise AccountBrowserNetworkError("account_browser_form_not_approved")
                 if self._url(str(target)) != url:
                     raise AccountBrowserNetworkError("account_browser_origin_denied")
 
@@ -155,6 +189,13 @@ class AccountBrowserNetwork:
             except (httpx.HTTPError, DownloadError, ResearchError, TimeoutError, OSError):
                 raise AccountBrowserNetworkError("account_browser_request_failed") from None
             self._authorize()
+            if method == "POST":
+                try:
+                    self._writes.response_received(approval[3])
+                except Exception:
+                    raise AccountBrowserNetworkError(
+                        "account_browser_write_tracking_failed"
+                    ) from None
             return result
 
     async def _response(self, url, method, response):

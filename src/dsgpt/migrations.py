@@ -533,3 +533,15 @@ CREATE TABLE account_grants (
 CREATE INDEX account_grants_session ON account_grants(session_id);
 """
 REQUIRED_TABLES[27] = {"account_grants"}
+
+MIGRATIONS[28] = """
+CREATE TABLE account_browser_writes (
+ id TEXT PRIMARY KEY,
+ session_id TEXT NOT NULL REFERENCES account_sessions(id) ON DELETE CASCADE,
+ status TEXT NOT NULL CHECK(status IN
+ ('uncertain','response_received','verified_applied','verified_not_applied')),
+ created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+);
+CREATE INDEX account_browser_writes_session ON account_browser_writes(session_id,status);
+"""
+REQUIRED_TABLES[28] = {"account_browser_writes"}

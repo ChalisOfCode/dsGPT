@@ -1,5 +1,6 @@
 import httpx
 import pytest
+from test_account_browser_writes import make_ledger
 from test_web_retrieval import Bytes
 
 from dsgpt.account_browser_network import (
@@ -7,6 +8,7 @@ from dsgpt.account_browser_network import (
     AccountBrowserNetwork,
     AccountBrowserNetworkError,
 )
+from dsgpt.storage import uid
 
 ORIGIN = "https://example.org"
 FORM = ORIGIN + "/sign-in"
@@ -14,7 +16,7 @@ HEADERS = {"Origin": ORIGIN, "Content-Type": "application/x-www-form-urlencoded"
 BODY = b"challenge=fixture-only"
 
 
-def network(handler, *, authorize=lambda: None, clock=lambda: 0):
+def network(handler, *, authorize=lambda: None, clock=lambda: 0, writes=None):
     def factory(validator):
         async def request(req):
             validator(req.url)
@@ -23,11 +25,11 @@ def network(handler, *, authorize=lambda: None, clock=lambda: 0):
         return httpx.MockTransport(request)
 
     return AccountBrowserNetwork(
-        ORIGIN, authorize=authorize, transport_factory=factory, clock=clock
+        ORIGIN, authorize=authorize, transport_factory=factory, clock=clock, writes=writes
     )
 
 
-async def test_only_approved_exact_form_reaches_transport_and_cannot_replay():
+async def test_only_approved_exact_form_reaches_transport_and_cannot_replay(tmp_path):
     seen = []
     now = [0]
 
@@ -37,17 +39,17 @@ async def test_only_approved_exact_form_reaches_transport_and_cannot_replay():
         assert req.headers["origin"] == ORIGIN
         return httpx.Response(303, headers={"Location": "/welcome"})
 
-    browser = network(respond, clock=lambda: now[0])
+    browser = network(respond, clock=lambda: now[0], writes=make_ledger(tmp_path))
     with pytest.raises(AccountBrowserNetworkError, match="not_approved"):
         await browser.fetch(FORM, "POST", HEADERS, BODY)
-    browser.approve_form(FORM, BODY)
+    browser.approve_form(FORM, BODY, action_id=uid())
     with pytest.raises(AccountBrowserNetworkError, match="not_approved"):
         await browser.fetch(FORM, "POST", HEADERS, BODY + b"x")
-    browser.approve_form(FORM, BODY)
+    browser.approve_form(FORM, BODY, action_id=uid())
     now[0] = 30
     with pytest.raises(AccountBrowserNetworkError, match="not_approved"):
         await browser.fetch(FORM, "POST", HEADERS, BODY)
-    browser.approve_form(FORM, BODY)
+    browser.approve_form(FORM, BODY, action_id=uid())
     result = await browser.fetch(FORM, "POST", HEADERS, BODY)
     assert result.status == 303
     assert result.headers == (("location", ORIGIN + "/welcome"),)
@@ -108,16 +110,18 @@ async def test_out_of_scope_requests_never_reach_transport(target):
         (307, "/sign-in-replay", "POST"),
     ],
 )
-async def test_redirect_does_not_send_secrets_to_a_second_request(status, location, method):
+async def test_redirect_does_not_send_secrets_to_a_second_request(
+    tmp_path, status, location, method
+):
     seen = []
 
     async def respond(req):
         seen.append(str(req.url))
         return httpx.Response(status, headers={"Location": location})
 
-    browser = network(respond)
+    browser = network(respond, writes=make_ledger(tmp_path))
     if method == "POST":
-        browser.approve_form(FORM, BODY)
+        browser.approve_form(FORM, BODY, action_id=uid())
     with pytest.raises(AccountBrowserNetworkError, match="denied"):
         await browser.fetch(FORM, method, HEADERS, BODY if method == "POST" else b"")
     assert seen == [FORM]
