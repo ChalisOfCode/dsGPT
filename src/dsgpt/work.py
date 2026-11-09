@@ -1699,7 +1699,9 @@ class WorkRegistry:
                         "Start a different requirement_id at offset 0."
                         if clipped.get("has_more")
                         else "This requirement page reached its end. Do not repeat the same read. "
-                        "Start any other requirement_id at offset 0, not original_start/end. "
+                        "Reuse retained exact requirement pages below; "
+                        "do not alternate rereading them. "
+                        "Read another section only for missing text, starting at offset 0. "
                         "Use the visible project inventory to choose a relevant read_file path; "
                         "list_files is needed only for missing inventory pages. Implement missing "
                         "behavior and test it. A scaffold or generated review is not evidence "

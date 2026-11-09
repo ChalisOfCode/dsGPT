@@ -100,6 +100,9 @@ def test_section_comparison_retains_verified_previous_section(tmp_path, corrupt)
     retained = [json.loads(m['content'][len(RETAINED_REQUIREMENT_PREFIX):]) for m in messages
                 if m['content'].startswith(RETAINED_REQUIREMENT_PREFIX)]
     assert bool(retained) is not corrupt
+    guidance = json.loads(messages[1]['content'])['next_step']
+    assert 'do not alternate rereading them' in guidance
+    assert 'only for missing text' in guidance
     if retained:
         assert retained[0]['requirement_id'] == 2
         assert retained[0]['content'] == 'b' * 500

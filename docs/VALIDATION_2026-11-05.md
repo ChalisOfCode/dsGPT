@@ -2156,3 +2156,44 @@ Final full suite: 1244 tests plus six subtests passed in 86.19 seconds. Ruff,
 whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual four-file
 review passed. Final replay remains 15745/16384 including output reserve. Original
 request and all runtime/model/acceptance limits remain unchanged.
+
+## c74fa73 platform evidence and actual-model outcome
+
+Routine CI 42528136497 passed all nine jobs on exact c74fa73. Backend: 1250 cases
+including subtests, no failures/errors/skips; browser: 26 expected, no flaky,
+skipped or unexpected results. Windows regressions: 139 cases, no failures/errors,
+one POSIX-only fixture skip with separate Windows CLI acceptance. Disposable
+Windows installed UI/local reply/Credential Manager/scheduled restart/reinstall/data
+preservation and Android lifecycle instrumentation (OK, one test) passed. Separate
+qwen3:1.7b fixture is not actual9B acceptance or complete item 5; staged inference
+BLOCKED/production REVIEW and owner-hardware unverified limitations remain.
+Five individually verified report ZIPs were preserved in dsGPT-ci-test-evidence-c74fa73.zip,
+46806 bytes, SHA256 4aa0c60b9b9d8fbfe11128943a16e1c96956ab764efb52a0a0fe11fd5b535bb1.
+These notes reconstruct the prior uncommitted platform evidence after workspace
+maintenance removed the checkout; committed source was recovered from public main.
+
+Actual9B run 42528136541 passed pinned model and production Docker setup, then
+failed initial step 58 with no_progress after 9695.123 seconds. No build_project
+occurred; native checks and follow-up were skipped. Steps 53/56 read section 3;
+55/57 read section 1; step 58 attempted section 3 again. Earlier malformed-looking
+but distinct source paths were created; generated source remains unverified.
+Original artifact 13641623457 was verified and durably preserved as
+ dsGPT-complex-evidence-42528136541.zip (171141 bytes), SHA256
+99653f83535f0fe6cd48a2ce090431566f3db114f2e676c56709803617e6e485.
+
+A hash-checked diagnostic replay through step 57 restored scaffold bytes and edits,
+recorded review notes, cumulative overview and latest session summary. Baseline
+already retained section 3 (offset 0, 1506 characters) alongside latest section 1,
+at 16322/16384 estimated tokens including 4096 output reserve. This was not another
+missing-section defect: EOF guidance suggested starting any other section despite
+visible retained text. Candidate guidance instead reuses retained pages and reads
+another section only for missing text. Candidate replay retains section 3 and the
+observed section 1 EOF receipt at 16343/16384. Replay is diagnostic, not acceptance.
+Model, original request, grammar syntax and all runtime/context/output/loop/native
+acceptance limits remain unchanged. Focused requirement checks: 24 passed.
+Full suite: 1244 tests plus six subtests passed in 80.72 seconds. Ruff, whitespace,
+static CI policy and pinned tracked-source Gitleaks passed; manual four-file review
+found no private data or acceptance changes. Before dispatch: active, queued,
+waiting and pending all zero; 89 public artifacts, 125329318 bytes, none expired.
+Local disk has 50 GiB available; no artifact deletion needed. Private archive,
+billing, cache settings and signing material remain untouched.
