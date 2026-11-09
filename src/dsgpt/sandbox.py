@@ -151,7 +151,7 @@ class DockerSandbox:
             raise SandboxError("invalid_execution_identity")
         return "dsgpt-" + self.owner_id[:12] + "-" + execution_id
 
-    async def cli(self, arguments, data=None, timeout=30, limit=OUTPUT_BYTES):
+    async def _spawn(self, arguments, *, input_pipe=False, private=False):
         # Configuration is trusted owner state. No incoming API or model value can
         # alter the executable, daemon endpoint, flags, environment, or host paths.
         info = self.executable.stat()
@@ -163,20 +163,23 @@ class DockerSandbox:
             raise SandboxError("docker_cli_changed")
         environment = {k: os.environ[k] for k in ("SystemRoot", "WINDIR") if k in os.environ}
         environment.update(PATH=os.defpath, LANG="C", LC_ALL="C")
-        process = await asyncio.create_subprocess_exec(
+        return await asyncio.create_subprocess_exec(
             str(self.executable),
             "--host",
             self.endpoint,
             "--config",
             str(self.configuration),
             *arguments,
-            stdin=asyncio.subprocess.PIPE if data is not None else asyncio.subprocess.DEVNULL,
+            stdin=asyncio.subprocess.PIPE if input_pipe else asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL if private else asyncio.subprocess.PIPE,
             cwd=self.configuration,
             env=environment,
             **({"creationflags": 0x08000000} if os.name == "nt" else {}),
         )
+
+    async def cli(self, arguments, data=None, timeout=30, limit=OUTPUT_BYTES):
+        process = await self._spawn(arguments, input_pipe=data is not None)
 
         async def read(stream, cap):
             result, omitted = bytearray(), 0

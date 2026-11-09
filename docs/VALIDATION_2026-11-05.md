@@ -2607,3 +2607,61 @@ as dsGPT-ci-test-evidence-ad28f20.zip, 48443 bytes, SHA256
 ba53f0cef9b13c028cd7299f5ef7c68706103fff7fda290a6110241d55c1f8c8.
 Routine installer fixtures do not establish complete item 5 or owner hardware
 behavior. Item 2 remains in progress; no final installers were released.
+
+
+## Item 2: private container/browser bridge
+
+The internal account bridge now creates a dedicated owned DockerSandbox, validates
+its isolation and disabled logging, streams only audited standard-library guest
+source into guest tmpfs, and attaches a bounded binary stdin/stdout channel.
+Profiles, page input, cookies and screenshots do not enter argv, host plaintext
+files, Work artifacts, model tools or diagnostics. The existing sandbox CLI now
+shares its pinned-executable/environment setup with this private spawn path;
+normal Work execution keeps its existing output capture and limits.
+
+The guest enables interception before navigation. Exact-origin GET/HEAD requests
+use the account network broker, with Chromium-selected cookies transferred only
+inside the private channel. Cross-origin requests are denied. This bridge denies
+all POSTs pending owner page/task-bound approval integration, even if the separate
+broker has an approval. Unsupported popups, workers and WebSockets cannot obtain
+direct network access in the required networkless container. Operations accept
+only navigation, bounded PNG frames, coordinates, text input and a small key
+allowlist; there is no arbitrary evaluation or exposed CDP endpoint.
+
+Live authority and profile-origin checks precede input and response release.
+Concurrent operations are rejected. Each exchange is capped at 25 seconds;
+network requests retain the existing 12-second bound. Frames are length-bounded,
+and profile capture requires both clean Chromium shutdown and successful guest
+exit before atomic revision-checked vault save. Cancellation, revocation, guest
+failure and malformed control requests abort without saving. Cleanup checks
+container ownership and is shielded from cancellation.
+
+Real Chromium fixture coverage now executes the actual shipped guest modules in
+a separate Python process without site packages, through the real private pipe
+and host broker. Two clean starts restore an HttpOnly persistent cookie, local
+storage and IndexedDB. Independent fixture request assertions confirm all three,
+HttpOnly invisibility to page JavaScript, blocked cross-origin requests and blocked
+unapproved POSTs. Additional cases cover in-flight cancellation, revocation,
+abrupt guest exit, concurrent input, malformed frames, raw-CDP rejection, origin
+mismatch and rejection of a container configured to log. The fixture explicitly
+substitutes container creation and HTTPS transport; it is not production Docker,
+TLS, owner sign-in/MFA, Windows encryption or complete item 2 acceptance. No
+personal accounts or external sites are used. Browser CI reuses installed Chromium.
+
+Prior 595f3ed routine CI 42692882643 passed all nine jobs, including the real
+Chromium restart fixture. Backend XML: 1313 cases including subtests, no failures
+or errors, three expected platform/browser-fixture skips; Windows: 171 cases,
+no failures/errors and two expected platform skips. Browser: 27 expected, zero
+flaky/unexpected/skipped. Android: 24 unit cases and lifecycle OK (1 test).
+Five original report ZIPs were individually size/digest verified and preserved as
+dsGPT-ci-test-evidence-595f3ed.zip, 48535 bytes, SHA256
+90ab2fca4d16ecfd69a1903727ad54bd572bfd39552e53f5d4cbfe9dc0729862.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall and data preservation passed in the separate fixture. Its 1.7B model
+is not item 1 acceptance or complete item 5; staged inference remains BLOCKED and
+production release REVIEW. Owner hardware remains unverified. Item 1 was not
+rerun, no full local suite was run, and no final installers were released.
+
+Focused bridge/worker/profile/broker/receipt/sandbox checks: 82 passed and one
+Windows-only DPAPI check skipped locally in 3.45 seconds. Ruff, whitespace,
+static CI policy and the pinned tracked-source secret scan passed.

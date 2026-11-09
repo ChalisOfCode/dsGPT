@@ -84,8 +84,17 @@ Chromium acknowledges shutdown and exits cleanly. The worker uses private OS
 pipes for Chromium control and requires a loopback-only Linux namespace in
 production. A real Chromium fixture restored a persistent HttpOnly cookie,
 local storage and IndexedDB across a vault round trip. That fixture uses an
-injected test protector and intercepted synthetic responses; production Docker
-and the HTTPS broker, owner controls and task access are still unconnected.
+injected test protector and intercepted synthetic responses. An internal bridge
+now connects the guest to a dedicated validated Docker sandbox, the host request
+broker and the vault, using bounded private pipes. It exposes only navigation,
+screenshots and a small input allowlist, never raw CDP or evaluation. The bridge
+rechecks live origin and owner authority, requires logging disabled, and saves
+only after clean browser and guest exits. It currently denies all POSTs, including
+broker approvals made outside the controller. Real Chromium tests exercise the
+actual guest/host pipe, cookie forwarding, profile restart, request denial and
+interrupted cleanup using a synthetic transport and explicit container fixture.
+Production Docker/HTTPS, owner controls, task access and page-bound write approval
+still require acceptance.
 
 Remaining for item 2: owner-facing browser login/MFA handoff,
 user-approved writes with interrupted-write recovery, task tool integration and

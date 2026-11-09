@@ -122,17 +122,22 @@ jobs:
         run: |
           export DSGPT_PROFILE_TEST_CHROMIUM="$(cd clients/desktop && node --input-type=module -e 'import { chromium } from "playwright"; console.log(chromium.executablePath())')"
           test -x "$DSGPT_PROFILE_TEST_CHROMIUM"
-          python -m pytest -q tests/test_account_browser_worker.py
+          python -m pytest -q tests/test_account_browser_worker.py tests/test_account_browser_bridge.py --junitxml=reports/private-browser.xml
       - name: Check diagnostic storage
         id: diagnostics
         if: always() && hashFiles('reports/browser.json') != ''
         env: {GH_TOKEN: '${{ github.token }}'}
-        run: python scripts/ci_artifact_guard.py reports/browser.json
+        run: |
+          paths=(reports/browser.json)
+          if test -f reports/private-browser.xml; then paths+=(reports/private-browser.xml); fi
+          python scripts/ci_artifact_guard.py "${paths[@]}"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always() && steps.diagnostics.outcome == 'success' && !cancelled()
         with:
           name: browser-tests-${{ github.sha }}
-          path: reports/browser.json
+          path: |
+            reports/browser.json
+            reports/private-browser.xml
           retention-days: 1
 
   android:

@@ -2,7 +2,8 @@
 
 Never expose this module's CDP methods, profile bytes or errors to Work tools.
 The host controller must use an owned, validated DockerSandbox and pass only
-a vault-restored snapshot. No network broker or owner UI is attached here yet.
+a vault-restored snapshot. The private guest/host bridge attaches the broker;
+application owner UI integration remains required.
 """
 
 import json
@@ -15,7 +16,7 @@ import sys
 import time
 from pathlib import Path, PurePosixPath
 
-from .account_browser_profiles import MAX_BYTES, MAX_FILES, validate
+from .account_browser_profile_data import MAX_BYTES, MAX_FILES, validate
 
 # Omit caches, crash dumps, extensions, locks and unneeded browsing history.
 PROFILE_FILES = frozenset(
@@ -176,7 +177,7 @@ class PrivateChromium:
             os.close(receive_cmd)
             os.close(send_reply)
 
-    def _call(self, method, params=None, *, session=None, events=None):
+    def _call(self, method, params=None, *, session=None, events=None, timeout=8):
         """Trusted driver only; never dispatch an externally supplied CDP method."""
         if self._send is None:
             raise AccountBrowserWorkerError("account_browser_closed")
@@ -191,7 +192,7 @@ class PrivateChromium:
             raise AccountBrowserWorkerError("account_browser_command_limit")
         identifier = message["id"]
         self._inflight.add(identifier)
-        deadline = time.monotonic() + 8
+        deadline = time.monotonic() + timeout
         try:
             os.set_blocking(self._send, False)
             pending = memoryview(payload)

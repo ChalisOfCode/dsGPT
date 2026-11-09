@@ -2,50 +2,22 @@
 
 The trusted browser controller must supply only regular files from its dedicated
 profile AFTER Chromium has stopped cleanly. This module never imports an everyday
-profile or writes decrypted files on the host. Worker integration remains required.
+profile or writes decrypted files on the host. The private bridge can now use it;
+application owner controls and production acceptance remain required.
 """
 
 import base64
 import hashlib
 import json
-from pathlib import PurePosixPath
 from uuid import UUID
 
+from .account_browser_profile_data import (
+    MAX_ENVELOPE,
+    MAX_FILES,
+    AccountProfileError,
+    validate,
+)
 from .account_sessions import WindowsSessionProtection
-
-MAX_BYTES = 8 * 1024**2
-MAX_ENVELOPE = 12 * 1024**2
-MAX_FILES = 512
-
-
-class AccountProfileError(Exception):
-    pass
-
-
-def validate(files):
-    if type(files) is not dict or not 1 <= len(files) <= MAX_FILES:
-        raise AccountProfileError("account_profile_invalid")
-    total = 0
-    for name, data in files.items():
-        if (
-            type(name) is not str
-            or not 1 <= len(name) <= 240
-            or any(ord(c) < 32 or ord(c) > 126 for c in name)
-            or "\\" in name
-            or ":" in name
-            or name.startswith("/")
-            or str(PurePosixPath(name)) != name
-            or any(p in {".", ".."} for p in name.split("/"))
-            or name.split("/")[0].startswith("Singleton")
-            or type(data) is not bytes
-        ):
-            raise AccountProfileError("account_profile_invalid")
-        total += len(data)
-        if total > MAX_BYTES:
-            raise AccountProfileError("account_profile_too_large")
-    # Reject a file that is also another file's parent.
-    if any(str(p) in files for name in files for p in PurePosixPath(name).parents):
-        raise AccountProfileError("account_profile_invalid")
 
 
 class AccountBrowserProfiles:
@@ -53,6 +25,15 @@ class AccountBrowserProfiles:
         self.store = store
         self.session_id, self.owner_id = str(UUID(session_id)), str(UUID(owner_id))
         self.protection = protection if protection is not None else WindowsSessionProtection()
+
+    def require_origin(self, origin):
+        """Recheck the live vault scope before attaching/releasing a browser."""
+        with self.store.transaction() as db:
+            self._binding(db, 0)
+            row = db.execute("SELECT origin FROM account_sessions WHERE id=?",
+                             (self.session_id,)).fetchone()
+            if row[0] != origin:
+                raise AccountProfileError("account_profile_scope_denied")
 
     def _binding(self, db, revision):
         row = db.execute(

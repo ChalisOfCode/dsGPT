@@ -1,6 +1,6 @@
 """Private transport for a future isolated, owner-controlled account browser.
 
-No browser worker, API route or model tool uses this yet.
+The internal private browser bridge uses this; no API route or model tool does.
 The caller must check the live owner handoff before issuing one-time form approval.
 Bodies, cookies and response headers are private bridge data, never receipts.
 """
