@@ -27,6 +27,7 @@ data class Model(val id: String, val label: String)
 
 data class State(
     val connected: Boolean = false,
+    val connectionEpoch: Long = 0,
     val origin: String = "",
     val chats: List<Chat> = emptyList(),
     val messages: List<Message> = emptyList(),
@@ -111,7 +112,7 @@ class ChatModel(app: Application) : AndroidViewModel(app) {
             api = vault.load()
             savedConnectionRevision = vault.revision()
             if (api != null) {
-                mutable.update { it.copy(connected = true, origin = api!!.origin) }
+                mutable.update { it.copy(connected = true, origin = api!!.origin, connectionEpoch = it.connectionEpoch + 1) }
                 loadModels()
                 loadChats()
                 val previous = preferences.getString("${api!!.origin}:selected", null)
@@ -139,7 +140,7 @@ class ChatModel(app: Application) : AndroidViewModel(app) {
             val restored=vault.load() ?: return@action
             api=restored;savedConnectionRevision=revision
             modelManagement.reset()
-            mutable.update {it.copy(connected=true,origin=restored.origin,error=null)}
+            mutable.update {it.copy(connected=true,origin=restored.origin,error=null,connectionEpoch=it.connectionEpoch+1)}
             loadModels();loadChats()
         }
     }
@@ -169,7 +170,7 @@ class ChatModel(app: Application) : AndroidViewModel(app) {
             savedConnectionRevision = vault.revision()
             api = connected
             modelManagement.reset()
-            mutable.update { it.copy(connected = true, origin = connected.origin, busy = false) }
+            mutable.update { it.copy(connected = true, origin = connected.origin, busy = false, connectionEpoch = it.connectionEpoch + 1) }
             loadModels()
             loadChats()
         }
@@ -659,6 +660,27 @@ class ChatModel(app: Application) : AndroidViewModel(app) {
         } }
     }
 
+    private fun accountReadConnection(task: String, revision: Int, epoch: Long): Api {
+        val s = state.value
+        check(s.connected && s.page == "work" && s.connectionEpoch == epoch &&
+            s.work.selected == task && s.work.task?.id == task && s.work.task?.revision == revision)
+        return api ?: error("Connection unavailable")
+    }
+
+    suspend fun workAccountGrants(task: String, revision: Int, epoch: Long): List<AccountReadGrant> {
+        val connection = accountReadConnection(task, revision, epoch)
+        val result = accountReadGrants(connection.accountReadRequest(task), revision)
+        check(accountReadConnection(task, revision, epoch) === connection)
+        return result
+    }
+
+    suspend fun readWorkAccountGrant(task: String, revision: Int, epoch: Long, grant: String): AccountReadPage {
+        val connection = accountReadConnection(task, revision, epoch)
+        val result = accountReadPage(connection.accountReadRequest(task, grant))
+        check(accountReadConnection(task, revision, epoch) === connection)
+        return result
+    }
+
     fun selectWork(id: String?) {
         workSourceEpoch++
         updateWork { it.copy(selected = id, task = null, files = emptyList(), steps = emptyList(),
@@ -1045,7 +1067,7 @@ class ChatModel(app: Application) : AndroidViewModel(app) {
             memoryRequestId = null
             memoryEpoch++
             memorySearch?.cancel()
-            mutable.value = State()
+            mutable.value = State(connectionEpoch = state.value.connectionEpoch + 1)
         }
     }
 }

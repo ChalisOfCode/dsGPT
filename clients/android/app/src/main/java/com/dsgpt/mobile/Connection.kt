@@ -110,6 +110,48 @@ class Vault(context: Context) {
 }
 
 class Api(val origin: String, private val token: String) {
+    // Private account traffic never enters generic request errors or telemetry.
+    private val accountHttp by lazy {
+        OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)
+            .retryOnConnectionFailure(false).proxy(java.net.Proxy.NO_PROXY)
+            .connectTimeout(12, TimeUnit.SECONDS).readTimeout(25, TimeUnit.SECONDS)
+            .callTimeout(30, TimeUnit.SECONDS).build()
+    }
+
+    internal suspend fun accountReadRequest(task: String, grant: String? = null): String =
+        kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+            val path = "/v1/work/tasks/${workTaskId(task)}/account-grants" +
+                (grant?.let { "/${workTaskId(it)}/read" } ?: "")
+            val request = Request.Builder().url(origin + path)
+                .header("Authorization", "Bearer $token")
+                .header("Cache-Control", "no-store")
+                .method(if (grant == null) "GET" else "POST",
+                    if (grant == null) null else "{}".toRequestBody("application/json".toMediaType()))
+                .build()
+            val call = accountHttp.newCall(request)
+            continuation.invokeOnCancellation { call.cancel() }
+            call.enqueue(object : okhttp3.Callback {
+                override fun onFailure(call: okhttp3.Call, e: java.io.IOException) {
+                    continuation.resumeWith(Result.failure(IllegalStateException("Private account access unavailable")))
+                }
+                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                    val result: Result<String> = try {
+                        response.use {
+                            check(it.code == 200)
+                            val body = it.body ?: error("Empty response")
+                            val type = body.contentType()
+                            check(type != null && type.type == "application" && type.subtype == "json")
+                            check(body.contentLength() <= ACCOUNT_RESPONSE_BYTES)
+                            Result.success(body.byteStream().use(::boundedAccountBody))
+                        }
+                    } catch (_: Exception) {
+                        Result.failure(IllegalStateException("Private account access unavailable"))
+                    }
+                    continuation.resumeWith(result)
+                }
+            })
+        }
+
     private val http =
         OkHttpClient.Builder().eventListenerFactory { MobileTelemetry.listener() }
             .followRedirects(false)

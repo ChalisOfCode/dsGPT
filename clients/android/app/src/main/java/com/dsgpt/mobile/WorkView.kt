@@ -115,6 +115,15 @@ fun WorkView(s: State, vm: ChatModel, export: (String) -> Unit, saveArtifact: (S
         confirmButton = { TextButton(onClick = {updateOptions = false}) {Text("Done")} },
     )
     Column(Modifier.fillMaxSize()) {
+    // A replacement connection or task revision destroys the entire private view.
+    if (s.connected && s.page == "work" && currentTask != null && currentTask.id == w.selected) {
+        key(s.connectionEpoch, currentTask.id, currentTask.revision) {
+            AccountReadView(
+                grants = { vm.workAccountGrants(currentTask.id, currentTask.revision, s.connectionEpoch) },
+                read = { vm.readWorkAccountGrant(currentTask.id, currentTask.revision, s.connectionEpoch, it) },
+            )
+        }
+    }
     LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Text("Tasks continue on your PC while you use Chat or close this app.")

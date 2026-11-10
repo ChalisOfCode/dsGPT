@@ -129,7 +129,12 @@ changes cancel the read and prevent response release. The desktop Work view
 lists grants and reads the selected page only on request; text remains in that
 view and is not attached to a task, used for research or sent to a model.
 
-Remaining for item 2: paired Android presentation and controlled production
+A paired Android private-page view is drafted with explicit grant discovery and
+read, an authenticated bounded transport, and clearing on task/revision/connection
+changes, backgrounding and close. Its native compilation and focused tests have
+not run successfully yet; this is not Android acceptance.
+
+Remaining for item 2: validate the Android presentation and controlled production
 Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
 revocation and interrupted writes. Chromium with synthetic transport and
 desktop UI fixtures establish their separate boundaries only.

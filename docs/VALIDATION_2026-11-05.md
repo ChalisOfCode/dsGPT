@@ -2825,3 +2825,32 @@ migration and refused responses. Three desktop Chromium UI fixture scenarios
 passed and the production web bundle built. Production Docker/TLS, MFA,
 Windows DPAPI and the Android presentation still need acceptance. Item 2
 remains open. No paid services, guard changes, artifact deletion or installers.
+
+### Paired Android account-read draft — native checks pending
+
+The Android Work view now has a separate private-page dialog. Grant discovery
+and reads require explicit input. Responses use a dedicated no-retry, no-redirect
+client without diagnostic listeners, a 30-second call deadline and a 256 KiB
+streaming response cap. Metadata is type checked; text is limited to 12,000
+Unicode code points. Fractional expiry timestamps and legacy cookie grants are
+preserved. Task revision and connection generation are checked before and after
+requests. View disposal cancels the network call. Dialog state is not saved,
+exported or passed to the model, and the window requests Android secure display.
+Backgrounding, close, revision/connection changes, grant expiry and a five-minute
+view deadline remove the private view or its content.
+
+Ten focused parser, loopback HTTP transport and Compose tests were authored for
+limits, consent, cancellation, stale results and fixed error text. They have NOT
+passed or established native behavior. A bounded local Gradle attempt failed
+first at network setup; after correcting the environment proxy it began dependency
+setup. Automatic approval review then rejected continuation because it wrote a
+Gradle dependency cache contrary to the no-cache-writes requirement. The test
+session was no longer available, and only this attempt's reproducible local
+dependency and Gradle directories were removed. No attempt was made to bypass
+the rejection. Native compilation and the ten tests remain pending.
+
+Source whitespace, static CI policy, pinned tracked-source Gitleaks and manual
+ten-file privacy review passed. This draft is preserved
+on a separate isolated branch; the previously tested account-form-review branch
+and public main remain unchanged. No acceptance run, installer, storage-guard
+change, artifact deletion or budget change was made. Item 2 remains open.
