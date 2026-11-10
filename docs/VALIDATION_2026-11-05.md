@@ -2854,3 +2854,23 @@ ten-file privacy review passed. This draft is preserved
 on a separate isolated branch; the previously tested account-form-review branch
 and public main remain unchanged. No acceptance run, installer, storage-guard
 change, artifact deletion or budget change was made. Item 2 remains open.
+
+### Controlled HTTPS acceptance-site preparation
+
+Added a test-only, loopback-bound TLS site with ephemeral certificates and
+synthetic credentials. Password and MFA stages precede a Secure HttpOnly cookie.
+CSRF and exact Origin checks protect updates. An independent effect counter
+deliberately counts duplicate submissions; a dropped-response route applies one
+update then closes the socket, so client retries cannot be hidden by server
+deduplication. The restoration probe only reads localStorage/IndexedDB markers;
+it does not reset them and thereby mask missing profile data. Temporary TLS keys
+are deleted on context exit and neither requests nor client addresses are logged.
+
+Three focused real HTTPS/socket tests passed in under one second using existing
+dependencies with Python bytecode and pytest cache writes disabled. They cover
+login/MFA, cookie attributes, CSRF/origin denial, expiry, untrusted-certificate
+rejection and an observable effect after response loss. Script presence was
+checked; JavaScript execution and profile restoration were NOT tested here.
+This is test-site validation, not production Docker, Chromium, DNS broker,
+Windows DPAPI or item 2 acceptance. Android validation remains blocked as above.
+No new Actions runs, cache writes, guard changes or final installers.

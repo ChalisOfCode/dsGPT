@@ -134,6 +134,12 @@ read, an authenticated bounded transport, and clearing on task/revision/connecti
 changes, backgrounding and close. Its native compilation and focused tests have
 not run successfully yet; this is not Android acceptance.
 
+A controlled loopback HTTPS test site now supplies login/MFA, CSRF-protected
+updates, expiry, a read-only profile-restoration probe and lost-response writes.
+Three real TLS/socket checks validate this site and its independent effect counter.
+They do not run the dsGPT browser, production DNS broker or Windows protection;
+connecting that acceptance driver remains pending.
+
 Remaining for item 2: validate the Android presentation and controlled production
 Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
 revocation and interrupted writes. Chromium with synthetic transport and
