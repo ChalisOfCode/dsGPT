@@ -29,6 +29,7 @@ class Site(ThreadingHTTPServer):
         self.session = secrets.token_hex(16)
         self.authenticated = False
         self.effects = 0
+        self.storage_ready = self.storage_restored = 0
         self.lock = threading.Lock()
         self.origin = f"https://localhost:{self.server_port}"
 
@@ -98,6 +99,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, f"Controlled account. Updates: {self.server.effects}")
             if self.path == "/redirect":
                 return self.reply(302, location="https://example.invalid/private")
+            if self.path == "/interrupt-form":
+                return self.reply(200, self.form("/interrupt", "value"), html=True)
+            if self.path in {"/storage-ready", "/storage-restored"}:
+                if self.path == "/storage-ready":
+                    self.server.storage_ready += 1
+                else:
+                    self.server.storage_restored += 1
+                return self.reply(200, "Observed")
             if self.path == "/restore":
                 # This page must never recreate markers: otherwise a missing
                 # profile would masquerade as successful restoration.
@@ -109,8 +118,11 @@ r.onsuccess = () => {
  const tx = db.transaction('markers', 'readonly');
  const read = tx.objectStore('markers').get('marker');
  read.onsuccess = () => {
-  if (read.result === 'persisted' && localStorage.getItem('account-fixture') === 'persisted')
+  if (read.result === 'persisted' && localStorage.getItem('account-fixture') === 'persisted'
+      && !document.cookie.includes('session=')) {
    document.title = 'Profile restored';
+   fetch('/storage-restored');
+  }
  };
  tx.oncomplete = () => db.close();
 };
@@ -126,7 +138,9 @@ r.onupgradeneeded = () => r.result.createObjectStore('markers');
 r.onsuccess = () => {
  const tx = r.result.transaction('markers', 'readwrite');
  tx.objectStore('markers').put('persisted', 'marker');
- tx.oncomplete = () => { r.result.close(); document.title = 'Storage ready'; };
+ tx.oncomplete = () => {
+  r.result.close(); document.title = 'Storage ready'; fetch('/storage-ready');
+ };
 };
 </script>"""
                 return self.reply(200, self.form("/update", "value") + script, html=True)

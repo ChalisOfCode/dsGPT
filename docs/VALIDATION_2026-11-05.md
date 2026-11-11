@@ -2894,3 +2894,30 @@ query) were corrected in the test invocation/mapping, not in production behavior
 The two cases passed in 0.44 seconds with existing dependencies, bytecode disabled
 and pytest caching disabled. Android validation remains unverified and blocked
 as previously recorded. No additional Actions run or release was dispatched.
+
+### Combined Chromium/TLS driver prepared; native results pending
+
+The controlled site now has a read-only restoration proof request and an
+interrupted-update form. Its browser script sends the restoration proof only
+after observing the existing localStorage and IndexedDB markers and checking
+that the session cookie is hidden from JavaScript. The proof endpoint requires
+the signed-in cookie. The drafted integration test drives actual guest input,
+separate form review, password/MFA, profile close/reopen, lost-response writes
+and denial of a newly approved duplicate after ledger restart. It uses existing
+explicit container/vault fixtures and the real-TLS endpoint mapping; it does not
+establish production Docker, public DNS/TLS or native Windows protection.
+
+Five focused TLS/site/ledger cases passed in 0.96 seconds; the new browser case
+was skipped without a configured browser. Attempts to run the pre-existing form
+fixture with the installed Chromium failed before account requests. A pristine
+about:blank launch isolated the cause: the execution host denied Chromium's
+process-singleton socket. No production security settings were weakened and no
+browser dependency was downloaded. The new browser driver is UNVERIFIED; it is
+selected in the existing CI browser job for a later tested-source run.
+
+Read-only public artifact inventory subsequently returned zero artifacts and no
+active/queued/waiting/pending runs. Main was advanced from exact `83b174b` to the
+previously tested `4b87ed1` using a non-force expected-head lease. Routine CI
+`42974018414` was observed running on that exact source. The newer Android and
+TLS-driver draft remains on its isolated branch and was not promoted as tested.
+No item 2 acceptance result or final installer is claimed.

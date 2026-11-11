@@ -144,6 +144,12 @@ including receipt reopening and blocked retries after a lost response. Their
 explicit test-only endpoint mapping does not validate production DNS pinning,
 Docker, Chromium, owner approval UI or Windows protection.
 
+A combined Chromium/TLS driver is drafted for the existing browser CI job. It
+uses real form input, password/MFA submissions, a clean profile restart and an
+independent storage/effect probe. It still uses explicit container, endpoint and
+vault test doubles. Local Chromium startup was blocked by the execution host's
+socket restrictions; this new driver has not passed yet and is not acceptance.
+
 Remaining for item 2: validate the Android presentation and controlled production
 Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
 revocation and interrupted writes. Chromium with synthetic transport and
