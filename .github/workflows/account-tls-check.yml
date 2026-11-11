@@ -24,16 +24,14 @@ jobs:
         with: {persist-credentials: false}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
-      - name: Use existing runner browser and locked dependencies
+      - name: Install locked dependencies without cache writes
         run: |
-          test -x /opt/google/chrome/chrome
-          /opt/google/chrome/chrome --version
           python -m pip install --no-cache-dir -r requirements-dev.lock
-      - name: Run focused real TLS and browser driver checks
+      - name: Check production public DNS and TLS transport
         env:
-          DSGPT_PROFILE_TEST_CHROMIUM: /opt/google/chrome/chrome
+          DSGPT_PUBLIC_HTTPS_CHECK: '1'
         run: |
-          python -m pytest -p no:cacheprovider -q --tb=short tests/test_account_https_site.py tests/test_account_https_broker.py tests/test_account_https_browser.py --junitxml=reports/account-tls.xml
+          python -m pytest -p no:cacheprovider -q --tb=short tests/test_account_public_https.py --junitxml=reports/account-tls.xml
       - name: Check bounded report storage
         id: report
         if: always() && hashFiles('reports/account-tls.xml') != ''
