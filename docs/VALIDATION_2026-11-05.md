@@ -2921,3 +2921,34 @@ previously tested `4b87ed1` using a non-force expected-head lease. Routine CI
 `42974018414` was observed running on that exact source. The newer Android and
 TLS-driver draft remains on its isolated branch and was not promoted as tested.
 No item 2 acceptance result or final installer is claimed.
+
+
+### Platform results and bounded TLS/browser integration
+
+Routine CI `42974018414` passed all nine jobs on exact `4b87ed1`.
+Five original report ZIPs were independently size/digest verified and preserved
+privately as a 52,906-byte bundle, SHA256
+`94e4e8c0724903d29aa2e29b6131174115eafb2896338052c7a92ab299e19ce4`.
+Backend: 1,351 cases, 13 expected skips; Windows: 171 cases, two expected skips;
+desktop browser: 29 expected; private browser: 43 cases; Android: 24 unit cases
+and lifecycle OK (1 test). No failures/errors. Windows installed-app/local-reply
+checks use the separate 1.7B fixture; production review and owner hardware remain
+unverified. This is not full item 5 acceptance.
+
+A separate six-minute Ubuntu check used the runner's existing Chrome and locked
+Python dependencies with cache writes disabled. No Gradle, model, installer or
+full-suite rerun. First run `42982154387` failed to observe login form review.
+Fixed coordinates in run `42982471990` still failed because the controlled site's
+CSP blocked inline layout styles. The test site now explicitly permits its own
+inline styles. Failure traces are short, and form diagnostics contain only fixed
+booleans, never request values. No product security setting was weakened.
+
+Run `42982778303` on exact isolated source `3ea2859` passed all six tests, no
+skips/errors/failures, in 7.671 seconds. Actual guest input submitted password/MFA,
+restored cookies/localStorage/IndexedDB after clean shutdown, and blocked a newly
+approved duplicate after a lost response and ledger restart. The independent
+server recorded exactly one update. The original 587-byte report ZIP is preserved
+privately, SHA256 `14756670ddbce09e57f7066d02f9767ce9f28904889f2213148c55d5c6a01d4c`.
+These checks still use explicit container, vault and endpoint-mapping fixtures.
+They do not establish production Docker isolation, public DNS pinning or native
+Windows protection. Android draft validation remains pending; item 2 stays open.

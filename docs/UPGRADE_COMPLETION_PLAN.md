@@ -148,7 +148,10 @@ A combined Chromium/TLS driver is drafted for the existing browser CI job. It
 uses real form input, password/MFA submissions, a clean profile restart and an
 independent storage/effect probe. It still uses explicit container, endpoint and
 vault test doubles. Local Chromium startup was blocked by the execution host's
-socket restrictions; this new driver has not passed yet and is not acceptance.
+socket restrictions. The isolated public-runner check now passes all six cases
+in 7.671 seconds on `3ea2859` (run `42982778303`), including actual browser
+login/MFA, profile restoration and lost-write retry denial. This is controlled
+integration evidence, not production Docker/DNS/DPAPI or full item 2 acceptance.
 
 Remaining for item 2: validate the Android presentation and controlled production
 Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
