@@ -68,7 +68,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; "
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; "
             "form-action 'self'; frame-ancestors 'none'",
         )
         if cookie:

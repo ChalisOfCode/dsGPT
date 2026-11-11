@@ -26,6 +26,18 @@ async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
         endpoint, site.origin = site.origin, ORIGIN
         ledger = make_ledger(tmp_path / "store")
         seen = []
+        form_events = []
+
+        class ObservedBridge(AccountBrowserBridge):
+            async def _resource(self, row, *, review=None):
+                if row.get("method") == "POST":
+                    headers = {k.lower(): v for k, v in row.get("headers", {}).items()}
+                    # Fixed booleans only: never log a body, URL or header value.
+                    form_events.append((row.get("document_form") is True,
+                                        headers.get("origin") == ORIGIN,
+                                        headers.get("content-type") ==
+                                        "application/x-www-form-urlencoded"))
+                await super()._resource(row, review=review)
 
         class ObservedTLS(LoopbackTLS):
             async def handle_async_request(self, request):
@@ -40,7 +52,7 @@ async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
                 ORIGIN, authorize=lambda: None, writes=receipts,
                 transport_factory=lambda validator: ObservedTLS(validator, endpoint, trust),
             )
-            return AccountBrowserBridge(FixtureSandbox(root), vault(receipts), net, lambda: None)
+            return ObservedBridge(FixtureSandbox(root), vault(receipts), net, lambda: None)
 
         async def page(browser, path):
             await browser.navigate(ORIGIN + path)
@@ -60,7 +72,7 @@ async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
                 return action
 
             await browser.submit({"op": "click", "x": 40, "y": 100}, review)
-            assert reviewed == [path]
+            assert reviewed == [path], ("review_missing", form_events)
             return action
 
         async def until(browser, observed):
