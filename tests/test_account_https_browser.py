@@ -48,7 +48,7 @@ async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
             assert ("GET", path, 200) in seen
 
         async def submit(browser, path, value):
-            await browser.key("Tab")
+            await browser.click(40, 40)
             await browser.type_text(value)
             await browser.frame()  # observe the current document before submission
             action = uid()
@@ -59,7 +59,7 @@ async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
                 reviewed.append(actual)
                 return action
 
-            await browser.submit({"op": "key", "key": "Enter"}, review)
+            await browser.submit({"op": "click", "x": 40, "y": 100}, review)
             assert reviewed == [path]
             return action
 

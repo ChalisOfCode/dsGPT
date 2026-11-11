@@ -84,7 +84,10 @@ class Handler(BaseHTTPRequestHandler):
         return (
             f'<form method="post" action="{path}"><input type="hidden" name="csrf" '
             f'value="{self.server.csrf}"><label>{field}<input name="{field}" '
-            f'type="password" autocomplete="off"></label><button>Submit</button></form>'
+            f'type="password" autocomplete="off" '
+            f'style="position:absolute;left:20px;top:20px;width:300px;height:40px">'
+            f'</label><button style="position:absolute;left:20px;top:80px;'
+            f'width:100px;height:40px">Submit</button></form>'
         )
 
     def do_GET(self):

@@ -33,7 +33,7 @@ jobs:
         env:
           DSGPT_PROFILE_TEST_CHROMIUM: /opt/google/chrome/chrome
         run: |
-          python -m pytest -p no:cacheprovider -q tests/test_account_https_site.py tests/test_account_https_broker.py tests/test_account_https_browser.py --junitxml=reports/account-tls.xml
+          python -m pytest -p no:cacheprovider -q --tb=short tests/test_account_https_site.py tests/test_account_https_broker.py tests/test_account_https_browser.py --junitxml=reports/account-tls.xml
       - name: Check bounded report storage
         id: report
         if: always() && hashFiles('reports/account-tls.xml') != ''
