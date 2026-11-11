@@ -2952,3 +2952,22 @@ privately, SHA256 `14756670ddbce09e57f7066d02f9767ce9f28904889f2213148c55d5c6a01
 These checks still use explicit container, vault and endpoint-mapping fixtures.
 They do not establish production Docker isolation, public DNS pinning or native
 Windows protection. Android draft validation remains pending; item 2 stays open.
+
+
+### Live production account HTTPS transport
+
+Isolated run `42988030561`, exact source `77dbd08`, passed one focused case with
+zero skips/errors/failures in 0.264 seconds. AccountBrowserNetwork used its default
+PublicHTTPS transport without resolver, endpoint, certificate-trust or response
+injection to fetch the public REQUIREMENTS.md at pinned source `4b87ed1`.
+The body matched SHA256 `e9663679a315c30d2d00b3a56e9d59e0d6200026877e25fc0c9deee8fc00fe1e`;
+authority checks and one-request accounting were observed. No cookies or private
+content were sent. This establishes the live public transport path, not every
+network scenario, browser/Docker isolation or full item 2 acceptance.
+
+The one-day 378-byte original report ZIP was size/digest verified and preserved
+privately: SHA256 `3b0fbd153bc293554ef16a5a81dffe19968d5d95904dbacdc5af0e5d628489a4`.
+The existing six-minute standard Ubuntu check ran only this new test, installed
+locked dependencies without cache writes, and did not repeat browser/model/
+installer/Gradle checks. Source audits passed. Main and Android runtime status are
+unchanged; the earlier local Gradle approval rejection was not bypassed.

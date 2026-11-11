@@ -183,3 +183,13 @@ claims, but those targeted tests are optional and not a routine release gate.
 Record hardware behavior as unverified when not observed. The 2026-11-03 public
 build authorization supersedes the former mandatory physical-device handoff.
 Signing identity and data-preservation acceptance remain required.
+
+
+### Focused production HTTPS transport evidence
+
+Run `42988030561` on isolated source `77dbd08` passed the unchanged production
+account broker and PublicHTTPS transport against a hash-pinned public repository
+file in 0.264 seconds. There was no substituted endpoint, resolver, TLS trust or
+response and no credential was sent. This exercises actual public DNS pinning,
+TLS hostname verification and bounded byte delivery on that route. It does not
+replace authenticated production Docker or Android acceptance.
