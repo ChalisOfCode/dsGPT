@@ -2874,3 +2874,23 @@ checked; JavaScript execution and profile restoration were NOT tested here.
 This is test-site validation, not production Docker, Chromium, DNS broker,
 Windows DPAPI or item 2 acceptance. Android validation remains blocked as above.
 No new Actions runs, cache writes, guard changes or final installers.
+
+### Production broker/ledger against the controlled TLS site
+
+Two focused integration cases exercise the actual account request broker and
+write ledger over real TLS sockets: a received response and a connection lost
+after an applied update. After reopening the ledger, both the original action
+and a new action are blocked until remote-state verification. Verifying the
+observed change never rearms the old action. The independent server count stays
+exactly one. Synthetic login/MFA credentials, cookies and CSRF values are absent
+from captured logs and the SQLite files.
+
+The test transport explicitly maps the configured public origin to the loopback
+TLS fixture and trusts its ephemeral certificate. No production code or network
+validation was changed. This tests broker/ledger integration, NOT PublicHTTPS
+DNS pinning, Docker isolation, Chromium, owner UI approval or Windows DPAPI.
+Initial test setup mistakes (old editable source path and an appended empty URL
+query) were corrected in the test invocation/mapping, not in production behavior.
+The two cases passed in 0.44 seconds with existing dependencies, bytecode disabled
+and pytest caching disabled. Android validation remains unverified and blocked
+as previously recorded. No additional Actions run or release was dispatched.

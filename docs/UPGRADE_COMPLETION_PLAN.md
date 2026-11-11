@@ -138,7 +138,11 @@ A controlled loopback HTTPS test site now supplies login/MFA, CSRF-protected
 updates, expiry, a read-only profile-restoration probe and lost-response writes.
 Three real TLS/socket checks validate this site and its independent effect counter.
 They do not run the dsGPT browser, production DNS broker or Windows protection;
-connecting that acceptance driver remains pending.
+connecting that acceptance driver remains pending. Two additional real TLS tests
+now exercise the production request broker and durable ledger against this site,
+including receipt reopening and blocked retries after a lost response. Their
+explicit test-only endpoint mapping does not validate production DNS pinning,
+Docker, Chromium, owner approval UI or Windows protection.
 
 Remaining for item 2: validate the Android presentation and controlled production
 Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
