@@ -29,6 +29,8 @@ def recipe_files():
                 "asset_install.py",
                 "asset_worker.py",
                 "transcript_merge.py",
+                "office_worker.py",
+                "office_inspection.py",
                 "ExportFunctions.java",
             )
         },

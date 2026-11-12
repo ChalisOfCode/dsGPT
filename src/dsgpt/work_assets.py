@@ -68,6 +68,21 @@ External assemblies/resources, strong names and mixed-mode binaries may require 
 No EXE is executed on Windows by these tools; make that remaining test explicit.
 
 Documents:
+ render_document(path="inputs/report.docx") renders every page (up to 20) with LibreOffice/Poppler.
+Supports PDF, DOCX and PPTX; outputs a render ZIP and hash-bound JSON report. Originals stay intact.
+ extract_render_page(path="receipts/EXACT_RENDER_ZIP",page_number=1) exposes one checked PNG.
+Use inspect_image on EACH extracted page for clipping, overlap, legibility and missing content.
+Without vision, report visual review not performed. Rendering, OCR and blank-page
+checks alone never prove good layout. Read the report for engine and font/compatibility limitations.
+ recalculate_workbook(path="inputs/book.xlsx") runs Calc calculateAll and exports a NEW XLSX plus
+an independently checked formula/cache report. Errors and changed content remain explicit. Read
+report_path with read_asset; check relevant formula results, changed cells and number/date formats.
+Active content, linked data, shared/array formulas and unsupported formats fail closed. Formats
+and Excel-specific features are not guaranteed preserved. Inputs are limited to 32 MiB, expanded
+Office packages to 128 MiB/4096 entries and workbooks to 20000 populated cells/32 sheets.
+These names are typed JSON actions, not argv subcommands. Output paths are returned by the tool.
+
+Legacy text extraction (does not render or calculate):
  document inputs/book.pdf pages.txt --start 1 --count 20 extracts selected pages with OCR fallback.
 Follow next_start for remaining pages. DOCX, XLSX, PPTX and image OCR also work; paging there is by
 Office XML part. Collect pages.txt, then read receipts/pages.txt --offset N. No document text is

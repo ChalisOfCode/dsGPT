@@ -80,6 +80,9 @@ class ProjectAction(BaseModel):
         "read_asset",
         "list_assets",
         "assemble_transcript",
+        "render_document",
+        "recalculate_workbook",
+        "extract_render_page",
     ]
     summary: str = Field(min_length=1, max_length=4000)
     path: str | None = Field(default=None, max_length=240)
@@ -87,6 +90,7 @@ class ProjectAction(BaseModel):
     expected_sha256: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     title: str | None = Field(default=None, max_length=200)
     offset: int = Field(default=0, ge=0, le=768 * 1024**2)
+    page_number: int = Field(default=1, ge=1, le=20)
     start_seconds: float = Field(default=0.0, ge=0, le=604800, allow_inf_nan=False)
     duration_seconds: float = Field(default=300.0, ge=1, le=900, allow_inf_nan=False)
     source_id: str | None = Field(default=None, max_length=20, pattern=r"^S[1-9][0-9]*$")
@@ -110,7 +114,8 @@ class ProjectAction(BaseModel):
     def valid_arguments(self):
         if self.tool != "read_asset" and self.offset > MAX_FILE_BYTES:
             raise ValueError("offset_out_of_range")
-        if self.tool in {"transcribe_media", "read_asset", "assemble_transcript"}:
+        if self.tool in {"transcribe_media", "read_asset", "assemble_transcript",
+                         "render_document", "recalculate_workbook", "extract_render_page"}:
             safe_path(self.path or "")
             if not self.path.startswith(("inputs/", "receipts/")):
                 raise ValueError("saved_input_or_receipt_path_required")
@@ -119,6 +124,8 @@ class ProjectAction(BaseModel):
                 if self.tool == "transcribe_media"
                 else {"offset"}
                 if self.tool == "read_asset"
+                else {"page_number"}
+                if self.tool == "extract_render_page"
                 else set()
             )
             if any(
@@ -285,6 +292,9 @@ def action_schema(
                 ("read_asset", ["path"], ["offset"]),
                 ("list_assets", [], ["offset", "query"]),
                 ("assemble_transcript", ["path"], []),
+                ("render_document", ["path"], []),
+                ("recalculate_workbook", ["path"], []),
+                ("extract_render_page", ["path"], ["page_number"]),
                 ("browser", ["path"], ["browser_steps"]),
                 ("read_build_log", ["execution_id"], ["offset"]),
                 ("scaffold_app", ["platform", "title"], []),
@@ -296,7 +306,8 @@ def action_schema(
     for tool, required, optional in tools:
         if file_paths == [] and tool in {"read_file", "edit_file", "browser"}:
             continue
-        if asset_paths == [] and tool in {"transcribe_media", "read_asset", "assemble_transcript"}:
+        if asset_paths == [] and tool in {"transcribe_media", "read_asset", "assemble_transcript",
+                         "render_document", "recalculate_workbook", "extract_render_page"}:
             continue
         properties = {"tool": {"const": tool}, "summary": base["summary"]}
         for key in required + optional:
@@ -307,7 +318,8 @@ def action_schema(
         if "offset" in properties and tool != "read_asset":
             properties["offset"]["maximum"] = MAX_FILE_BYTES
         if (
-            tool in {"transcribe_media", "read_asset", "assemble_transcript"}
+            tool in {"transcribe_media", "read_asset", "assemble_transcript",
+                         "render_document", "recalculate_workbook", "extract_render_page"}
             and asset_paths is not None
         ):
             properties["path"] = {"enum": asset_paths}
@@ -461,7 +473,8 @@ class ProjectTools:
             from .work_asset_tools import list_assets
 
             return list_assets(db, task_id, action.offset, action.query)
-        if tool in {"transcribe_media", "assemble_transcript"}:
+        if tool in {"transcribe_media", "assemble_transcript", "render_document",
+                    "recalculate_workbook", "extract_render_page"}:
             return {"error": "transcription_requires_isolated_work"}
         if tool in {"read_requirements", "list_requirements", "mark_requirement"}:
             from .work_specs import WorkSpecs

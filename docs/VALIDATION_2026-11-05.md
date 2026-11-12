@@ -3034,3 +3034,28 @@ The Android source compiled and its new focused cases passed. Account acceptance
 is scoped to the documented supported same-origin interactions and plain-text
 grants; it does not claim universal website compatibility or physical devices.
 Reconciled main integration CI remains the final check before the item-2 alert.
+
+
+### 2026-11-12 item 2 integration completed and item 3 candidate
+
+Main `89803c25089e3d8a517bd749bddaf1c429e9cb7e`, integration run
+`43271693885`, passed all nine jobs. Backend 1369 cases (19 explicit optional
+skips), desktop browser 29 and private browser 45 (zero unexpected/flaky/skips),
+Android 34 unit cases plus lifecycle OK (1 test), Windows 172 cases (two expected
+platform skips). Windows installed native UI/reply, Credential Manager, scheduled
+restart, reinstall and data preservation passed using the separate 1.7B fixture.
+That fixture does not replace item 1 or complete item 5; staged inference remains
+BLOCKED and production physical usability REVIEW, owner hardware unverified.
+Five original report ZIPs were each size/digest checked and preserved privately
+as `dsGPT-ci-test-evidence-89803c2.zip`, 53586 bytes, SHA256
+`3c4897b903d25fd85b1211ee35a7c866ce78fc75d1bdb4e2a44d942844dfe000`.
+Terminal item-2 alert `43273894623` passed and posted one owner mention in issue 1
+(comment 6831505823). Integration monitor `43271832772` remains run scoped.
+
+Item 3 candidate: fixed isolated render/recalculate/extract-page actions, separate
+outputs, bounded OOXML inspection, macro/link-update denial, independent exported
+formula/cache checks, and transitive invalidation of stale validation receipts.
+73 focused parser/orchestration/build-context/Work checks passed in 5.90 seconds,
+with two opt-in Docker checks explicitly skipped locally. The additional affected
+receipt checks passed (39 selected cases in 2.06 seconds).
+These are not engine or visual acceptance. No final installers or model reruns.

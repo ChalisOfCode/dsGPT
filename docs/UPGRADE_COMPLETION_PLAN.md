@@ -78,16 +78,20 @@ federation, passkeys, anti-automation gates, arbitrary site APIs and universal l
 are not promised. Revoking dsGPT access does not undo an already-sent request or
 log out a remote website. Previously viewed content cannot be recalled remotely.
 
-The focused supported-scope acceptance is passed across the recorded real
-boundaries. Main integration CI for the reconciled candidate must pass before
-the terminal item-2 alert and item-3 implementation. No final installers are
-authorized until items 3–5 also pass.
+The reconciled main candidate `89803c2` passed all nine integration jobs in
+`43271693885`. The single terminal item-2 alert was delivered by run `43273894623`
+in issue 1. Item 3 implementation has started; final installers remain gated on
+items 3–5. All preserved report hashes are recorded in the validation log.
 
-## 3. Document layout and spreadsheet formula validation — queued after 2
+## 3. Document layout and spreadsheet formula validation — in progress
 
 Render generated documents independently, inspect page images and structural
 problems, and recalculate supported workbook formulas with a real engine. Preserve
 original files, report unsupported formulas/formatting, and verify exported results.
+
+The candidate adds bounded typed render, recalculation and page-extraction tools.
+Parser/orchestration checks pass; real production-image rendering/calculation and
+visual review are pending. Do not infer acceptance from those unit checks.
 
 ## 4. Group related imported projects — queued after 3
 

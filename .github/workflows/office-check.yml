@@ -1,0 +1,69 @@
+name: Focused production office checks
+on:
+  push:
+    branches: [work/document-validation-89803c2]
+    paths: [.github/workflows/office-check.yml, src/dsgpt/office_worker.py, src/dsgpt/office_inspection.py, src/dsgpt/work_office.py, tests/test_office_docker.py, tests/office_fixtures.py]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: office-check
+  cancel-in-progress: false
+jobs:
+  office:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: src
+      PIP_NO_CACHE_DIR: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Install locked test dependencies without shared caches
+        run: python -m pip install --no-cache-dir -r requirements-dev.lock
+      - name: Build exact production recipe on the disposable runner
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          context="$RUNNER_TEMP/office-context"
+          python scripts/prepare_app_toolchain.py --directory "$context"
+          recipe="$(python -c 'from dsgpt.tool_setup import recipe_digest; print(recipe_digest())')"
+          base="$(python -c 'from dsgpt.tool_setup import BASE_IMAGE; print(BASE_IMAGE)')"
+          docker build --no-cache --build-arg "DSGPT_BASE_IMAGE=$base" \
+            --label "org.dsgpt.recipe=$recipe" --tag dsgpt-office-check:ci "$context"
+          docker image inspect --format '{{.Id}}' dsgpt-office-check:ci > "$RUNNER_TEMP/office-image-id"
+          printf 'Production recipe SHA256: %s\n' "$recipe"
+      - name: Actual isolated calculation and rendering
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          set -euo pipefail
+          export DSGPT_OFFICE_IMAGE="$(cat "$RUNNER_TEMP/office-image-id")"
+          export DSGPT_OFFICE_EVIDENCE="$GITHUB_WORKSPACE/reports/office"
+          python -m pytest -p no:cacheprovider -q --tb=short tests/test_office_docker.py \
+            --junitxml=reports/office-check.xml
+      - name: Bound synthetic visual evidence
+        id: reports
+        if: always()
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('reports')
+          assert root.is_dir()
+          assert sum(p.stat().st_size for p in root.rglob('*') if p.is_file()) < 2 * 1024**2
+          PY
+          python scripts/ci_artifact_guard.py reports
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always() && steps.reports.outcome == 'success' && !cancelled()
+        with:
+          name: office-check-${{ github.sha }}
+          path: reports/
+          retention-days: 1
+          if-no-files-found: error
+      - name: Remove only this job's disposable image
+        if: always()
+        run: docker image rm --force dsgpt-office-check:ci || true

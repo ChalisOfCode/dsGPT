@@ -9,6 +9,8 @@ RUN apt-get update \
        openjdk-17-jdk-headless tar \
        poppler-utils tesseract-ocr tesseract-ocr-eng python3-pil chromium python3-websocket \
        ffmpeg python3-pefile mono-utils mono-devel \
+       libreoffice-writer libreoffice-impress libreoffice-calc python3-uno \
+       fonts-dejavu-core fonts-liberation \
        python3-cffi python3-requests python3-srt python3-tqdm \
     && apt-get clean \
     && mkdir -p /opt/dsgpt /work \
@@ -16,7 +18,8 @@ RUN apt-get update \
     && useradd --uid 1000 --create-home --shell /usr/sbin/nologin dsgpt \
     && chown 1000:1000 /work
 COPY toolchain_install.py app_builder.py app_build_worker.py asset_install.py \
-     asset_worker.py transcript_merge.py ExportFunctions.java /opt/dsgpt/
+     asset_worker.py transcript_merge.py office_worker.py office_inspection.py \
+     ExportFunctions.java /opt/dsgpt/
 ENV ANDROID_HOME=/opt/android JAVA_TOOL_OPTIONS="-XX:ActiveProcessorCount=2" \
     GRADLE_USER_HOME=/opt/dsgpt/gradle-home
 RUN python3 -I /opt/dsgpt/toolchain_install.py /opt \

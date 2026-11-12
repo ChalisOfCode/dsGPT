@@ -18,6 +18,7 @@ from .project_tools import ProjectAction, ProjectTools, action_schema, safe_path
 from .storage import canonical, uid, utcnow
 from .submissions import accepted, remember
 from .work_asset_tools import asset_comparison_hint, asset_read_hint, related_asset_read
+from .work_office import OFFICE_TOOLS
 from .work_references import WorkReferences
 from .work_research import WorkResearch
 from .work_specs import SpecReview, WorkSpecs, excerpt, infer_target, sections
@@ -2590,7 +2591,8 @@ class WorkRegistry:
             result = None
             if (
                 action.tool
-                in {"run", "browser", "build_project", "transcribe_media", "assemble_transcript"}
+                in ({"run", "browser", "build_project", "transcribe_media", "assemble_transcript"}
+                    | OFFICE_TOOLS)
                 and build
             ):
                 result = await self.builds.execute(task_id, session["step"] + 1, action)
@@ -2729,7 +2731,8 @@ class WorkRegistry:
             definition["read_sha256"] = current_file["sha256"] if current_file else None
         if (
             action.tool
-            in {"run", "browser", "build_project", "transcribe_media", "assemble_transcript"}
+            in ({"run", "browser", "build_project", "transcribe_media", "assemble_transcript"}
+                    | OFFICE_TOOLS)
             and external_result
         ):
             definition["snapshot_sha256"] = external_result.get("snapshot_sha256")
@@ -2737,6 +2740,8 @@ class WorkRegistry:
                 definition["transcription_source_sha256"] = external_result.get(
                     "transcription_source_sha256"
                 )
+            if action.tool in OFFICE_TOOLS:
+                definition["office_source_sha256"] = external_result.get("office_source_sha256")
             if action.tool == "assemble_transcript":
                 definition["assembly_assets_sha256"] = external_result.get("assets_sha256")
         encoded = canonical(definition).encode()
@@ -2765,7 +2770,7 @@ class WorkRegistry:
                     "build_project",
                     "transcribe_media",
                     "assemble_transcript",
-                }:
+                } | OFFICE_TOOLS:
                     previous_action["snapshot_sha256"] = json.loads(previous[1]).get(
                         "snapshot_sha256"
                     )
@@ -2773,6 +2778,9 @@ class WorkRegistry:
                         previous_action["transcription_source_sha256"] = json.loads(
                             previous[1]
                         ).get("transcription_source_sha256")
+                    if previous_action["tool"] in OFFICE_TOOLS:
+                        previous_action["office_source_sha256"] = json.loads(previous[1]).get(
+                            "office_source_sha256")
                     if previous_action["tool"] == "assemble_transcript":
                         previous_action["assembly_assets_sha256"] = json.loads(previous[1]).get(
                             "assets_sha256"

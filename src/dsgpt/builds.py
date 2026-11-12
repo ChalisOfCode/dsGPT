@@ -16,6 +16,7 @@ from .project_tools import safe_path
 from .sandbox import PIDS_LIMIT, DockerSandbox, SandboxError
 from .storage import canonical, uid, utcnow
 from .work_asset_tools import transcription_plan, transcription_result
+from .work_office import OFFICE_TOOLS, office_plan, office_result
 from .work_transcripts import assembly_plan, assembly_result, coverage_state
 
 
@@ -58,7 +59,7 @@ def current_file_receipts(db, task_id, digest=None):
     ):
         saved[artifact["id"]] = dict(artifact)
         execution_paths.setdefault(artifact["execution_id"], set()).add(artifact["path"])
-    seen, collected = set(), []
+    seen, collected, dependencies = set(), [], {}
     for row in db.execute(
         "SELECT id,status,cleanup_pending,result FROM work_executions WHERE task_id=? "
         + ("AND snapshot_sha256=? " if digest is not None else "")
@@ -112,7 +113,25 @@ def current_file_receipts(db, task_id, digest=None):
                     "execution_id": row["id"],
                 }
             )
+            office = result.get("document_validation")
+            if isinstance(office, dict):
+                dependencies[stored["id"]] = (
+                    office.get("source_path"), office.get("source_sha256")
+                )
             available.remove(artifact["path"])
+    # Invalidate descendants when their input receipt is replaced/deleted. A stale
+    # rendered page must not remain eligible evidence after its source changes.
+    inputs = {"inputs/" + r["name"]: r["sha256"] for r in db.execute(
+        "SELECT name,sha256 FROM work_inputs WHERE task_id=?", (task_id,)
+    )}
+    while True:
+        current = inputs | {"receipts/" + r["path"]: r["sha256"] for r in collected}
+        valid = [r for r in collected if r["id"] not in dependencies
+                 or (isinstance(dependencies[r["id"]][1], str)
+                     and current.get(dependencies[r["id"]][0]) == dependencies[r["id"]][1])]
+        if len(valid) == len(collected):
+            break
+        collected = valid
     return collected
 
 
@@ -193,7 +212,9 @@ class WorkBuilds:
                     intended = requested_artifact_paths(saved)
                     if intended:
                         result["requested_artifact_paths"] = intended
-                    for key in ("assets_sha256", "transcription_source_sha256"):
+                    for key in (
+                        "assets_sha256", "transcription_source_sha256", "office_source_sha256",
+                    ):
                         value = saved.get(key) if isinstance(saved, dict) else None
                         if (
                             isinstance(value, str)
@@ -269,8 +290,10 @@ class WorkBuilds:
         return (json.loads(row["action"]), json.loads(row["result"])) if row else None
 
     async def execute(self, task_id, step, action):
-        if action.tool in {"transcribe_media", "assemble_transcript"} and not self.store.one(
-            "SELECT 1 FROM work_build_profiles WHERE task_id=?", (task_id,)
+        if action.tool in {"transcribe_media", "assemble_transcript"} | OFFICE_TOOLS and not (
+            self.store.one(
+                "SELECT 1 FROM work_build_profiles WHERE task_id=?", (task_id,)
+            )
         ):
             return {"error": "transcription_requires_isolated_work"}
         if not self.ready or not self.sandbox:
@@ -312,14 +335,14 @@ class WorkBuilds:
                     db.execute(
                         "UPDATE work_executions SET status='running' WHERE id=?", (identifier,)
                     )
-                if action.tool in {"run", "transcribe_media", "assemble_transcript"}:
+                if action.tool in {"run", "transcribe_media", "assemble_transcript"} | OFFICE_TOOLS:
                     with self.store.connect() as db:
                         if action.tool == "assemble_transcript":
                             plan = assembly_plan(db, task_id, action.path)
                             assets, asset_digest = work_assets.snapshot(
                                 db, task_id, paths=plan["paths"]
                             )
-                        elif action.tool == "transcribe_media":
+                        elif action.tool in {"transcribe_media"} | OFFICE_TOOLS:
                             if not work_assets.lookup(db, task_id, action.path):
                                 raise SandboxError("transcription_saved_asset_required")
                             assets, asset_digest = work_assets.snapshot(
@@ -349,6 +372,12 @@ class WorkBuilds:
                         plan["argv"],
                         plan["artifacts"],
                         plan["timeout_seconds"],
+                    )
+                if action.tool in OFFICE_TOOLS:
+                    plan = office_plan(action, assets)
+                    result["office_source_sha256"] = plan["source_sha256"]
+                    argv, outputs, timeout = (
+                        plan["argv"], plan["artifacts"], plan["timeout_seconds"],
                     )
                 if action.tool == "assemble_transcript":
                     if any(f["path"].startswith(".dsgpt-media/") for f in files):
@@ -409,7 +438,8 @@ class WorkBuilds:
                     timeout,
                     **(
                         {"input_limit": 800 * 1024**2}
-                        if action.tool in {"run", "transcribe_media", "assemble_transcript"}
+                        if action.tool in ({"run", "transcribe_media", "assemble_transcript"}
+                                           | OFFICE_TOOLS)
                         and assets
                         else {}
                     ),
@@ -420,6 +450,8 @@ class WorkBuilds:
                 if output["exit_code"]:
                     result["error"] = "command_failed"
                 else:
+                    if action.tool in OFFICE_TOOLS:
+                        result["document_validation"] = office_result(action, plan, artifacts)
                     if action.tool == "transcribe_media":
                         result["transcription"] = transcription_result(action, plan, artifacts)
                     if action.tool == "assemble_transcript":
