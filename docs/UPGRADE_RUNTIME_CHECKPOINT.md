@@ -54,3 +54,22 @@ public reports. No dependency/model setup is invoked. Three local driver guards
 check altered rows, stale provenance/payloads and non-runner denial. Actual
 execution with both installers is still pending; this driver does not prove
 native UI, model-file preservation, Android or physical Tailscale behavior.
+
+A separate offline-signing route keeps the original key outside GitHub. The
+bounded `sign_apk_v2.py` utility uses existing cryptographic primitives, verifies
+input/certificate pins and key agreement, refuses existing signatures/ambiguous
+ZIPs, preserves entry bytes and emits a v2 envelope. It is limited to Android 7+
+(the application minimum is Android 8). No new local dependencies or production
+key were used for its test. Official Android format reference:
+https://source.android.com/docs/security/features/apksigning/v2
+
+Independent SDK run `43298591745` on `1f26082` passed all seven checks with zero
+failures/errors/skips in 4.791 seconds. Android SDK 35.0.0 `apksigner` accepted
+the synthetic signature and rejected changed payload bytes. The original
+552-byte report ZIP has SHA-256
+`1ea9775bd80876cce777796d7a5b22060d586dfbc143bf230f5a880c0f6c0573`.
+This does not establish production certificate continuity, application validity,
+or installed upgrade behavior. Those gates still require the actual candidate
+APK, the original private key, independent SDK verification and emulator update
+without uninstall/data reset. No repository signing secrets are required by the
+offline format test; no signing material is included in source or artifacts.

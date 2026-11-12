@@ -3142,3 +3142,21 @@ No model, Gradle, installer or full-suite rerun. Per-attempt metrics remain
 private reviewed diagnostics; stream completion is not action success.
 Item 5 remains open for real old-to-candidate upgrades and reconnect/signing
 acceptance. No item-5 terminal alert or final installers have been released.
+
+### Independent offline signing-format boundary (2026-11-12)
+
+Run `43298591745`, job `131463379733`, exact isolated
+`1f26082c4a7077e13838894244585c41b674a2c8` (tree
+`cc3a3278776fbc0c3b8a5769c9fcc76ea98bf0cf`), passed seven checks in 4.791 seconds
+with zero failures/errors/skips. A synthetic RSA key and bounded multi-chunk ZIP
+were signed offline using existing cryptographic primitives. Independent Android
+SDK 35.0.0 apksigner verified the v2 envelope/certificate and rejected a changed
+payload. Original artifact `13979454260`, 552 bytes, SHA-256
+`1ea9775bd80876cce777796d7a5b22060d586dfbc143bf230f5a880c0f6c0573`,
+was independently size/digest checked and preserved privately.
+
+No production key, account credential, model run, Gradle build, emulator or final
+installer was used. This is a signing-format boundary check, not production APK
+signing-continuity or item-5 acceptance. The original key remains private outside
+GitHub. The six-minute public Ubuntu job used uncached disposable dependencies,
+the preinstalled Android SDK and only a bounded one-day JUnit artifact.
