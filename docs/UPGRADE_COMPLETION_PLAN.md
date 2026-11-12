@@ -105,17 +105,20 @@ calculation. Coverage is not a layout pass. Native text-only inference cannot re
 images; vision remains required for automatic image inspection. Office/font fidelity
 is not universal and workbook formatting preservation is not certified.
 The acceptance and recovery checks were integrated into main `111df67`; integration
-CI `43280663340` is still pending its Windows installer result. No final installers
-are delivered at this stage.
+CI `43280663340` passed all nine jobs, including Windows installation validation.
+The single terminal item-3 alert was delivered by run `43288787309` in issue 1.
+No final installers are delivered at this stage.
 
-## 4. Group related imported projects — implementation in progress
+## 4. Group related imported projects — focused acceptance passed, integration pending
 
 Recognize and propose coherent projects from related imports using observable
 metadata/content, preserving originals and letting the owner correct associations.
 Validate duplicates, unrelated inputs and conflicting project identities.
 The isolated implementation is described in `PROJECT_GROUPS_CHECKPOINT.md`;
-backend preservation/permission checks pass, while browser/native acceptance is
-pending. Do not infer completion from the backend checks.
+backend preservation/permission checks pass. Actual-backend desktop Chrome review,
+correction, rename and removal passed in `43289697441`; native Android compilation
+and Compose browsing/connection clearing passed in `43289109215`. Generated client
+types are reconciled. Main integration is pending; no terminal item-4 alert yet.
 
 ## 5. Software upgrade/reconnect and empty-response diagnosis — queued after 4
 

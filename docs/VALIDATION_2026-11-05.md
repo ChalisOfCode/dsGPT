@@ -3059,3 +3059,45 @@ formula/cache checks, and transitive invalidation of stale validation receipts.
 with two opt-in Docker checks explicitly skipped locally. The additional affected
 receipt checks passed (39 selected cases in 2.06 seconds).
 These are not engine or visual acceptance. No final installers or model reruns.
+
+
+### Item 3 integration completion and item 4 initial client check
+
+Main `111df671be24e180b4c1e23d8843e4a3895a08eb`, tree
+`5ad8fe148f61a93d5ee3354e5234caf8d81a0776`, passed all nine integration jobs
+in `43280663340`. Backend: 1382 cases including subtests, no failures/errors,
+22 expected skips. Desktop: 30 expected, no flaky/unexpected/skipped. Private
+browser: 45 passed. Android: 35 unit cases and lifecycle `OK (1 test)`. Windows:
+172 cases, no failures/errors, two platform skips; installed native UI/reply,
+Credential Manager, scheduled restart, reinstall and data preservation passed.
+The separate 1.7B installer fixture is not item 1 or complete item 5 acceptance;
+staged inference remains BLOCKED, production REVIEW and owner hardware unverified.
+Five original report ZIPs independently size/digest verified; private combined
+`dsGPT-ci-test-evidence-111df67.zip`: 53996 bytes, SHA256
+`86e5ec57e94df646f6ecf160fa7a938093506a112b58845159dcf2b3cd0deb70`.
+Monitor `43280869724` passed. One item-3 completion alert `43288787309` passed
+and posted issue 1 comment `6833526633`; do not duplicate.
+
+Grouping run `43289109215` on `efd73dc44075389b0b282fad4ad27ced90fa002a`
+passed eight backend checks (1.45s), desktop TypeScript/Vite build and native
+Android app/test compilation with one Compose check, no failures/errors/skips
+(Gradle 1m56s). Desktop Chrome failed after link creation while selecting the
+project by exact accessible name. The corrected selector has an explicit stable
+accessible name; the test stays unchanged. The follow-up targets only desktop.
+Original report artifact `13976637303`: 2503 bytes, SHA256
+`621fb27e1ff31c886ddce6e135b011fe19ee78188ecb1ac6bca3d15b86bd1fce`.
+Original ZIP plus decoded desktop/Android job logs preserved privately as
+`dsGPT-group-check-evidence-43289109215.zip`: 19161 bytes, SHA256
+`5807d672bc7b83c0f698735ff6bb38fed922f8d200ac8a220b2e275b22380185`.
+These are separate boundaries; item 4 remains open pending browser acceptance
+and integration of the generated API contract.
+
+Desktop grouping correction passed in `43289697441` on exact `88ef7a8`: eight
+backend checks in 1.43s, desktop build and one actual-backend Chrome UI workflow
+in 4.96s, zero failed/flaky/skipped. Original artifact `13975908223`, 12360 bytes,
+SHA256 `649c6c9deefcb3b94a43a482b8838cced31cd257b9a94205660d972be1722c38`.
+Generated API declarations reconciled from that artifact. Private original/report
+log bundle `dsGPT-group-desktop-evidence-43289697441.zip`, 23000 bytes, SHA256
+`caa89adb8a19ef3070335c97343b5b3f9eb9017e4a507a190daa1a7500711498`.
+No unchanged Android rerun, no model/office rerun, and no terminal item-4 alert
+before main integration.

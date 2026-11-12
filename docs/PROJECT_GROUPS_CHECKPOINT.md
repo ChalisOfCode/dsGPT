@@ -1,7 +1,7 @@
 # Related project groups checkpoint
 
-Item 4 implementation is isolated on `work/project-groups-111df67`. Native/browser
-acceptance is pending; do not mark the item complete from backend fixtures alone.
+Item 4 implementation is isolated on `work/project-groups-111df67`. Focused native/browser
+acceptance passed; main integration remains pending.
 
 Groups are references to already imported history, Work tasks and original Work
 inputs. Owner review happens after the existing import validation/save, in History
@@ -55,3 +55,19 @@ loaded. The correction supplies a stable explicit accessible name; the test is
 unchanged. The follow-up workflow selects only the affected desktop check and
 keeps the generated API types even if browser validation fails. Android source is
 unchanged, so its successful focused check is reused. Item 4 remains open.
+
+Desktop retry `43289697441` on `88ef7a8f14dac6187ac2836b0fea0a603794ee17`
+passed all eight backend checks in 1.43s, generated the API contract, built the
+desktop bundle and passed the actual-backend Chrome workflow in 4.96s (one expected,
+zero failed/skipped/flaky). It reviewed the exact repository hint, required explicit
+application, linked two sources, renamed the group, rejected one association, left
+the other ungrouped and removed the group; original requirements stayed unchanged.
+The unchanged Android source retains its compilation/Compose pass from `43289109215`.
+Generated TypeScript declarations are reconciled byte-for-byte from the verified
+report artifact. The API, browser and Android checks are separate observations,
+not a physical-device end-to-end result or universal archive classification.
+
+Original desktop report ZIP: 12360 bytes, SHA256
+`649c6c9deefcb3b94a43a482b8838cced31cd257b9a94205660d972be1722c38`.
+Private report/log bundle `dsGPT-group-desktop-evidence-43289697441.zip`:
+23000 bytes, SHA256 `caa89adb8a19ef3070335c97343b5b3f9eb9017e4a507a190daa1a7500711498`.
