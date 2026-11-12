@@ -73,3 +73,14 @@ or installed upgrade behavior. Those gates still require the actual candidate
 APK, the original private key, independent SDK verification and emulator update
 without uninstall/data reset. No repository signing secrets are required by the
 offline format test; no signing material is included in source or artifacts.
+
+The exact Android 0.10.0 unsigned candidate from run `43301766498` was hash-
+checked and signed privately with the existing original key. No key was exported
+or transferred to GitHub. Independent SDK verification of those exact APK bytes
+is still pending. A bounded confidential transfer driver prepares a fresh RSA
+receiver key on one disposable public runner, binds AES-GCM ciphertext to its
+verified run/source challenge, and accepts only two fixed APK hashes. Only the
+public challenge and encrypted APK bytes cross public storage; signing keys,
+backups and credentials are excluded. Receiver secrets and plaintext copies are
+deleted on exit. The protocol's three synthetic checks pass locally; this is
+not APK, installed upgrade, AndroidKeyStore or reconnect acceptance.
