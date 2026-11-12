@@ -12,6 +12,8 @@ import os
 import re
 import sqlite3
 import subprocess
+import time
+import uuid
 from pathlib import Path
 
 TABLE_KEYS = {"conversations": "id", "messages": "id", "work_tasks": "id",
@@ -87,6 +89,78 @@ def manifest(install_dir, expected_source=None):
     return source
 
 
+def native_history(install_dir, directory, private, identifier, seed):
+    """Launch each installed native client, without model downloads or inference."""
+    import httpx
+    from dsgpt_acceptance.__main__ import port
+    from dsgpt_acceptance.cdp import CDP
+
+    from dsgpt import managed
+    from dsgpt.bootstrap import WindowsVault
+
+    desktop = WindowsVault(directory, target="backend-connection.dsGPT-acceptance-" + identifier,
+                           encoding="utf-16-le")
+    if seed:
+        managed.wire_desktop(WindowsVault(directory), desktop)
+    # On upgrade do not repair/reseed even this isolated native-view credential.
+    if desktop.read() != WindowsVault(directory, target=managed.CLIENT_TARGET,
+                                      encoding="utf-16-le").read():
+        raise AssertionError("Native-view credential was not preserved")
+    debug_port = port()
+    env = dict(os.environ, DSGPT_ACCEPTANCE_RUN_ID=identifier,
+               DSGPT_ACCEPTANCE_DEBUG_PORT=str(debug_port),
+               DSGPT_ACCEPTANCE_PROFILE=str(private / "upgrade-native-profile"))
+    child = subprocess.Popen([str(install_dir / "client/dsGPT.exe")], env=env,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    cdp = None
+    try:
+        deadline = time.monotonic() + 60
+        with httpx.Client(trust_env=False, follow_redirects=False, timeout=3) as client:
+            while time.monotonic() < deadline:
+                if child.poll() is not None:
+                    raise AssertionError("Installed native client exited")
+                try:
+                    pages = client.get(f"http://127.0.0.1:{debug_port}/json/list").json()
+                    page = next(p for p in pages if p.get("type") == "page")
+                    cdp = CDP(page["webSocketDebuggerUrl"])
+                    break
+                except (httpx.HTTPError, ValueError, StopIteration, OSError):
+                    time.sleep(0.25)
+        if cdp is None:
+            raise AssertionError("Installed native window did not open")
+        deadline = time.monotonic() + 45
+        while time.monotonic() < deadline:
+            visible = cdp.evaluate(
+                "document.body.innerText.includes('Synthetic prior-release conversation')")
+            if visible:
+                origin = cdp.evaluate("window.__TAURI_INTERNALS__.invoke('restore_connection')")
+                if origin != managed.ORIGIN:
+                    raise AssertionError("Installed native connection differs")
+                return
+            time.sleep(0.25)
+        raise AssertionError("Prior conversation not visible in installed native client")
+    finally:
+        if cdp:
+            cdp.close()
+        if child.poll() is None:
+            child.terminate()
+            child.wait(timeout=20)
+
+
+def preserved_model_file(directory, expected=None):
+    # Inert filesystem sentinel, explicitly not a model or inference fixture.
+    path = directory / "managed-models" / "upgrade-preservation-fixture.bin"
+    if expected is None:
+        path.parent.mkdir(exist_ok=True)
+        with path.open("xb") as output:
+            output.write(b"dsGPT synthetic retained model-directory bytes\n" * 128)
+        return {"bytes": path.stat().st_size, "sha256": digest(path)}
+    if (not path.is_file() or path.is_symlink() or path.stat().st_size != expected["bytes"]
+            or digest(path) != expected["sha256"]):
+        raise AssertionError("Model-directory fixture bytes changed")
+    return expected
+
+
 def phase(args):
     # -I loads the ACTUAL installed old/candidate backend, never checkout source.
     import httpx
@@ -123,7 +197,9 @@ def phase(args):
                 paired = response.json()
             before = {"source": source, "chat_id": chat["id"], "task_id": task["id"],
                       "owner_sha256": hashlib.sha256(owner["token"].encode()).hexdigest(),
-                      "desktop": desktop.read(), "paired_token": paired["token"]}
+                      "desktop": desktop.read(), "paired_token": paired["token"],
+                      "native_id": uuid.uuid4().hex,
+                      "model_directory_fixture": preserved_model_file(directory)}
         else:
             if source == before["source"]:
                 raise AssertionError("Same-version reinstall is not upgrade acceptance")
@@ -132,6 +208,7 @@ def phase(args):
             # Do not wire/repair here: a surviving desktop credential must already exist.
             if desktop.read() != before["desktop"]:
                 raise AssertionError("Desktop credential changed")
+            preserved_model_file(directory, before["model_directory_fixture"])
         with httpx.Client(trust_env=False, follow_redirects=False, timeout=10) as client:
             headers = {"Authorization": "Bearer " + before["paired_token"]}
             identity = client.get(managed.ORIGIN + "/v1/device", headers=headers)
@@ -144,6 +221,8 @@ def phase(args):
             for path in ("/v1/conversations/" + before["chat_id"] + "/messages",
                          "/v1/work/tasks/" + before["task_id"]):
                 client.get(managed.ORIGIN + path, headers=headers).raise_for_status()
+        native_history(args.install_dir, directory, args.private, before["native_id"],
+                       seed=args.phase == "baseline")
     finally:
         managed.stop(directory)
     store = Store(directory)
@@ -186,7 +265,9 @@ def phase(args):
             "old_rows_and_imported_work_source_preserved": True, "migration_backup_verified": True,
             "owner_and_desktop_credentials_preserved": True,
             "paired_identity_and_scopes_reconnected": True, "backend_restart_passed": True,
-            "scope": "Installed Windows backend; no model or physical/Tailscale claim."
+            "old_and_candidate_native_history_visible": True,
+            "synthetic_model_directory_bytes_preserved": True,
+            "scope": "Installed Windows backend/native UI; no model or physical/Tailscale claim."
         }, indent=2) + "\n")
 
 

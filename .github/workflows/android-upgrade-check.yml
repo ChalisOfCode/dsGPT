@@ -1,3 +1,4 @@
+# Separate final restart observations after the first installed run's failure.
 name: Exact production Android in-place upgrade
 on:
   push:

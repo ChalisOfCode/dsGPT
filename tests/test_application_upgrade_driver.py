@@ -62,3 +62,15 @@ def test_reconnect_must_preserve_scopes_and_role():
                    {"scopes": ["chat", "work", "admin"]}, {"scopes": ["chat"]}):
         with pytest.raises(AssertionError, match="authority changed"):
             driver.check_identity({**original, **change}, original)
+
+
+def test_existing_model_directory_bytes_cannot_be_replaced_or_silently_reseeded(tmp_path):
+    receipt = driver.preserved_model_file(tmp_path)
+    driver.preserved_model_file(tmp_path, receipt)
+    with pytest.raises(FileExistsError):
+        driver.preserved_model_file(tmp_path)
+    path = tmp_path / "managed-models/upgrade-preservation-fixture.bin"
+    original = path.read_bytes()
+    path.write_bytes(b"X" + original[1:])
+    with pytest.raises(AssertionError, match="fixture bytes changed"):
+        driver.preserved_model_file(tmp_path, receipt)

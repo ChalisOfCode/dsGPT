@@ -113,8 +113,28 @@ Private observations never become public reports. Only fixed outcome fields are
 retained. The controlled CA/hostname is not physical Tailscale evidence.
 Two local driver guard/TLS fixture checks pass; installed checks remain pending.
 
+Installed run `43328679346` on `4bcc913` passed input verification, emulator
+preparation, prior-release pairing, real `adb install -r`, unchanged UID/encrypted
+preferences, candidate authenticated reuse and native history visibility, and
+offline credential preservation. It then failed within the combined fresh-backend
+restart stage. Cleanup succeeded. Original 217-byte report SHA-256:
+`48d43e457cd5f73b693ad39a5dfa3f6fbf0d505be77834fd40c50f5a6884801b`.
+No complete upgrade pass is claimed. A local actual-TLS/backend restart check
+preserves paired authority and task/chat data; it does not reproduce the installed
+failure. The next bounded diagnostic run separates restart identity, token,
+scopes, vault, data, native history and shutdown checks without changing assertions
+or either APK. It reports only fixed stage/type labels, never exception content.
+
 The Windows upgrade driver additionally pins the candidate installer digest,
 seeds original Work source text through the old application API and compares
 its stored rows, and checks paired role/scopes as well as identity before and
 after restart. Four local driver guards pass (0.02 seconds). This remains
 unexecuted installed acceptance, not a replacement for actual old-to-new tests.
+
+The pending Windows driver now also opens both installed native clients and
+requires the prior conversation title in each real window. Its isolated native
+credential is seeded only before the old install observation and must survive
+the candidate phase without repair. An inert file in the model directory is
+hash/size checked across the update; this tests byte preservation, not a usable
+model or new inference. Five local driver guards pass in 0.02 seconds. Actual
+Windows installed upgrade execution is still pending.

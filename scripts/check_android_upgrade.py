@@ -296,16 +296,25 @@ def run(private, report):
         stage = "offline_preservation"
         connect(pending_code, "connection_failed")
         check_preserved(before_vault, vault_digest())
-        stage = "backend_restart_reconnect"
+        stage = "backend_restart_start"
         with Backend(private, token) as backend:
+            stage = "backend_restart_identity"
             check_preserved(identity, connect(backend.pairing(), "reused"))
+            stage = "backend_restart_token"
             check_preserved(before_auth, backend.observed_tokens)
+            stage = "backend_restart_device_scopes"
             check_preserved(before_devices, backend.devices())
+            stage = "backend_restart_vault"
             check_preserved(before_vault, vault_digest())
+            stage = "backend_restart_chat_data"
             check_preserved(before_chat, backend.request("/v1/conversations"))
+            stage = "backend_restart_work_data"
             check_preserved(before_task, backend.request("/v1/work/tasks/" + task["id"]))
+            stage = "backend_restart_messages"
             assert backend.request("/v1/conversations/" + chat["id"] + "/messages") == []
+            stage = "backend_restart_native_history"
             visible_chat()
+            stage = "backend_restart_shutdown"
         report.write_text(json.dumps({
             "passed": True, "baseline_sha256": FILES["baseline.apk"][1],
             "candidate_sha256": FILES["candidate.apk"][1], "api_level": 28,
@@ -317,9 +326,14 @@ def run(private, report):
             "controlled_system_ca_and_hostname": True, "physical_tailscale_verified": False,
         }, indent=2) + "\n")
         print("Exact production APK in-place update and reconnect checks passed.")
-    except Exception:
+    except Exception as exc:
         # Never publish request/credential, subprocess output, private path or traceback.
-        report.write_text(json.dumps({"passed": False, "failed_stage": stage}) + "\n")
+        kind = type(exc).__name__
+        safe_types = {"AssertionError", "RuntimeError", "TimeoutExpired", "ValueError", "OSError"}
+        if kind not in safe_types:
+            kind = "Other"
+        report.write_text(json.dumps({"passed": False, "failed_stage": stage,
+                                      "failure_type": kind}) + "\n")
         raise RuntimeError("Android upgrade acceptance failed at " + stage) from None
 
 
