@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from office_fixtures import document, slides, workbook
+from office_fixtures import document, encrypted_pdf, slides, workbook
 from test_work_asset_tools import setup
 
 from dsgpt.office_inspection import workbook_cells
@@ -93,14 +93,20 @@ async def test_real_calc_replaces_wrong_caches_and_reports_errors(office_task):
         assert cells[("Values", "B2")]["value"] == "23"
         assert cells[("Values", "B3")]["value"] == "你好 world"
         assert cells[("Values", "B4")]["value"] == "45293"
-        assert report["calculate_all_called"] and not report["content_changes"]
+        assert report["calculate_all_called"]
         assert report["sheet_names_preserved"]
         if errors:
+            # Calc rewrites the intentionally unsupported function on export.
+            # The production comparison must expose exactly that compatibility loss.
+            assert report["content_changes"] == [
+                {"sheet": "Values", "cell": "B6", "kind": "formula_or_cell_changed"}
+            ]
             assert cells[("Values", "B5")]["type"] == "e"
             assert cells[("Values", "B6")]["type"] == "e"
             assert report["exported_error_count"] == len(report["formula_errors"]) == 2
             assert result["document_validation"]["calculation_status"] == "errors_or_changes"
         else:
+            assert not report["content_changes"]
             assert result["document_validation"]["calculation_status"] == "recalculated"
 
 
@@ -134,3 +140,24 @@ async def test_real_writer_impress_and_pdf_pages(office_task):
         assert "error" not in extracted
     rendered, _ = await execute(office_task, "render_document", "original.pdf", pdf, 20)
     assert rendered["document_validation"]["page_count"] == 2
+
+
+async def test_real_engine_rejects_malformed_encrypted_and_active_inputs(office_task):
+    store, work, tid = office_task
+    for step, (name, body, tool) in enumerate((
+        ("broken.pdf", b"%PDF-1.7\nnot a document", "render_document"),
+        ("encrypted.pdf", encrypted_pdf(), "render_document"),
+        ("linked.xlsx", workbook(unsafe=True), "recalculate_workbook"),
+    ), 1):
+        with store.transaction() as db:
+            db.execute("INSERT INTO work_inputs VALUES(?,?,?,?,?)", (
+                tid, name, body, hashlib.sha256(body).hexdigest(), "{}",
+            ))
+        result = await work.builds.execute(tid, step, ProjectAction(
+            tool=tool, path="inputs/" + name, summary="Reject unsafe controlled input",
+        ))
+        assert result.get("error") and not result.get("document_validation")
+        assert not result.get("artifacts")
+        assert store.one("SELECT original FROM work_inputs WHERE task_id=? AND name=?", (
+            tid, name,
+        ))["original"] == body

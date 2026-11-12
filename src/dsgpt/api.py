@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from . import __version__
+from . import __version__, office_evidence
 from .account_browser_handoff import (
     AccountBrowserHandoffs,
     BrowserClick,
@@ -1322,6 +1322,8 @@ def create_app(settings: Settings, inference=None, managed=None):
             raise HTTPException(404, "Execution not found")
         row["action"] = json.loads(row["action"])
         row["result"] = json.loads(row["result"]) if row["result"] else None
+        with store.connect() as db:
+            row["document_validation_summary"] = office_evidence.summary(db, str(task_id), row)
         return row
 
     @app.get("/v1/work/tasks/{task_id}/artifacts", dependencies=[Depends(work_device)])

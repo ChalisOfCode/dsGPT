@@ -201,7 +201,10 @@ fun WorkView(s: State, vm: ChatModel, export: (String) -> Unit, saveArtifact: (S
                             TextButton(onClick = { vm.readBuildReceipt(receipt.id) }, enabled = !w.busy) { Text("Read receipt and logs") }
                         }
                     }
-                    if(showDetails && w.buildDetail.isNotEmpty()) item { WorkDetail("Recorded command and result", w.buildDetail) }
+                    if(showDetails && w.buildDetail.isNotEmpty()) item {
+                        WorkDocumentEvidence(w.buildDetail)
+                        WorkDetail("Recorded command and result", w.buildDetail)
+                    }
                     items(w.artifacts, key = { "artifact:" + it.id }) { artifact -> Column {
                         WorkDetail("${artifact.path} · ${artifact.bytes} bytes", "Execution: ${artifact.execution}\nSHA256: ${artifact.sha}")
                         TextButton(onClick = { saveArtifact(task.id, artifact) }, enabled = !w.busy) { Text("Save artifact…") }

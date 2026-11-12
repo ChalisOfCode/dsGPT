@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Client } from "./transport";
 
 interface Receipt {
@@ -35,6 +35,13 @@ export function WorkBuilds({
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [limit, setLimit] = useState(50);
   const [detail, setDetail] = useState("");
+  const [validation, setValidation] = useState("");
+  const generation = useRef(0);
+  useEffect(() => {
+    generation.current += 1;
+    setDetail("");
+    setValidation("");
+  }, [taskId, revision, active]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -106,16 +113,17 @@ export function WorkBuilds({
               onClick={async () => {
                 setBusy(true);
                 setDetail("");
+                setValidation("");
                 try {
-                  setDetail(
-                    JSON.stringify(
-                      await client.request(
-                        `/v1/work/tasks/${taskId}/executions/${r.id}`,
-                      ),
-                      null,
-                      2,
-                    ),
+                  const version = generation.current;
+                  const response = await client.request<Record<string, unknown>>(
+                    `/v1/work/tasks/${taskId}/executions/${r.id}`,
                   );
+                  if (version === generation.current) {
+                    setDetail(JSON.stringify(response, null, 2));
+                    const value = response.document_validation_summary;
+                    setValidation(typeof value === "string" && value.length <= 2000 ? value : "");
+                  }
                 } catch (e) {
                   setError(String(e));
                 } finally {
@@ -134,6 +142,7 @@ export function WorkBuilds({
           </details>
         )}
       </details>
+      {validation && <p role="status" aria-label="Document validation">{validation}</p>}
       <h4>Downloads</h4>
       <p>
         Artifacts belong to the recorded execution; earlier outputs may predate

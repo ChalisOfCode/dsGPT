@@ -146,3 +146,61 @@ def test_tampered_collected_output_cannot_validate():
         office_result(action(), plan, [])
     replacement = office_plan(action(), [{"path": "inputs/book.xlsx", "sha256": "f" * 64}])
     assert plan["artifacts"] != replacement["artifacts"]
+
+
+def test_host_png_checks_need_no_imaging_dependency():
+    import zipfile
+
+    from office_fixtures import document
+
+    from dsgpt.work_office import png_dimensions
+
+    with zipfile.ZipFile(io.BytesIO(document())) as archive:
+        body = archive.read("word/media/square.png")
+    assert png_dimensions(body) == (32, 32)
+    for bad in (body[:-1], body + b"extra", body[:40] + b"bad" + body[43:]):
+        with pytest.raises(ValueError, match="office_png_invalid"):
+            png_dimensions(bad)
+    with pytest.raises(ValueError, match="office_png_invalid"):
+        png_dimensions(body, (100, 100))
+
+
+async def test_receipt_summary_distinguishes_coverage_and_stale_evidence(tmp_path):
+    from dsgpt.office_evidence import summary
+    from dsgpt.storage import canonical, utcnow
+
+    store, work, tid, _ = setup(tmp_path, sandbox=OfficeFixture())
+    original = workbook()
+    with store.transaction() as db:
+        db.execute("INSERT INTO work_inputs VALUES(?,?,?,?,?)", (
+            tid, "book.xlsx", original, hashlib.sha256(original).hexdigest(), "{}",
+        ))
+    parent = await work.builds.execute(tid, 1, action())
+    row = {"id": parent["execution_id"], "result": parent}
+    with store.connect() as db:
+        assert "Recalculated. Formulas: 4" in summary(db, tid, row)
+        assert "visual layout are unverified" in summary(db, tid, row)
+    child = await work.builds.execute(
+        tid, 2, action(path=parent["document_validation"]["output_path"])
+    )
+    # Projection-only fixture: no image review or real render is claimed by this test.
+    parent["document_validation"].update(operation="render", page_count=2, issues=[])
+    child["document_validation"].update(operation="extract-page", page=1)
+    with store.transaction() as db:
+        for result in (parent, child):
+            db.execute("UPDATE work_executions SET result=? WHERE id=?", (
+                canonical(result), result["execution_id"],
+            ))
+        assert "none (0/2)" in summary(db, tid, row)
+        path = child["document_validation"]["output_path"]
+        review = {"path": path, "sha256": "f" * 64, "brief": "Readable, possible clipping"}
+        db.execute("INSERT INTO work_steps VALUES(?,?,?,?,?)", (
+            tid, 3, canonical({"tool": "inspect_image", "path": path}), canonical(review), utcnow(),
+        ))
+        assert "none (0/2)" in summary(db, tid, row)
+        review["sha256"] = child["document_validation"]["output_sha256"]
+        db.execute("UPDATE work_steps SET result=? WHERE task_id=?", (canonical(review), tid))
+        assert "pages: 1 (1/2)" in summary(db, tid, row)
+        assert "not a layout pass" in summary(db, tid, row)
+        db.execute("UPDATE work_inputs SET sha256=? WHERE task_id=?", ("0" * 64, tid))
+        assert summary(db, tid, row).startswith("Historical document result")

@@ -3,7 +3,9 @@
 import hashlib
 import io
 import json
+import struct
 import zipfile
+import zlib
 
 from .office_inspection import checked_entries, compare_workbooks
 from .sandbox import SandboxError
@@ -15,6 +17,37 @@ OPERATIONS = {
     "recalculate_workbook": "recalculate",
     "extract_render_page": "extract-page",
 }
+
+
+def png_dimensions(data, expected=None):
+    """Validate bounded PNG framing/CRC without adding a host imaging dependency.
+
+    Pixel decoding is performed by the isolated renderer. The host binds these
+    original bytes to the manifest and checks dimensions and container integrity.
+    """
+    if not 45 <= len(data) <= 4 * 1024**2 or data[:16] != b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR":
+        raise ValueError("office_png_invalid")
+    width, height = struct.unpack(">II", data[16:24])
+    if not 1 <= width <= 1600 or not 1 <= height <= 1600 or (
+        expected is not None and (width, height) != expected
+    ):
+        raise ValueError("office_png_invalid")
+    offset, pixels = 8, False
+    while offset + 12 <= len(data):
+        size = int.from_bytes(data[offset:offset + 4], "big")
+        end = offset + 8 + size
+        if end + 4 > len(data) or zlib.crc32(data[offset + 4:end]) != int.from_bytes(
+            data[end:end + 4], "big"
+        ):
+            raise ValueError("office_png_invalid")
+        kind = data[offset + 4:offset + 8]
+        pixels |= kind == b"IDAT" and size > 0
+        if kind == b"IEND":
+            if size or end + 4 != len(data) or not pixels:
+                raise ValueError("office_png_invalid")
+            return width, height
+        offset = end + 4
+    raise ValueError("office_png_invalid")
 
 
 def office_plan(action, assets):
@@ -98,17 +131,7 @@ def office_result(action, plan, artifacts):
                         or not data.startswith(b"\x89PNG\r\n\x1a\n")
                     ):
                         raise ValueError
-                    from PIL import Image
-
-                    with Image.open(io.BytesIO(data)) as image:
-                        if (
-                            image.format != "PNG"
-                            or image.size != (page["width"], page["height"])
-                            or max(image.size) > 1600
-                            or len(data) > 4 * 1024**2
-                        ):
-                            raise ValueError
-                        image.verify()
+                    png_dimensions(data, (page["width"], page["height"]))
             summary.update(
                 rendered=True,
                 page_count=len(pages),
@@ -155,8 +178,23 @@ def office_result(action, plan, artifacts):
                 content_change_count=len(report["content_changes"]),
                 formatting_preservation_verified=False,
             )
-        elif report["page"] != action.page_number:
-            raise ValueError
+        else:
+            if report["page"] != action.page_number:
+                raise ValueError
+            png_dimensions(output["content"])
+            with zipfile.ZipFile(io.BytesIO(plan["source_content"])) as archive:
+                checked_entries(archive)
+                manifest = json.loads(archive.read("manifest.json"))
+                page = manifest["pages"][action.page_number - 1]
+                if (
+                    manifest["operation"] != "render"
+                    or page["page"] != action.page_number
+                    or page["member"] != f"page-{action.page_number:03}.png"
+                    or archive.read(page["member"]) != output["content"]
+                    or page["sha256"] != report["output_sha256"]
+                ):
+                    raise ValueError
+            summary["page"] = action.page_number
         return summary
     except (KeyError, TypeError, ValueError, zipfile.BadZipFile, IndexError) as exc:
         raise SandboxError("office_report_or_output_invalid") from exc
