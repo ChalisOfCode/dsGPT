@@ -20,7 +20,7 @@ be automatic where the operating system permits it.
 | Repair apps using compiler and runtime diagnostic logs | Source inspection, targeted edits, sandbox execution, paginated logs, repeated build/test cycle | Binary paths now use the same inspect/edit/test loop; individual apps still need runtime validation |
 | Inspect/decompile existing apps and make narrow changes | Apktool/JADX decoding, exact smali/resource edits, rebuild and persistent task signing; Ghidra native PE decompilation, monodis IL, guarded byte patches and IL rebuild | Original publisher signatures cannot be reproduced; native pseudocode is not automatically a rebuildable original project |
 | Read documents, scanned PDFs, screenshots and Office inputs | Resumable Work inputs up to 256 MiB each / 512 MiB total; original retention; isolated paged PDF/Office extraction and OCR; image review | Four inputs per task, 512 MiB expanded archive limit; extraction does not certify visual layout or recalculate formulas |
-| Browser inspection and UI/regression checks | Isolated local Chromium with click/type, screenshots and page/control reports | This is not an authenticated online browser; no claim of arbitrary account/site automation |
+| Browser inspection and UI/regression checks | Isolated local Chromium with click/type, screenshots and page/control reports | Scoped owner account handoff, encrypted profiles and task/device plain-text read grants also passed focused acceptance; arbitrary account/site automation remains unsupported |
 | Create and deliver an animated GIF | Pillow is installed in the isolated tool image; generated scripts can export files | Inputs and previous tool outputs are available in each isolated run; inspect the generated animation before claiming visual quality |
 | Analyze uploaded/linked videos to derive UI requirements | Uploaded/direct-public-linked files, video metadata, timestamped storyboards/OCR, local vision, repeated narrower sampling, FFmpeg exports and local English speech transcription with JSON/SRT timestamps | Frame sampling is not every-frame understanding. Speech recognition can mishear names/code/noise; no speaker identification. Links must serve direct public files, not authenticated/DRM players |
 | Preserve progress and deliver installable files after failures/restarts | SQLite checkpoints, immutable tool receipts, source exports, artifact downloads, per-project signing | Migration, interrupted operations and native installer verification on each release |
@@ -139,10 +139,10 @@ progress without invalid-action retries. Existing desktop and mobile clients
 receive an explanatory blocker while the session retains its machine error code.
 This does not establish why any particular owner runtime returned an empty reply.
 
-Remaining broader work includes authenticated online browser/account workflows,
-independent document layout checks and spreadsheet recalculation, automatic
-grouping of related imported projects, and owner-device upgrade/reconnection and
-modified-app acceptance. Release validation records the separate real-model and
+Scoped authenticated account workflows and bounded independent document rendering/
+recalculation have focused acceptance recorded in the completion plan. Remaining
+ordered work includes editable related-project grouping and disposable software
+upgrade/reconnection and diagnostic acceptance; physical hardware remains optional. Release validation records the separate real-model and
 isolated-tool results; no claim of complete hosted Work parity is made.
 
 An actual Qwen3.5 9B abliterated workflow completed the short media task across
@@ -154,3 +154,20 @@ local CPU inference and Vosk with a reviewed local command fixture; separate CI
 passed live public download and Docker isolation. The 8 GiB test host used reduced
 runtime caches. This is not an RTX 3080 Ti speed test, a long-recording test, or
 proof that the model can autonomously finish every requested application.
+
+
+## Bounded document validation
+
+Work can render DOCX/PPTX/PDF, recalculate supported XLSX formulas with actual Calc,
+and expose an exact hash-checked rendered page for vision review. Inputs are copied,
+never overwritten. Reports preserve source/output hashes, engine/font details,
+structural findings and exported formula errors/changes. Execution receipts bind
+the production image; retain them with reports. Limits are explicit: 32 MiB input,
+128 MiB expanded package, 20 rendered pages, 32 sheets and 20,000 inspected cells.
+Active/external dependencies and unsupported formula representations fail closed.
+Desktop and Android distinguish calculation from visual review and historical
+receipts. Successful rendering or complete review coverage is not proof of correct
+layout. The selected runtime must advertise vision for model image inspection.
+Representative production-engine evidence and independent page review passed in
+`43278654806`; this does not certify arbitrary Office files or pixel-identical
+Microsoft Office formatting. See the office checkpoint for exact boundaries.

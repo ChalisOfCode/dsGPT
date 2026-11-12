@@ -83,15 +83,28 @@ The reconciled main candidate `89803c2` passed all nine integration jobs in
 in issue 1. Item 3 implementation has started; final installers remain gated on
 items 3–5. All preserved report hashes are recorded in the validation log.
 
-## 3. Document layout and spreadsheet formula validation — in progress
+## 3. Document layout and spreadsheet formula validation — focused acceptance passed
 
 Render generated documents independently, inspect page images and structural
 problems, and recalculate supported workbook formulas with a real engine. Preserve
 original files, report unsupported formulas/formatting, and verify exported results.
 
 The candidate adds bounded typed render, recalculation and page-extraction tools.
-Parser/orchestration checks pass; real production-image rendering/calculation and
-visual review are pending. Do not infer acceptance from those unit checks.
+Run `43278654806` on `b83c47f` passed actual production LibreOffice/Poppler checks
+(3 in 12.66 seconds), desktop build/Chrome presentation and Android compilation/
+Compose presentation. All six DOCX/PDF/PPTX page images were inspected individually:
+normal document content/page breaks preserved; deliberate slide clipping observed
+and reported. Actual exported workbook formulas/caches match independent expected
+values; intentional formula errors and a rewrite remain explicit failures.
+Original preservation, malformed/encrypted/active input rejection, stale receipt
+invalidation and interruption/cleanup failure are covered. See
+`OFFICE_VALIDATION_CHECKPOINT.md` for exact hashes and observation boundaries.
+
+Clients distinguish rendering, structural findings, page-review coverage and
+calculation. Coverage is not a layout pass. Native text-only inference cannot review
+images; vision remains required for automatic image inspection. Office/font fidelity
+is not universal and workbook formatting preservation is not certified.
+Integration into main is pending; no final installers are produced at this stage.
 
 ## 4. Group related imported projects — queued after 3
 

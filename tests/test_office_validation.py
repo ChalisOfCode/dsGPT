@@ -1,5 +1,6 @@
 """Bounded parser/orchestration checks; engine acceptance runs separately in Docker."""
 
+import asyncio
 import hashlib
 import io
 import json
@@ -110,6 +111,57 @@ class OfficeFixture:
                 for p, b in zip(artifacts, [output, json.dumps(report).encode()], strict=True)
             ],
         }
+
+
+@pytest.mark.parametrize(
+    "tool,name", [("render_document", "book.pdf"), ("recalculate_workbook", "book.xlsx")]
+)
+async def test_interrupted_office_never_exports_or_replays_and_cleanup_failure_blocks(
+    tmp_path, tool, name,
+):
+    entered = asyncio.Event()
+
+    class Interrupted(OfficeFixture):
+        calls = 0
+        fail_cleanup = True
+
+        async def execute(self, *args, **kwargs):
+            self.calls += 1
+            entered.set()
+            await asyncio.Event().wait()
+
+        async def cleanup(self, identifier):
+            if self.fail_cleanup:
+                raise SandboxError("controlled_cleanup_failure")
+
+    sandbox = Interrupted()
+    store, work, tid, _ = setup(tmp_path, sandbox=sandbox)
+    original = workbook() if name.endswith("xlsx") else b"%PDF-1.7 controlled interruption"
+    with store.transaction() as db:
+        db.execute("INSERT INTO work_inputs VALUES(?,?,?,?,?)", (
+            tid, name, original, hashlib.sha256(original).hexdigest(), "{}",
+        ))
+    running = asyncio.create_task(
+        work.builds.execute(tid, 1, action(tool=tool, path="inputs/" + name))
+    )
+    await asyncio.wait_for(entered.wait(), 2)
+    running.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await running
+    assert not work.builds.ready
+    assert not store.all("SELECT * FROM work_artifacts")
+    await work.builds.recover()
+    assert not work.builds.ready and work.builds.status()["cleanup_pending"] == 1
+    sandbox.fail_cleanup = False
+    await work.builds.recover()
+    pending_action, result = work.builds.pending(tid, 1)
+    assert pending_action["tool"] == tool
+    assert result.get("error") and not result.get("document_validation")
+    assert not result.get("artifacts") and sandbox.calls == 1
+    retained = store.one(
+        "SELECT original FROM work_inputs WHERE task_id=? AND name=?", (tid, name)
+    )
+    assert bytes(retained["original"]) == original
 
 
 async def test_saved_hash_binding_and_stale_source_invalidates_receipts(tmp_path):
