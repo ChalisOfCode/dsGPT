@@ -156,3 +156,18 @@ to exit. An actual TLS held-request test confirms cancellation, reader and serve
 exit, and rebinding the same listener with retained owner authority. Three local
 driver tests pass; this is not a substitute for the pending installed retry.
 The same already SDK-verified APK pair is retained without rebuilding/signing.
+
+
+Installed Android acceptance 43332013571 on cd1f3bdfcc48df268d6a29fa2e6edabaf122a2d5
+passed, including disposal of the receiver key, decrypted APKs and emulator data.
+Exact production APKs, unchanged from standalone SDK verification 43326864291,
+passed install-r version 23 to 24, unchanged UID/encrypted preferences, successful
+AndroidKeyStore decryption through authenticated API access, paired identity/token/
+scopes, prior native chat history, original backend data, offline credential
+preservation and fresh-backend reconnect. The test uses an isolated API-28 emulator
+and controlled system CA/hostname; physical Tailscale and owner hardware remain
+unverified. No model/Gradle build or re-signing was repeated.
+Original bounded report ZIP: 519 bytes, SHA256
+cc6e48d31be0091629e91c8c9fadf41aae1e9c1b87c8dc2a37902b20c443fce4.
+Item 5 remains open for actual Windows old-to-new installation and final source/
+packaging integration. No final installers or terminal item-5 alert are released.
