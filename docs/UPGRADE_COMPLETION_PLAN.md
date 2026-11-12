@@ -30,136 +30,58 @@ Both revisions were independently built and launched on Windows and Android.
 Actual model inference totaled 106.684 seconds. This is smoke-test evidence,
 not the final dsGPT installers or physical-device validation.
 
-## 2. Signed-in website and account workflows — in progress
+## 2. Signed-in website and account workflows — focused acceptance passed
 
-Implement explicit session setup, scoped permissions and durable account access
-without exposing credentials to the model. Validate read and allowed interaction
-flows, session persistence, revocation and observable failures. Account access,
-CAPTCHA/MFA and external writes require the owner's applicable authorization.
+The implemented supported scope is explicit owner sign-in and same-origin form
+interaction, encrypted saved browser profiles, and task/device-scoped plain-text
+reads. Account data stays outside model context, research, task persistence and
+ordinary diagnostics. No everyday browser profile is imported.
 
-The first backend slice is separate from public research and the model. A
-local desktop owner can provision, list, read, and revoke an explicitly
-scoped session. One opaque session cookie is encrypted under Windows DPAPI
-and bound to the owner, session, origin and exact read path. The broker
-sends only a bounded GET to that path over public HTTPS, never follows
-redirects, and returns plain text to an explicitly authorized caller. No cookie, page
-content or headers are retained in Work, diagnostics or model context.
-Local revocation does not sign the user out of the remote website.
+- The local authenticated owner enrolls a configured HTTPS origin/page, opens a
+  five-minute isolated screenshot/input handoff, and explicitly saves or discards.
+  Passwords/MFA bypass model tools and logs. Stale handoff generations cannot act
+  on a replacement session. Remote and paired clients cannot control owner login.
+- Real Chromium runs in an owned, validated networkless Docker container. The
+  bounded host broker checks the exact HTTPS origin, public DNS and TLS hostname.
+  Guest controls use private pipes, with no debugging port or arbitrary evaluation.
+- Clean shutdown captures selected cookie/localStorage/IndexedDB files. Current-user
+  Windows DPAPI protects the snapshot with owner/session/origin/revision binding.
+  Failed protection, tampering, abrupt shutdown or stale replacement fails closed.
+- Each supported form requires a fresh observed page and a one-use owner decision.
+  Durable opaque receipts precede network dispatch. A lost response blocks retries
+  until a fresh owner observation verifies remote state; old action IDs never replay.
+- Saved-profile read grants bind exact task revision, device, page, profile revision
+  and expiry. Delegated reads permit one GET and bounded plain text only; redirects,
+  HTML, cookie rotation and known reflected credentials are rejected. Revocation
+  cancels active work and suppresses late text. Desktop and Android views keep text
+  ephemeral and clear it on lifecycle, task, connection and permission changes.
 
-The local owner can now issue and revoke read grants bound to an exact task
-revision and active device. Grants expire after at most one hour and survive
-backend restart. Every read checks current authorization before the request
-and before releasing text. Revocation no longer waits for network I/O; an
-in-flight response is discarded after revocation, expiry or task modification.
-Already-sent network requests cannot be undone. Account reads are serialized
-and overlapping requests are rejected, with the existing 12-second network cap.
-These are explicit API permissions, not automatic model access or write approval.
+### Recorded acceptance boundaries
 
-Settings now provides owner-facing account and grant revocation, task/device
-selection, explicit read consent and refreshed permission review after uncertain
-mutation responses. Browser form submission remains unavailable; the settings
-interface never asks for pasted credentials. UI fixture coverage is separate from real sign-in.
+| Boundary | Verified evidence |
+| --- | --- |
+| Android account presentation and transport | `43266192022` / `30ef476`: app/test Kotlin compiled; all 10 focused checks passed, zero skips/errors/failures; Gradle 2m22s. |
+| Production Docker guest and broker | `43269409156` / `6341616`: exact production recipe, unchanged DockerSandbox and guest; two checks passed in 8.94s. Controlled TLS login/MFA, cookie/localStorage/IndexedDB restore, lost-write duplicate denial, real public DNS/TLS through the guest, revocation and owned cleanup. |
+| Owner controller with real browser | `43270310226` / `72fa47b`: two checks passed in 6.18s. Actual input/review/decision/save, backend-service restart, scoped read, expiry, cross-task/device denial and revoke. Uses explicit container, endpoint and protection fixtures. |
+| Native Windows protection | `43270956531` / `452085b`: native DPAPI plus owner API grants, separate-process restoration, stale profile-revision denial, durable uncertain receipts, tamper rejection and revoke cascades; one check passed in 1.78s, zero skips/errors/failures. |
+| Desktop/native and regression baseline | Main `4b87ed1`, CI `42974018414`, passed all nine jobs; desktop 29 and private browser 43 checks passed. The installed Windows application checks use a separate inference fixture and do not complete item 5. |
 
-The private browser network component now validates one public HTTPS origin,
-preserves browser cookie headers and security policy, and bounds requests and
-responses. It accepts form POSTs only with fresh, single-use approval for the
-exact destination and body. It does not follow redirects or retry submissions.
-This component is not exposed to the application yet: the isolated browser,
-owner handoff and encrypted profile still need integration. Form dispatch now
-requires a durable receipt committed before network I/O. An interrupted request
-remains uncertain after restart; even a received HTTP response requires remote
-state verification before another form submission in that session. Receipt IDs
-cannot be replayed within the session. These internal receipts store only opaque
-identifiers, status and timestamps, never URLs, request hashes, credentials or
-response content. Owner verification controls and page/task binding still need
-integration; this is not yet an end-to-end recovery workflow. Focused transport
-and storage tests do not count as browser acceptance.
+These boundaries are separate observations, not one end-to-end physical-device
+run. Controlled login uses a test-only loopback TLS mapping and test protection on
+Linux. The additional public transport case has no endpoint/resolver/trust override.
+Neither alters production network or credential protections. Windows protection is
+validated natively; physical owner hardware remains unverified.
 
-A separate internal profile vault now protects bounded regular-file snapshots with
-current-user Windows DPAPI. Session/owner/origin/revision binding and atomic
-revision checks prevent cross-session restoration and stale overwrites. Migration
-29 stores only the encrypted envelope. A dedicated guest worker now restores
-selected profile files into a fresh directory and captures them only after
-Chromium acknowledges shutdown and exits cleanly. The worker uses private OS
-pipes for Chromium control and requires a loopback-only Linux namespace in
-production. A real Chromium fixture restored a persistent HttpOnly cookie,
-local storage and IndexedDB across a vault round trip. That fixture uses an
-injected test protector and intercepted synthetic responses. An internal bridge
-now connects the guest to a dedicated validated Docker sandbox, the host request
-broker and the vault, using bounded private pipes. It exposes only navigation,
-screenshots and a small input allowlist, never raw CDP or evaluation. The bridge
-rechecks live origin and owner authority, requires logging disabled, and saves
-only after clean browser and guest exits. It denies POSTs outside an exact
-local owner review, including broker approvals made outside the controller. Real Chromium tests exercise the
-actual guest/host pipe, cookie forwarding, profile restart, request denial and
-interrupted cleanup using a synthetic transport and explicit container fixture.
-Production Docker/HTTPS, owner controls, task access and page-bound write approval
-still require acceptance. Startup and active exchanges are now cancelled and
-joined before abort cleanup completes. Aborted bridge instances cannot restart;
-concurrent close is rejected without terminating an already active operation.
+Compatibility is deliberately bounded: one configured origin, supported top-level
+form-encoded submissions, and explicitly approved plain-text task pages. Complex
+federation, passkeys, anti-automation gates, arbitrary site APIs and universal logout
+are not promised. Revoking dsGPT access does not undo an already-sent request or
+log out a remote website. Previously viewed content cannot be recalled remotely.
 
-The local owner API can enroll a browser account without a pasted cookie,
-start one five-minute handoff on the exact configured origin and page, and
-request a no-store PNG, send bounded input, save or discard. Handoff identifiers
-are replaced on reopen. Revocation discards the running browser; paired and
-non-loopback clients cannot use these endpoints. Browser sessions do not expose
-legacy cookie reads. The desktop now provides a private modal
-screenshot/input view, cookie-free enrollment and explicit save/discard. Its native binary transport caps PNG bytes
-and dimensions and never writes frames to disk. Text clears before input dispatch;
-errors do not retry, expiry removes images and stale discard cannot close a newer
-handoff.
-
-The owner can now opt in to reviewing a form triggered by the next click or
-Enter. Only a supported top-level, same-origin form can pause for review.
-A fresh single-use observation binds the input to the current browser handoff
-and document; the review identifies the exact paused request. Review and
-dispatch are bounded, and ordinary inputs cannot send a form. Approving does
-not establish the outcome. A durable receipt blocks further submissions until
-the owner inspects a fresh page and confirms whether the remote change applied.
-Credential fields and cookies do not appear in receipts or review metadata.
-
-Saved browser profiles support an explicit, expiring grant for one task
-revision, paired Work device, configured page and profile revision. Replacing
-the profile invalidates previous grants. The delegated reader restores the
-profile into a disposable isolated browser and allows one signed-in GET to
-the exact approved path. Only bounded plain text is supported. Redirects,
-cookie rotation, rendered HTML and known credential reflections are rejected.
-No profile state is saved by a delegated read. Revocation and task or profile
-changes cancel the read and prevent response release. The desktop Work view
-lists grants and reads the selected page only on request; text remains in that
-view and is not attached to a task, used for research or sent to a model.
-
-A paired Android private-page view is drafted with explicit grant discovery and
-read, an authenticated bounded transport, and clearing on task/revision/connection
-changes, backgrounding and close. Its native Kotlin compilation and all 10
-focused Robolectric checks passed on
-`30ef476` in run `43266192022`, with no failures, errors or skips. The Gradle
-build took 2 minutes 22 seconds on a disposable public runner. This validates
-the Android presentation and transport slice, not complete item 2 acceptance.
-
-A controlled loopback HTTPS test site now supplies login/MFA, CSRF-protected
-updates, expiry, a read-only profile-restoration probe and lost-response writes.
-Three real TLS/socket checks validate this site and its independent effect counter.
-They do not run the dsGPT browser, production DNS broker or Windows protection;
-connecting that acceptance driver remains pending. Two additional real TLS tests
-now exercise the production request broker and durable ledger against this site,
-including receipt reopening and blocked retries after a lost response. Their
-explicit test-only endpoint mapping does not validate production DNS pinning,
-Docker, Chromium, owner approval UI or Windows protection.
-
-A combined Chromium/TLS driver is drafted for the existing browser CI job. It
-uses real form input, password/MFA submissions, a clean profile restart and an
-independent storage/effect probe. It still uses explicit container, endpoint and
-vault test doubles. Local Chromium startup was blocked by the execution host's
-socket restrictions. The isolated public-runner check now passes all six cases
-in 7.671 seconds on `3ea2859` (run `42982778303`), including actual browser
-login/MFA, profile restoration and lost-write retry denial. This is controlled
-integration evidence, not production Docker/DNS/DPAPI or full item 2 acceptance.
-
-Remaining for item 2: validate the Android presentation and controlled production
-Docker/HTTPS and native Windows acceptance, including login/MFA, profile restart,
-revocation and interrupted writes. Chromium with synthetic transport and
-desktop UI fixtures establish their separate boundaries only.
+The focused supported-scope acceptance is passed across the recorded real
+boundaries. Main integration CI for the reconciled candidate must pass before
+the terminal item-2 alert and item-3 implementation. No final installers are
+authorized until items 3–5 also pass.
 
 ## 3. Document layout and spreadsheet formula validation — queued after 2
 

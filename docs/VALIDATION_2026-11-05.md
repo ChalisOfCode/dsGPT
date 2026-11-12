@@ -2992,3 +2992,45 @@ exact production tool image. The controlled login scenario retains explicit TLS
 endpoint mapping and a test vault, and a separate case uses unchanged public
 DNS/TLS through the actual guest. The driver has not yet run on Docker. Linux
 checks cannot establish native Windows DPAPI. No final installers are released.
+
+
+### Production account Docker and owner-controller evidence — 2026-11-12
+
+Run `43269409156`, job `131361597023`, passed both opt-in Docker checks on
+`6341616` in 8.94 seconds after the production image build. Recipe SHA256
+`57d6b095721edd3103a2f675a2ff1ed76423c7f6365dceb24ede021d96b131d6`;
+image `sha256:e961941baff974e31b1c2116a18736d8299b1b364700420a684dea3a5c5e1b81`.
+The unchanged sandbox enforced its real isolation checks and streamed the audited
+guest through private pipes. Controlled login/MFA, clean profile restoration and
+interrupted-write retry denial passed with independent effect count one. The
+separate guest/public transport case used real DNS/TLS with no endpoint override,
+checked pinned bytes, revoked authority and confirmed cleanup. All test cases
+passed with no skips, failures or errors. The image was removed afterward, with
+no image/cache/artifact publication. The private 81,241-byte log/summary bundle has
+SHA256 `7d9f19be93c1a2eaa58f729a83f770b134dec7f8cda8a93814600cae38701bcd`.
+
+Run `43270310226`, job `131364763884`, passed both owner-controller checks on
+`72fa47b` in 6.18 seconds, with zero skips/errors/failures. Real Chromium and TLS
+exercised owner observation, single-use form decisions, pending-outcome blocking,
+clean save, service restart, authorized task/device reads, wrong-scope rejection,
+expiry and revoke. Browser plaintext never becomes model or task content. This
+case retains explicit container, endpoint and vault fixtures; it does not claim
+native Windows encryption. The private 9,612-byte log/summary bundle has SHA256
+`f10cd18dc90c8a851cfaefc1c098a4ad79d3e99a5ee5a21599356c0b0bbca9ad`.
+
+A separate native Windows check on `452085b` passed. It uses default real DPAPI
+with synthetic profile data and checks persisted API grants, process restart,
+profile revision invalidation, uncertain receipt preservation, tamper rejection
+and revoke cascades. It is separate from actual Chromium/Docker observations.
+
+Run `43270956531`, job `131367024166`, passed the native Windows account boundary
+in 1.78 seconds: one test, zero skips/errors/failures. The private 8,910-byte
+log/summary bundle has SHA256
+`dc852a042b687b586783b6dad013c41c9c300ac97ceb5c05f4eee2ff45b6d389`.
+All four new focused runs used standard public runners, bounded runtime and no
+artifact/cache uploads. Earlier native and browser evidence remains applicable:
+no production backend or desktop behavior changed during these test additions.
+The Android source compiled and its new focused cases passed. Account acceptance
+is scoped to the documented supported same-origin interactions and plain-text
+grants; it does not claim universal website compatibility or physical devices.
+Reconciled main integration CI remains the final check before the item-2 alert.
