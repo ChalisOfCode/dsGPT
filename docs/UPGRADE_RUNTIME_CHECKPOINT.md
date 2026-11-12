@@ -37,3 +37,20 @@ against their original delivery manifest. The recovered original Android key's
 certificate matches the public signing policy and the prior APK certificate.
 This is preparation only; no installation or signing-continuity acceptance has
 been claimed. Private backups/keys are excluded from source and public artifacts.
+
+Focused native Windows run `43296765243` on `a38dc68` passed all 37 checks,
+zero failures/errors/skips, in 27.259 seconds. The original 1,057-byte JUnit ZIP
+has SHA-256 `535a19a5e655ae06e22b9d932d945feedee4c43efe9d7d95a6ee25e661e65656`.
+This checks runtime protocol faults and installed-platform process behavior;
+it is not a real-model or old-installer upgrade result.
+
+`check_application_upgrade.py` prepares a separate old-to-candidate Windows
+boundary check. It pins the prior delivered EXE hash, requires fresh disposable
+runner paths, invokes each installed bundled Python with isolated imports,
+checks payload provenance, seeds inert old-schema records, and checks exact
+original values, migration backup, Credential Manager and paired-token reconnect
+across candidate installation and backend restart. Private receipts are outside
+public reports. No dependency/model setup is invoked. Three local driver guards
+check altered rows, stale provenance/payloads and non-runner denial. Actual
+execution with both installers is still pending; this driver does not prove
+native UI, model-file preservation, Android or physical Tailscale behavior.

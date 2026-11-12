@@ -3128,3 +3128,17 @@ privately as `dsGPT-ci-test-evidence-5638a5d.zip`, 53910 bytes, SHA256
 `756be374f0836f036738fea828dab6ccc447f17d6a3b57162c3184ac175f09c1`.
 Item-4 alert `43294611261` on `c69ff0c2b1c30e5348330418a3ec37ef8f92bc9e`
 passed and posted issue 1 comment `6834304747`; do not duplicate.
+
+### Item 5 bounded Work inference diagnostics (2026-11-12)
+
+Isolated `a38dc68f06bbb7c7c96609443d3bc71cef49f8ff` (tree
+`74997084b04ecda111a10b98b2bc546d6ba35168`) passed focused Windows run
+`43296765243`, job `131457027574`: 37 checks, zero failures/errors/skips,
+27.259 seconds. Original artifact `13979926068`, 1,057 bytes, SHA-256
+`535a19a5e655ae06e22b9d932d945feedee4c43efe9d7d95a6ee25e661e65656`,
+was size/digest verified. The job used a standard public Windows runner,
+six-minute cap, locked uncached dependencies and a bounded one-day JUnit report.
+No model, Gradle, installer or full-suite rerun. Per-attempt metrics remain
+private reviewed diagnostics; stream completion is not action success.
+Item 5 remains open for real old-to-candidate upgrades and reconnect/signing
+acceptance. No item-5 terminal alert or final installers have been released.
