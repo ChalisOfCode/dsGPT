@@ -104,13 +104,18 @@ Clients distinguish rendering, structural findings, page-review coverage and
 calculation. Coverage is not a layout pass. Native text-only inference cannot review
 images; vision remains required for automatic image inspection. Office/font fidelity
 is not universal and workbook formatting preservation is not certified.
-Integration into main is pending; no final installers are produced at this stage.
+The acceptance and recovery checks were integrated into main `111df67`; integration
+CI `43280663340` is still pending its Windows installer result. No final installers
+are delivered at this stage.
 
-## 4. Group related imported projects — queued after 3
+## 4. Group related imported projects — implementation in progress
 
 Recognize and propose coherent projects from related imports using observable
 metadata/content, preserving originals and letting the owner correct associations.
 Validate duplicates, unrelated inputs and conflicting project identities.
+The isolated implementation is described in `PROJECT_GROUPS_CHECKPOINT.md`;
+backend preservation/permission checks pass, while browser/native acceptance is
+pending. Do not infer completion from the backend checks.
 
 ## 5. Software upgrade/reconnect and empty-response diagnosis — queued after 4
 

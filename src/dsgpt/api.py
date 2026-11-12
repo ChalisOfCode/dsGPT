@@ -41,6 +41,7 @@ from .downloads import DownloadError, DownloadManager
 from .history import History
 from .memory import Memory
 from .models import ModelRegistry
+from .project_groups import GroupApply, GroupPreview, GroupRename, ProjectGroups
 from .public_browser import PublicBrowser
 from .research import Research, ResearchOptions
 from .runs import TERMINAL, RunManager
@@ -1518,6 +1519,41 @@ def create_app(settings: Settings, inference=None, managed=None):
         return runs.attachments.search(
             q, hidden, limit, offset, str(conversation_id) if conversation_id else None
         )
+
+    groups = ProjectGroups(store)
+
+    @app.get("/v1/project-groups/sources")
+    async def group_sources(
+        kind: Literal["history", "task", "input"], offset: int = Query(default=0, ge=0),
+        current=Depends(device),
+    ):
+        return groups.sources(current, kind, offset)
+
+    @app.post("/v1/project-groups/preview")
+    async def group_preview(body: GroupPreview, current=Depends(device)):
+        return groups.preview(body, current)
+
+    @app.post("/v1/project-groups/apply")
+    async def group_apply(body: GroupApply, current=Depends(device)):
+        return groups.apply(body, current)
+
+    @app.get("/v1/project-groups")
+    async def group_list(offset: int = Query(default=0, ge=0), current=Depends(device)):
+        return groups.list(current, offset)
+
+    @app.get("/v1/project-groups/{group_id}")
+    async def group_members(group_id: UUID, current=Depends(device)):
+        return groups.members(group_id, current)
+
+    @app.patch("/v1/project-groups/{group_id}")
+    async def group_rename(group_id: UUID, body: GroupRename, current=Depends(device)):
+        return groups.rename(group_id, body, current)
+
+    @app.delete("/v1/project-groups/{group_id}")
+    async def group_delete(
+        group_id: UUID, revision: int = Query(ge=1), current=Depends(device),
+    ):
+        return groups.delete(group_id, revision, current)
 
     @app.get("/v1/history/search", dependencies=[Depends(chat_device)])
     async def history_search(

@@ -89,6 +89,7 @@ fun RecallView(vm: ChatModel) {
         } }) { Text("Confirm source removal") } },
         dismissButton = { TextButton(enabled = !busy, onClick = { removing = null }) { Text("Keep source") } }) }
     LazyColumn(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { ProjectGroupsView(currentState.connectionEpoch) { vm.recallRequest(it) } }
         item {
             Text("Search private history or one memory scope. Results are excerpts, not verified facts. Nothing is copied into memory or sent to a model automatically.")
             if(error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)

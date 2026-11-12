@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 import pytest
+from schema_fixtures import remove_project_groups
 from test_account_browser_writes import make_ledger
 from test_account_sessions import FixtureProtection
 
@@ -94,6 +95,7 @@ def test_v28_migration_preserves_sessions_and_receipts(tmp_path):
     with sqlite3.connect(ledger.store.path) as db:
         db.execute("ALTER TABLE account_grants DROP COLUMN profile_revision")
         db.execute("DROP TABLE account_browser_profiles")
+        remove_project_groups(db)
         db.execute("PRAGMA user_version=28")
     ledger.store = Store(tmp_path)
     assert ledger.pending() == before

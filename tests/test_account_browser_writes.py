@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 import pytest
+from schema_fixtures import remove_project_groups
 
 from dsgpt.account_browser_network import AccountBrowserNetwork, AccountBrowserNetworkError
 from dsgpt.account_browser_writes import AccountBrowserWriteError, AccountBrowserWrites
@@ -203,6 +204,7 @@ def test_v27_upgrade_preserves_session_bytes(tmp_path):
         db.execute("ALTER TABLE account_grants DROP COLUMN profile_revision")
         db.execute("DROP TABLE account_browser_profiles")
         db.execute("DROP TABLE account_browser_writes")
+        remove_project_groups(db)
         db.execute("PRAGMA user_version=27")
     store = Store(tmp_path)
     assert store.all("SELECT * FROM account_sessions") == before

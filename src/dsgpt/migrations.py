@@ -560,3 +560,34 @@ ALTER TABLE account_grants ADD COLUMN profile_revision INTEGER
 """
 
 REQUIRED_TABLES[30] = set()
+
+MIGRATIONS[31] = """
+CREATE TABLE project_groups (
+ id TEXT PRIMARY KEY, name TEXT NOT NULL, revision INTEGER NOT NULL,
+ scopes TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+ deleted INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE project_group_links (
+ group_id TEXT NOT NULL, source_key TEXT NOT NULL, kind TEXT NOT NULL,
+ source_id TEXT NOT NULL, source_sha256 TEXT NOT NULL,
+ decision TEXT NOT NULL CHECK(decision IN ('accepted','rejected','ungrouped')),
+ rule TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(group_id,source_key)
+);
+CREATE TABLE project_group_requests (
+ id TEXT PRIMARY KEY, request_sha256 TEXT NOT NULL, result TEXT NOT NULL
+);
+CREATE TRIGGER group_history_remove AFTER UPDATE OF removed ON history_sources
+ WHEN NEW.removed=1 BEGIN
+ DELETE FROM project_group_links WHERE kind='history' AND source_id=NEW.conversation_id;
+END;
+CREATE TRIGGER group_history_delete AFTER DELETE ON conversations BEGIN
+ DELETE FROM project_group_links WHERE kind='history' AND source_id=OLD.id;
+END;
+CREATE TRIGGER group_task_delete AFTER DELETE ON work_tasks BEGIN
+ DELETE FROM project_group_links WHERE kind IN ('task','input') AND source_id=OLD.id;
+END;
+CREATE TRIGGER group_input_delete AFTER DELETE ON work_inputs BEGIN
+ DELETE FROM project_group_links WHERE source_key=json_array('input',OLD.task_id,OLD.name);
+END;
+"""
+REQUIRED_TABLES[31] = {"project_groups", "project_group_links", "project_group_requests"}

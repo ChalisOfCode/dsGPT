@@ -1,3 +1,4 @@
+
 """Task-scoped profile reads, with real Chromium where available."""
 
 import asyncio
@@ -8,6 +9,7 @@ import httpx
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
+from schema_fixtures import remove_project_groups
 from test_account_browser_bridge import FixtureSandbox, needs_browser
 from test_account_browser_network import network
 from test_account_grants import bearer, setup
@@ -243,6 +245,7 @@ async def test_v29_migration_preserves_legacy_grants_and_profiles(tmp_path):
     old_profile = service.store.one("SELECT * FROM account_browser_profiles")
     with sqlite3.connect(service.store.path) as db:
         db.execute("ALTER TABLE account_grants DROP COLUMN profile_revision")
+        remove_project_groups(db)
         db.execute("PRAGMA user_version=29")
     reopened = Store(tmp_path)
     assert reopened.one("SELECT * FROM account_browser_profiles") == old_profile

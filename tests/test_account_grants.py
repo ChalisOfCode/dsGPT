@@ -5,6 +5,7 @@ import httpx
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
+from schema_fixtures import remove_project_groups
 from test_account_sessions import REQUEST, SECRET, FixtureProtection
 
 from dsgpt.account_sessions import AccountGrantCreate, AccountSessionCreate
@@ -194,6 +195,7 @@ def test_v26_upgrade_preserves_protected_sessions(tmp_path):
         db.execute("DROP TABLE account_browser_profiles")
         db.execute("DROP TABLE account_browser_writes")
         db.execute("DROP TABLE account_grants")
+        remove_project_groups(db)
         db.execute("PRAGMA user_version=26")
     upgraded = Store(tmp_path)
     assert upgraded.all("SELECT * FROM account_sessions") == before

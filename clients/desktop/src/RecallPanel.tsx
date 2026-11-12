@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AttachmentHistory, AttachmentRecord } from "./Attachments";
+import { ProjectGroups } from "./ProjectGroups";
 import { HistoryImport } from "./HistoryImport";
 import { Client } from "./transport";
 
@@ -179,6 +180,7 @@ export function RecallPanel({
   return (
     <section hidden={!active} aria-label="History and retrieval">
       <h1>History and retrieval</h1>
+      <ProjectGroups client={client} active={active} owner={owner} />
       <p>
         Search private history or one memory scope. Results are excerpts, not
         verified facts. Nothing is copied into memory or sent to a model

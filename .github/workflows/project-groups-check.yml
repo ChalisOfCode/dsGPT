@@ -1,0 +1,78 @@
+name: Focused project grouping checks
+on:
+  push:
+    branches: [work/project-groups-111df67]
+    paths: [.github/workflows/project-groups-check.yml, 'src/dsgpt/project_groups.py', 'clients/desktop/src/ProjectGroups.tsx', 'clients/android/**', 'tests/test_project_groups.py']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: project-groups-check
+  cancel-in-progress: false
+jobs:
+  desktop:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: src
+      PIP_NO_CACHE_DIR: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Check bounded grouping API and actual desktop review
+        shell: bash
+        run: |
+          set -euo pipefail
+          export npm_config_cache="$(mktemp -d "$RUNNER_TEMP/dsgpt-npm.XXXXXX")"
+          trap 'rm -rf -- "$npm_config_cache"' EXIT
+          python -m pip install --no-cache-dir -r requirements-dev.lock
+          python -m pytest -p no:cacheprovider -q --tb=short tests/test_project_groups.py --junitxml=reports/groups-api.xml
+          export PYTHONPATH="$GITHUB_WORKSPACE/src"
+          export DSGPT_TEST_PYTHON="$(command -v python)"
+          cd clients/desktop
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run types
+          npm run build
+          npx --no-install playwright test --config=playwright.groups.config.ts
+          cp src/api-schema.d.ts ../../reports/groups-api-schema.d.ts
+      - name: Bound synthetic reports and generated contract
+        id: reports
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+        run: python scripts/ci_artifact_guard.py reports
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always() && steps.reports.outcome == 'success' && !cancelled()
+        with:
+          name: project-groups-${{ github.sha }}
+          path: reports/
+          retention-days: 1
+          if-no-files-found: error
+  android:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Compile Android and check group browsing and connection clearing
+        working-directory: clients/android
+        shell: bash
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          export GRADLE_USER_HOME="$(mktemp -d "$RUNNER_TEMP/dsgpt-gradle.XXXXXX")"
+          trap 'rm -rf -- "$GRADLE_USER_HOME"' EXIT
+          bash gradlew --no-daemon --no-build-cache --no-configuration-cache --console=plain testDebugUnitTest --tests com.dsgpt.mobile.ProjectGroupsViewTest
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+          rows = [ElementTree.parse(p).getroot() for p in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml')]
+          counts = {k: sum(int(r.attrib[k]) for r in rows) for k in ('tests','errors','failures','skipped')}
+          print('Group browsing', counts)
+          assert counts == {'tests':1,'errors':0,'failures':0,'skipped':0}
+          PY
