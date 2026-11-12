@@ -1,0 +1,70 @@
+name: Item 3 acceptance completion alert
+on:
+  push:
+    branches: [notify/item3-43280663340]
+    paths: [.github/workflows/item3-completion-alert.yml]
+permissions:
+  actions: read
+  issues: write
+concurrency:
+  group: notify-item3-43280663340
+  cancel-in-progress: false
+jobs:
+  notify:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Verify terminal checkpoint and mention owner once
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          repo = "ChalisOfCode/dsGPT"
+          run_id = 43280663340
+          expected = "111df671be24e180b4c1e23d8843e4a3895a08eb"
+          marker = "<!-- dsgpt-item3-43280663340 -->"
+          assert os.environ["GITHUB_REPOSITORY"] == repo
+          def api(path, body=None):
+              request = urllib.request.Request(
+                  "https://api.github.com/repos/" + repo + path,
+                  data=None if body is None else json.dumps(body).encode(),
+                  headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                           "Accept": "application/vnd.github+json",
+                           "Content-Type": "application/json",
+                           "User-Agent": "dsGPT-terminal-checkpoint"})
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  return json.load(response)
+          run = api(f"/actions/runs/{run_id}")
+          assert run["head_sha"] == expected and run["status"] == "completed"
+          assert run["conclusion"] == "success"
+          jobs = api(f"/actions/runs/{run_id}/jobs?per_page=100")["jobs"]
+          assert len(jobs) == 9 and all(j["conclusion"] == "success" for j in jobs)
+          issue = api("/issues/1")
+          assert issue["user"]["login"] == "github-actions[bot]"
+          for page in range(1, 11):
+              comments = api(f"/issues/1/comments?per_page=100&page={page}")
+              if any(marker in c["body"] for c in comments):
+                  print("Completion alert already exists.")
+                  raise SystemExit(0)
+              if len(comments) < 100:
+                  break
+          else:
+              raise SystemExit("Comment inventory exceeded bound")
+          body = (
+              marker + "\n@ChalisOfCode **Item 3 passed** for bounded document validation. "
+              "Actual production LibreOffice/Poppler checks, independent inspection of all six "
+              "rendered pages, exported workbook formula checks and desktop/Android presentation "
+              "checks passed. Intentional clipping and formula errors remain explicitly reported. "
+              "All nine integration jobs passed on " + expected[:7] + ".\n\n"
+              "The next phase is item 4: editable related-project grouping. Its source draft is "
+              "preserved and focused client checks come next. Continuation remains enabled; "
+              "no reply is required. Final EXE/APK delivery waits for items 4 and 5. "
+              "Office/font compatibility is bounded; physical owner hardware remains unverified.\n\n"
+              f"[Integration result](https://github.com/{repo}/actions/runs/{run_id}) · "
+              f"[Ten-minute monitor](https://github.com/{repo}/actions/runs/43280869724)"
+          )
+          created = api("/issues/1/comments", {"body": body})
+          print("Posted terminal checkpoint:", created["html_url"])
+          PY
