@@ -11,7 +11,7 @@ tasks.matching { it.name == "packageDebug" }.configureEach {
 android {
  namespace = "com.dsgpt.mobile"
  compileSdk = 35
- defaultConfig { applicationId = "com.dsgpt.mobile"; minSdk = 26; targetSdk = 35; versionCode = 23; versionName = "0.9.0" }
+ defaultConfig { applicationId = "com.dsgpt.mobile"; minSdk = 26; targetSdk = 35; versionCode = 24; versionName = "0.10.0" }
  defaultConfig { testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
  defaultConfig { buildConfigField("boolean", "ACCEPTANCE", "false") }
  // Built only by the acceptance job; it cannot replace the user's installed app.

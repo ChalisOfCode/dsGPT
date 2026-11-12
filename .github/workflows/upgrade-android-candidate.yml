@@ -1,0 +1,43 @@
+name: Unsigned Android upgrade candidate
+on:
+  push:
+    branches: [work/upgrade-diagnostics-5638a5d]
+    paths: [.github/workflows/upgrade-android-candidate.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: upgrade-android-candidate
+  cancel-in-progress: false
+jobs:
+  candidate:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Compile and check the unsigned candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          (cd clients/android && bash gradlew --no-daemon testDebugUnitTest assembleRelease)
+          sdk="$ANDROID_HOME/build-tools/35.0.0"
+          input=clients/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          "$sdk/aapt" dump badging "$input" | grep "^package: name='com.dsgpt.mobile' versionCode='24' versionName='0.10.0'"
+          mkdir -p artifacts/upgrade-android
+          cp "$input" artifacts/upgrade-android/dsGPT-unsigned.apk
+          python scripts/ci_provenance.py write artifacts/upgrade-android "$GITHUB_SHA"
+      - name: Bound unsigned candidate storage
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+        run: python scripts/ci_artifact_guard.py artifacts/upgrade-android
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: unsigned-upgrade-input-${{ github.sha }}
+          path: artifacts/upgrade-android/
+          retention-days: 1
+          if-no-files-found: error
