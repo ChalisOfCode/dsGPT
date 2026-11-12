@@ -1,3 +1,4 @@
+# Focused dispatch after preserving the reviewed draft; no shared caches.
 name: Focused project grouping checks
 on:
   push:
