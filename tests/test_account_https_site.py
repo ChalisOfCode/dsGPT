@@ -53,6 +53,19 @@ def test_real_https_login_mfa_cookie_and_independent_effect_counter():
         assert client.get("/private.txt").status_code == 401
 
 
+def test_configured_entry_changes_from_login_to_plain_text_and_expires():
+    with https_site() as (site, trust), client_for(site, trust) as client:
+        response = client.get("/entry")
+        assert response.headers["content-type"].startswith("text/html")
+        assert 'action="/login"' in response.text
+        login(site, client)
+        response = client.get("/entry")
+        assert response.headers["content-type"].startswith("text/plain")
+        assert response.text == "Controlled account. Updates: 0"
+        site.expire()
+        assert client.get("/entry").headers["content-type"].startswith("text/html")
+
+
 def test_csrf_origin_and_unauthenticated_writes_cannot_change_server_state():
     with https_site() as (site, trust), client_for(site, trust) as client:
         assert (

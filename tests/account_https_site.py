@@ -96,6 +96,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, self.form("/login", "password"), html=True)
             if self.path == "/mfa" and self.cookie("challenge") == self.server.challenge:
                 return self.reply(200, self.form("/mfa", "code"), html=True)
+            if self.path == "/entry":
+                # One configured page supports owner sign-in and later task reads.
+                if not self.signed_in():
+                    return self.reply(200, self.form("/login", "password"), html=True)
+                return self.reply(200, f"Controlled account. Updates: {self.server.effects}")
             if not self.signed_in():
                 return self.reply(401, "Sign in required")
             if self.path == "/private.txt":

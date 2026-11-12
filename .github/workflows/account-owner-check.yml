@@ -1,0 +1,44 @@
+name: Focused account owner browser checks
+on:
+  push:
+    branches: [work/android-account-read-4b87ed1]
+    paths: [.github/workflows/account-owner-check.yml, tests/test_account_owner_browser.py]
+permissions:
+  contents: read
+concurrency:
+  group: account-owner-check
+  cancel-in-progress: false
+jobs:
+  owner-browser:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: src
+      PIP_NO_CACHE_DIR: '1'
+      DSGPT_PROFILE_TEST_CHROMIUM: /opt/google/chrome/chrome
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Install locked dependencies without shared caches
+        run: python -m pip install --no-cache-dir -r requirements-dev.lock
+      - name: Check owner control and delegated read with real Chrome and TLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x "$DSGPT_PROFILE_TEST_CHROMIUM"
+          python -m pytest -p no:cacheprovider -q --tb=short \
+            tests/test_account_owner_browser.py \
+            tests/test_account_https_site.py::test_configured_entry_changes_from_login_to_plain_text_and_expires \
+            --junitxml="$RUNNER_TEMP/account-owner.xml"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from xml.etree import ElementTree
+          suites = ElementTree.parse(Path(os.environ['RUNNER_TEMP']) / 'account-owner.xml').getroot()
+          totals = {k: sum(int(s.get(k, 0)) for s in suites.iter('testsuite'))
+                    for k in ('tests', 'failures', 'errors', 'skipped')}
+          print('Owner browser checks:', totals)
+          assert totals == dict(tests=2, failures=0, errors=0, skipped=0)
+          PY
