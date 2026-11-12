@@ -71,3 +71,22 @@ def test_bounds_and_receiver_path(envelope, monkeypatch, tmp_path):
     with pytest.raises(ValueError):
         transfer.runner_directory(tmp_path.parent)
     transfer.runner_directory(tmp_path / "private")
+
+
+def test_partitioned_transfer_is_bounded_and_hash_checked(monkeypatch):
+    import io
+    import json
+    data = b"ciphertext" * 50000
+    manifest = {"format": 1, "bytes": len(data), "parts": 2,
+                "sha256": hashlib.sha256(data).hexdigest()}
+    replies = {"manifest.json": json.dumps(manifest).encode(),
+               "part-000.bin": data[:393216], "part-001.bin": data[393216:]}
+    monkeypatch.setattr(transfer.urllib.request, "urlopen",
+                        lambda url, timeout: io.BytesIO(replies[url.rsplit("/", 1)[1]]))
+    assert transfer.fetch_envelope("https://example.test/fixed") == data
+    replies["part-001.bin"] = b"wrong"
+    with pytest.raises(ValueError, match="Incomplete"):
+        transfer.fetch_envelope("https://example.test/fixed")
+    replies["manifest.json"] = json.dumps({**manifest, "parts": 10000}).encode()
+    with pytest.raises(ValueError, match="Invalid transfer manifest"):
+        transfer.fetch_envelope("https://example.test/fixed")

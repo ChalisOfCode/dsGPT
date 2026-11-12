@@ -98,6 +98,36 @@ def runner_directory(path):
         raise ValueError("Receiver files must remain in runner temporary storage")
 
 
+def fetch_envelope(url):
+    # Fixed-size transport parts avoid connector request-size limits. Only
+    # ciphertext is exposed. AES-GCM and the reviewed APK hashes still decide
+    # authenticity; this public manifest never supplies trusted plaintext paths.
+    with urllib.request.urlopen(url + "/manifest.json", timeout=15) as response:
+        raw = response.read(4097)
+    if len(raw) > 4096:
+        raise ValueError("Transfer manifest too large")
+    manifest = json.loads(raw)
+    if (set(manifest) != {"format", "bytes", "sha256", "parts"}
+            or manifest["format"] != 1 or type(manifest["bytes"]) is not int
+            or not 32 <= manifest["bytes"] <= MAX_ENVELOPE
+            or type(manifest["parts"]) is not int
+            or manifest["parts"] != (manifest["bytes"] + 393215) // 393216
+            or not isinstance(manifest["sha256"], str)
+            or len(manifest["sha256"]) != 64):
+        raise ValueError("Invalid transfer manifest")
+    output = bytearray()
+    for index in range(manifest["parts"]):
+        with urllib.request.urlopen(url + f"/part-{index:03d}.bin", timeout=15) as response:
+            part = response.read(393217)
+        expected = min(393216, manifest["bytes"] - len(output))
+        if len(part) != expected:
+            raise ValueError("Incomplete transfer part")
+        output.extend(part)
+    if hashlib.sha256(output).hexdigest() != manifest["sha256"]:
+        raise ValueError("Transfer ciphertext changed")
+    return bytes(output)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("prepare", "receive", "seal"))
@@ -139,13 +169,12 @@ def main():
     if not args.run.isdigit():
         raise ValueError("Invalid run")
     url = ("https://raw.githubusercontent.com/ChalisOfCode/dsGPT/"
-           f"transfer/android-{args.run}/sealed.bin")
+           f"transfer/android-{args.run}")
     deadline = time.monotonic() + 600
     try:
         while time.monotonic() < deadline:
             try:
-                with urllib.request.urlopen(url, timeout=15) as response:
-                    envelope = response.read(MAX_ENVELOPE + 1)
+                envelope = fetch_envelope(url)
                 files = unseal(envelope, challenge, private, args.run, args.source)
                 for name, data in files.items():
                     with (args.directory / name).open("xb") as stream:
