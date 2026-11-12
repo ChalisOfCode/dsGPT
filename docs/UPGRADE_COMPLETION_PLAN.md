@@ -131,8 +131,11 @@ view and is not attached to a task, used for research or sent to a model.
 
 A paired Android private-page view is drafted with explicit grant discovery and
 read, an authenticated bounded transport, and clearing on task/revision/connection
-changes, backgrounding and close. Its native compilation and focused tests have
-not run successfully yet; this is not Android acceptance.
+changes, backgrounding and close. Its native Kotlin compilation and all 10
+focused Robolectric checks passed on
+`30ef476` in run `43266192022`, with no failures, errors or skips. The Gradle
+build took 2 minutes 22 seconds on a disposable public runner. This validates
+the Android presentation and transport slice, not complete item 2 acceptance.
 
 A controlled loopback HTTPS test site now supplies login/MFA, CSRF-protected
 updates, expiry, a read-only profile-restoration probe and lost-response writes.

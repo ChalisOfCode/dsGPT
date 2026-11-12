@@ -2971,3 +2971,24 @@ The existing six-minute standard Ubuntu check ran only this new test, installed
 locked dependencies without cache writes, and did not repeat browser/model/
 installer/Gradle checks. Source audits passed. Main and Android runtime status are
 unchanged; the earlier local Gradle approval rejection was not bypassed.
+
+
+### Focused Android account presentation — 2026-11-12
+
+Run `43266192022`, job `131350279931`, passed on exact `30ef476`. App and
+test Kotlin compiled; 10 selected account transport/parser/Compose checks passed
+with zero failures, errors or skips. Gradle reported 2 minutes 22 seconds.
+The preceding run compiled successfully but its truncation-notice assertion
+looked for an offscreen LazyColumn item; the corrected check scrolls to the
+item and still requires it to be displayed. No acceptance requirement was removed.
+The owner authorized disposable-runner build dependencies with no shared cache
+upload or budget change. This job used standard public Ubuntu and no artifact
+uploads. Its log and summary were preserved privately in a 5,823-byte bundle,
+SHA256 `5c1aedde4c3c1c8ee408bfc09463d5b8945ddaab464904069312e012f7fc3571`.
+This is focused Android evidence, not full account-workflow or release acceptance.
+
+The next opt-in driver uses unchanged DockerSandbox and guest modules with the
+exact production tool image. The controlled login scenario retains explicit TLS
+endpoint mapping and a test vault, and a separate case uses unchanged public
+DNS/TLS through the actual guest. The driver has not yet run on Docker. Linux
+checks cannot establish native Windows DPAPI. No final installers are released.

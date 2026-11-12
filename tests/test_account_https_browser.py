@@ -22,6 +22,11 @@ from dsgpt.storage import uid
 @needs_browser
 @pytest.mark.skipif(shutil.which("openssl") is None, reason="TLS fixture requires OpenSSL")
 async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
+    await run_browser_tls_scenario(tmp_path, caplog, FixtureSandbox)
+
+
+async def run_browser_tls_scenario(tmp_path, caplog, sandbox_factory):
+    """Share the same server assertions with the opt-in production Docker check."""
     with https_site() as (site, trust):
         endpoint, site.origin = site.origin, ORIGIN
         ledger = make_ledger(tmp_path / "store")
@@ -52,7 +57,7 @@ async def test_browser_tls_login_restart_and_lost_write(tmp_path, caplog):
                 ORIGIN, authorize=lambda: None, writes=receipts,
                 transport_factory=lambda validator: ObservedTLS(validator, endpoint, trust),
             )
-            return ObservedBridge(FixtureSandbox(root), vault(receipts), net, lambda: None)
+            return ObservedBridge(sandbox_factory(root), vault(receipts), net, lambda: None)
 
         async def page(browser, path):
             await browser.navigate(ORIGIN + path)
