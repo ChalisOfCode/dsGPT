@@ -57,7 +57,7 @@ Section "dsGPT"
  WriteUninstaller "$INSTDIR\Uninstall.exe"
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\dsGPT-Managed" "DisplayName" "dsGPT"
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\dsGPT-Managed" "UninstallString" '$\"$INSTDIR\Uninstall.exe$\"'
- WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\dsGPT-Managed" "DisplayVersion" "0.9.2-personal"
+ WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\dsGPT-Managed" "DisplayVersion" "0.10.0"
  ${If} $NoSetup != "1"
   ${If} $ExistingInstall == "1"
    ; Launch reuses completed setup; an incomplete installation resumes setup itself.

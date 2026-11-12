@@ -138,3 +138,8 @@ the candidate phase without repair. An inert file in the model directory is
 hash/size checked across the update; this tests byte preservation, not a usable
 model or new inference. Five local driver guards pass in 0.02 seconds. Actual
 Windows installed upgrade execution is still pending.
+
+The pending Windows/backend package metadata is aligned to 0.10.0, including
+the native/web package locks and Windows uninstall registry version. Dependency
+versions are unchanged. The already built Android 0.10.0 APK remains byte-for-byte
+unchanged. This metadata preparation is not a new build, installation or release.
