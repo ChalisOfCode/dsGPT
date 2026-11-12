@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 50772)
-Total output lines: 3176
-
 # Validation checkpoint, 2026-11-05 UTC
 
 Item 1 is incomplete; items 2–5 remain queued. No release is authorized by this
@@ -949,7 +946,1316 @@ Original-request actual 9B run 42298079310 on exact
 production build and received Android compiler errors, including unresolved
 `remember` and `title` references. Step 22 requested its third unchanged
 MainActivity source read and stopped. Generated native/follow-up jobs skipped.
-Neither compilation nor complex-app completion pas…20772 tokens truncated…einstall/data preservation and
+Neither compilation nor complex-app completion passed.
+
+Original artifact 13547052678, 123345 bytes, was GitHub-digest-verified:
+SHA256 `ca5e4570157c4292ffc3cb283272d62503e99dc8ed7c77947d125dfab26582f1`.
+The unchanged `dsGPT-complex-evidence-42298079310.zip` is preserved as durable
+file `libfile_fde3_f-85ed1aa0f5648191a3b9f31a7432f90d_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The prompt previously retained observed source across reads/rejections but not
+failed builds. It now applies the same bounded current-hash source retention
+after `build_project` returns `command_failed`, alongside the exact latest
+compiler response. No model code/action was substituted. Changed or omitted
+source remains readable; the existing no-progress limit, budgets and acceptance
+criteria remain unchanged. Two synthetic tests verify current versus stale source
+and preservation of compiler diagnostics; focused suite passed 28 tests.
+A replay of saved evidence through step 21 retains MainActivity and Task source
+with the compiler response at estimated 15379/16384 budget including the unchanged
+4096 output reserve. This is diagnostic replay, not fresh actual-model acceptance.
+
+Full suite passed 1152 tests plus 6 subtests in 84.17 seconds. Ruff, whitespace,
+CI-policy and pinned tracked-source Gitleaks passed. Manual publication review
+covered all four changed files and preserved prior platform notes; no private
+conversations, diagnostics, device addresses, credentials, signing material or
+generated-app implementation were added. This limited review is not a security
+certification. Before dispatch all active/queued/waiting/pending counts were zero;
+124 public artifacts totaled 179170610 bytes, none expired. No deletion needed.
+Historical private storage remains unverified, archive Actions disabled and
+account usage blocking unchanged from the recorded administrative checks.
+
+## 114db75 routine platform verification
+
+Routine CI 42314308021 passed all nine jobs on exact commit
+`114db758553784d7f5a66ffa685e2b4eb11cac0a`, tree
+`cd43938da2dec56ee6525dd92f5ad93f8bd963dd`. Five report ZIPs were
+GitHub-digest-verified and preserved as `dsGPT-ci-test-evidence-114db75.zip`,
+44214 bytes, SHA256
+`3f061a4ed1fabff7cd8ea9320ef513c71244661097b692ffb79945e1723be374`,
+durable file `libfile_fde3_f-634c07478bd88191801a857c9015cb89_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall owner/chat/model preservation and data-preserving uninstall passed.
+This uses separate qwen3:1.7b fixture inference, not actual 9B complex acceptance.
+The staged report retains inference BLOCKED and production/physical usability
+REVIEW labels. Android lifecycle/diagnostics instrumentation reports OK (one test).
+Complete item 5, production signing and owner hardware remain unverified.
+
+At the 2026-11-07 00:11 UTC check, original-request actual 9B run 42314308022,
+job 128223080445, remains in progress on this exact commit. Exact model loading
+and production Docker setup passed; unchanged-request decisions are active.
+No completed complex-app/follow-up/generated-native result is available.
+No source change, duplicate acceptance or cancellation was performed.
+
+## 114db75 completed complex failure and rejected-response requirement recovery
+
+Original-request actual 9B run 42314308022 on exact
+`114db758553784d7f5a66ffa685e2b4eb11cac0a` failed initial step 19,
+`no_progress`. This supersedes the preceding active observation. After source
+edit step 12, section 2 reads at steps 14/16 were separated by incomplete JSON
+at step 15. Step 17 used an invalid section offset, step 18 produced another
+incomplete JSON response, and step 19 repeated section 2 offset 0 and stopped.
+Neither rejected JSON response executed. Generated native/follow-up jobs skipped.
+
+Original artifact 13553436454 is 117615 bytes, SHA256
+`abce471371a5722046c2e1deebfa819946a9fc1fc8fcc2a8f83d7a34e1043edc`.
+The GitHub digest was verified; unchanged `dsGPT-complex-evidence-42314308022.zip`
+is preserved as durable file
+`libfile_fde3_f-f0bf4b0e89248191b82352b9fe3e27e0_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Invalid-action responses retained source but displaced the inspected requirement.
+The existing bounded requirement retention now also applies after invalid_action:
+keep the most recent observed nonempty exact original page if it fits alongside
+the latest validation feedback. The visible-page guard then prevents repeating
+that same displayed page; omitted/stale pages remain readable. This changes no
+model action, generated implementation, output/context budget, loop limit or
+acceptance criterion. Two synthetic regressions cover one/consecutive rejected
+responses, validation-feedback retention, stale originals and tight-budget
+omission. Focused suite passed 30 tests. Diagnostic replay through step 18 retains
+section 2 offset 0 at estimated 13550/16384 including 4096 output reserve. Replay
+is not actual-model completion or a fresh acceptance pass.
+
+Full suite passed 1154 tests plus 6 subtests in 75.41 seconds. Ruff, whitespace,
+CI-policy and pinned tracked-source Gitleaks passed. Manual four-file publication
+review preserved prior platform notes and excluded private diagnostics,
+conversations, device addresses, credentials, signing material and generated-app
+implementation. This limited review is not a security certification. Before
+dispatch active/queued/waiting/pending counts were zero; 110 public artifacts
+totaled 162572824 bytes, none expired. No deletion needed. Earlier archive
+privacy/Actions-disablement and $0 usage-blocking checks remain the recorded
+administrative evidence; historical private storage remains unverified.
+
+## 61895e0 routine platform verification
+
+Routine CI 42325936463 passed all nine jobs on exact commit
+`61895e0e1cff9637e5afd1d5807ea394c9ac111f`, tree
+`38c6cb40f8596fc1b72ec3fec5ec2dbc47d98534`. Five report ZIPs were
+GitHub-digest-verified and preserved as `dsGPT-ci-test-evidence-61895e0.zip`,
+44347 bytes, SHA256
+`71cb3b99bcfc93dcf21df34545be60b22e52ee0167562f7b59a02b357b0d6e98`,
+durable file `libfile_fde3_f-dcfdf1cc038c81918d6ef38c6269da21_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall owner/chat/model preservation and data-preserving uninstall passed.
+Separate qwen3:1.7b fixture inference is not actual 9B complex acceptance.
+The staged report retains inference BLOCKED and production/physical usability
+REVIEW labels. Android lifecycle/diagnostics instrumentation reports OK (one test).
+Complete item 5, production signing and owner hardware remain unverified.
+
+At the 2026-11-07 02:17 UTC check, original-request actual 9B run 42325936995,
+job 128261113950, remains in progress on this exact commit, in the unchanged
+request's model-decision step. No completed complex-app/follow-up/generated-native
+result is available. No source change, duplicate run or cancellation was made.
+
+## 61895e0 completed complex failure and bounded requirement navigation
+
+Original-request actual 9B run 42325936995 on exact
+`61895e0e1cff9637e5afd1d5807ea394c9ac111f` failed initial step 23,
+`no_progress`. This supersedes the preceding active observation. The model made
+MainActivity edits and wrote a new 12435-byte TaskLedger module at step 20.
+Steps 21/22 requested section 2 offset 900 despite its length being 869 and
+received explicit out-of-range errors. Step 23 proposed another write_file to the
+existing module, was rejected, and the bounded failure stop fired. Generated
+native/follow-up jobs skipped. Source writes do not establish feature correctness.
+
+Original artifact 13558190302 is 120439 bytes, SHA256
+`f953f27731a500e83131b194ecc232f7c4f2eef9bceb37f85ff40fb57705e898`.
+Its GitHub digest was verified; unchanged `dsGPT-complex-evidence-42325936995.zip`
+is preserved as durable file
+`libfile_fde3_f-e444fb8ef2e081919850669dd8b5e60a_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The action schema now uses the saved original's section lengths to constrain
+requirement IDs and section-relative offsets. Every valid offset, including exact
+EOF and omitted offset=0, remains available except an exact already-visible page.
+Other sections and edit tools remain available. Runtime validation remains in
+place. No model action, generated implementation, budget, loop limit or acceptance
+criterion changed. Three synthetic cases cover no visible page, visible offset0,
+and visible EOF; focused suites passed 40 tests. A saved-request schema check
+confirms section2 allows 0..869 and excludes the observed invalid offset900.
+This is a schema check, not a fresh actual-model acceptance result.
+
+Full suite passed 1157 tests plus 6 subtests in 74.43 seconds. Ruff, whitespace,
+CI-policy and pinned tracked-source Gitleaks passed. Manual five-file publication
+review preserved prior platform notes and excluded private conversations,
+diagnostics, device addresses, credentials, signing material and generated-app
+implementation. This limited review is not a security certification. Before
+dispatch active/queued/waiting/pending counts were zero; 99 public artifacts
+totaled 146339336 bytes, none expired. No deletion needed. Historical private
+storage remains unverified; earlier archive disablement and $0 usage-blocking
+observations remain the recorded administrative evidence.
+
+## Rejected overwrite after a requirement comparison (2026-11-07 UTC)
+
+Routine CI 42334618636 passed all nine jobs on exact
+`43b855c73716e02200f236ec2469849c636ccdc9`. The five original report ZIPs
+were individually checked against GitHub's SHA256 digests and bundled as
+`dsGPT-ci-test-evidence-43b855c.zip`, 43623 bytes, SHA256
+`1f036f59f8dc473fb0f465a3f67f028918070d285cd8b9bbb58845047836716f`.
+Durable evidence:
+`libfile_fde3_f-7380949fc1948191b8157e71884a09b1_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall/data preservation passed. Android lifecycle/diagnostics instrumentation
+reported OK (1 test). Windows uses the separate qwen3:1.7b fixture, not actual 9B
+complex acceptance or complete item 5. The staged inference BLOCKED and production
+REVIEW labels remain in the original evidence. Owner hardware remains unverified.
+
+Original-request actual 9B run 42334618633 on that same commit failed initial
+step 24, no_progress. Step 19 proposed an edit with a wrong hash and was rejected;
+step 20 read unchanged MainActivity; step 21 proposed an identical-text edit and
+was rejected. Step 22 read requirement 3, step 23 attempted a whole-file overwrite
+and was rejected, and step 24 requested the third unchanged source read. No
+rejected edit executed. Generated native and follow-up jobs skipped.
+
+Original artifact 13559579232, 117196 bytes, SHA256
+`5b59f1bfba76e9c548ba58b1fce8fee6bbecff68cbd82f18d82a0c82f9a8ce2f`,
+was digest-verified and preserved unchanged as
+`dsGPT-complex-evidence-42334618633.zip`, durable file
+`libfile_fde3_f-5c613eebf2ec8191bf037ba167e8bbe1_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The rejection recovery search stopped at the intervening requirement result,
+even though the previously inspected file still matched its current hash. The
+fix searches the existing bounded history for the latest qualifying source read,
+retaining it only if it fits alongside the rejection feedback. Non-source results
+are not substituted for source. Partial/stale/omitted content stays readable;
+edit tools remain available. No model actions, generated source, loop limits,
+context/output budgets or acceptance criteria changed.
+
+Saved-result replay through step 23 previously omitted MainActivity and now
+retains its complete hash-verified text at estimated 15022/16384 including the
+unchanged 4096 output reserve. This is a controller replay, not fresh model
+acceptance. Synthetic cases cover intervening inventory, requirements, no-op edit
+plus comparison, and stale source after comparison for both rejected JSON and
+rejected overwrites.
+
+Full suite passed 1163 tests plus 6 subtests in 84.27 seconds; focused rejection
+and requirement suites passed 35 tests. Ruff, whitespace, CI-policy and pinned
+tracked-source Gitleaks passed. Manual review of the four changed files found no
+private conversations, credentials, signing material, device addresses, private
+diagnostics or generated-app implementation for publication. This limited review
+is not a security certification. Before dispatch active/queued/waiting/pending
+counts were zero; 110 public artifacts totaled 162594396 bytes, none expired.
+No deletion was necessary. Historical private storage remains unverified; prior
+archive disablement and $0 usage-blocking observations remain the administrative
+evidence. Item 1 remains open; items 2–5 and the upgrade release remain gated.
+
+## Rejected overwrite target selection (2026-11-07 UTC)
+
+Routine CI 42338395352 passed all nine jobs on exact
+`b357c6b01139614296930c9feca5448ce9b15936`. Five original report ZIPs were
+verified against GitHub SHA256 digests and preserved in
+`dsGPT-ci-test-evidence-b357c6b.zip`, 43869 bytes, SHA256
+`f63d28b1154158eb72a28abc27eb5e2fb02de01d90a0e9a73eb6706bd5c409b0`,
+durable file
+`libfile_fde3_f-3a568548e240819197ca6deacf968d56_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Actual original-request 9B run 42338395466 failed initial step 17, no_progress.
+Whole-file MainActivity writes at steps 11, 13 and 16 were rejected. Read 14
+showed MainActivity, read 15 showed build.gradle despite the model summary naming
+MainActivity. After rejection 16, recovery retained the newer unrelated Gradle
+read, not the target source. Step 17 repeated unchanged MainActivity and stopped.
+Generated native and follow-up jobs skipped. No rejected write executed.
+Original artifact 13560733606, 108515 bytes, SHA256
+`82351d2a060f3242c2a4e5f5ad135fecfe0e2065da86842e5bb3781cde4c3c87`
+was digest-verified and preserved as `dsGPT-complex-evidence-42338395466.zip`,
+durable file
+`libfile_fde3_f-9ccb5925cb78819188dc4f3ccd70e211_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Recovery from an existing-file overwrite rejection now selects an observed read
+of that exact target path from the existing bounded history, subject to the same
+current-hash and prompt-budget checks. Generic invalid JSON recovery is unchanged.
+Synthetic tests cover a newer unrelated read, stale target and partial target;
+changed or incompletely displayed files remain readable. Saved-result replay
+through step 16 retains complete MainActivity at estimated 14294/16384 including
+the unchanged 4096 output reserve. This is not actual-model acceptance. No model
+actions, generated implementation, request, budgets, loop limits or acceptance
+criteria were substituted.
+
+The platform reports confirm installed Windows native UI/local reply, Credential
+Manager, restart and reinstall/data preservation; Android instrumentation OK
+(1 lifecycle/diagnostics test). The separate qwen3:1.7b Windows fixture does not
+establish actual 9B acceptance or complete item 5. Staged inference BLOCKED and
+production REVIEW labels remain, and owner hardware is unverified. Before the
+next dispatch, active/queued/waiting/pending counts were zero; 110 public artifacts
+totaled 162601160 bytes, none expired. No deletion was needed. Prior archive
+Private/Actions-disabled and $0 usage-blocking observations remain the recorded
+administrative evidence; historical archive storage remains unverified.
+
+Full suite passed 1166 tests plus 6 subtests in 75.74 seconds; focused rejection
+suite passed 28 tests. Ruff, whitespace, CI-policy and pinned tracked-source
+Gitleaks passed. Manual four-file publication review excluded credentials,
+signing material, private conversations/diagnostics/device addresses and generated
+application source. This limited scan/review is not a security certification.
+Item 1 still requires fresh actual-model completion; later items and release
+remain gated by their unchanged acceptance criteria.
+
+## Visible requirement suffix guard (2026-11-07 UTC)
+
+Routine CI 42345187824 passed all nine jobs on exact
+`56e6b570da44d06fc892f0eedd51bf5f3026decd`. Five report ZIPs were individually
+verified against GitHub digests and bundled as `dsGPT-ci-test-evidence-56e6b57.zip`,
+44526 bytes, SHA256
+`a8e1d3f6a3e8db850596f4dc9a16283b949d39ab71e6f0143613306fb99d340b`,
+durable file
+`libfile_fde3_f-7ba0e7f17cd4819181de3c3bb9184c0f_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, restart/reinstall/data
+preservation passed; Android lifecycle instrumentation OK (1 test). Separate
+qwen3:1.7b fixture is not actual 9B acceptance or complete item 5. Staged inference
+BLOCKED/production REVIEW labels remain; owner hardware remains unverified.
+
+Original-request actual 9B run 42345187823 failed initial step 19, no_progress.
+Step 14 wrote a new Task module. Steps 15–18 alternated requirement 3 offsets
+900/901, reading virtually identical suffixes ending at character 1506; step 19
+requested offset 900 again and stopped. Generated native/follow-up jobs skipped.
+Original artifact 13563559930, 107822 bytes, SHA256
+`aff14140a7089233dc88441c136aab893347162573c7db4dfd6d3a7c1edf8193`,
+was digest-verified and preserved as `dsGPT-complex-evidence-42345187823.zip`,
+durable file
+`libfile_fde3_f-4ae43fda04d88191b11ade96d7b6b574_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+When exact displayed requirement text extends to the saved section's end, grammar
+now excludes offsets within that already-visible suffix. Unseen prefix, other
+sections and exact EOF remain available. Partial pages exclude only their exact
+start because later reads could reveal new text; missing/corrupt/stale observations
+remain readable. Retained verified suffixes receive the same treatment. Runtime
+validation and model actions remain unchanged. No request, generated code,
+context/output budget, loop limit or acceptance substitution.
+
+Saved-observation schema check identifies section 3's visible 900..1505 suffix,
+leaving ranges 0..899 and exact EOF 1506. This is not actual-model acceptance.
+Focused suites passed 42 tests, including suffix, partial, corrupt and retained
+observations with and without bounded section lengths. Before dispatch all active,
+queued, waiting and pending counts were zero; 121 public artifacts totaled
+178847815 bytes, none expired. No deletion needed. Prior archive disablement and
+$0 usage-blocking observations remain recorded; historical archive storage remains
+unverified.
+
+Full suite passed 1170 tests plus 6 subtests in 78.93 seconds. Ruff, whitespace,
+CI-policy, pinned tracked-source Gitleaks and manual five-file review passed.
+Publication excludes private conversations, credentials, signing material,
+device addresses, private diagnostics and generated-app implementation. This
+limited scan/review is not a security certification. Item 1 remains open;
+items 2–5 and final delivery remain gated by their unchanged acceptance criteria.
+
+## Platform evidence on the visible-suffix checkpoint (2026-11-07 UTC)
+
+Routine CI 42347937506 passed all nine jobs on exact
+`5eb1402951d1e2748ebe03f43910cddac9d61754`. Five original report ZIPs were
+individually verified against GitHub SHA256 digests and preserved in
+`dsGPT-ci-test-evidence-5eb1402.zip`, 43897 bytes, SHA256
+`826873b8a1165f6da3a20f3a506612ea019562a19d0474f23ee4360e0b47105d`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall/data preservation passed. Android lifecycle/diagnostics instrumentation
+reported OK (1 test). The separate qwen3:1.7b Windows fixture is not actual 9B
+complex acceptance or complete item 5. Staged inference BLOCKED and production
+REVIEW labels remain; owner hardware remains unverified.
+
+Actual original-request 9B run 42347937357, job 128329642596, remains active in
+unchanged-request model decisions after successful pinned model loading and
+production Docker toolchain setup. No final model/native result is claimed.
+No duplicate run was dispatched and the active run was not altered or cancelled.
+Durable platform evidence:
+`libfile_fde3_f-08471624ea048191bb72fc8824de8e63_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+## Observed requirement EOF recovery (2026-11-07 UTC)
+
+Actual original-request 9B run 42347937357 on exact
+`5eb1402951d1e2748ebe03f43910cddac9d61754` failed initial step 45,
+no_progress, superseding the active observation above. Step 38 rejected a wrong-hash
+source edit. Requirement 3 reads then moved through offsets 900, 90, 9 and 0.
+Steps 43/44 read exact EOF 1506 and returned empty successful pages; step 45
+repeated that EOF and stopped. Generated native/follow-up jobs skipped.
+Original artifact 13567976308, 144731 bytes, SHA256
+`5a22ad9734a4886897e829e7313d2a5ea75bca8d65e61e61188e50d0c13a04f2`,
+was verified against GitHub's digest and preserved unchanged as
+`dsGPT-complex-evidence-42347937357.zip`, durable file
+`libfile_fde3_f-c9fac9be08e48191a6f717015a97df88_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The grammar guard now recognizes an explicitly observed empty EOF only when its
+section provenance, offset, total length and terminal paging fields match the
+saved original. It excludes repeating that already-observed EOF. If the matching
+verified suffix is also retained in the actual prompt, both are excluded together.
+The first EOF read remains available, as do unseen prefixes and other sections.
+Corrupt/nonterminal empty observations do not qualify. No actions are rewritten;
+runtime validation, request, context/output budgets, loop limits and acceptance
+criteria remain unchanged.
+
+Saved-result replay through step 44 retains section 3 and excludes its observed
+0..1506 range within estimated 15798/16384 including the unchanged 4096 output
+reserve. This is a controller replay, not fresh model acceptance. Focused suites
+passed 46 tests, covering standalone EOF, retained suffix plus EOF, incorrect
+length and empty non-EOF cases. Prior platform evidence above remains preserved;
+its separate 1.7B Windows fixture does not establish actual 9B acceptance or
+complete item 5. Owner hardware remains unverified.
+
+Before dispatch active/queued/waiting/pending counts were zero; 121 public
+artifacts totaled 178888797 bytes, none expired. No deletion was needed. Prior
+archive Private/Actions-disabled and $0 usage-blocking observations remain the
+administrative evidence; historical archive storage remains unverified.
+
+Full suite passed 1174 tests plus 6 subtests in 78.01 seconds. Ruff, whitespace,
+CI-policy, pinned tracked-source Gitleaks and manual four-file review passed.
+Prior uncommitted platform evidence notes are preserved. Publication excludes
+private conversations, diagnostics, device addresses, credentials, signing
+material and generated application source. This limited scan/review is not a
+security certification. Actual-model item 1 and later release gates remain open.
+
+### Platform evidence for d5d85de (2026-11-07)
+
+Routine CI 42356556206 passed all nine jobs on exact source
+`d5d85defb61fadc4cbe371f58659f1bfc6b52f2d`. Five original report ZIPs
+(Windows, Android unit/runtime, backend, browser) were verified against GitHub's
+SHA256 digests and preserved in `dsGPT-ci-test-evidence-d5d85de.zip`
+(44661 bytes; SHA256
+`7a01f5c9a23736e5e4a3ae4684493ce193b2a26a4192f30dc8d04dec32e1ec59`).
+Durable evidence: `libfile_fde3_f-c256c0d4e10c819182ed481e8204b19f_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall and data preservation passed using separate `qwen3:1.7b` fixture.
+Android lifecycle/diagnostics instrumentation reports OK (1 test).
+Staged inference BLOCKED and production REVIEW labels remain; installed-app
+checks do not erase them. Owner hardware remains unverified. These results are
+not actual 9B complex acceptance or full item 5 completion.
+Original-request run 42356556204, job 128355801805, remains in progress after
+pinned model load and production Docker setup passed. No duplicate dispatched.
+
+### Actual model failure and idempotent prompt compaction (2026-11-07)
+
+Original-request run 42356556204 on exact
+`d5d85defb61fadc4cbe371f58659f1bfc6b52f2d` failed after initial step 25 with
+`work_step_failed`; generated native/follow-up jobs skipped. Step 23 rejected an
+identical-text edit, step 24 read requirement 1, and step 25 read its exact EOF.
+No rejected edit executed. A saved-state replay including the original scaffold
+inventory and build profile reproduces `KeyError: inputs` in
+`compact_asset_context`: requirement recovery attempted to compact an already
+compacted asset catalog. This is a controller exception, not `no_progress`.
+
+Original artifact 13570103070 (118014 bytes) was verified against GitHub SHA256
+`cd470bb78d89d43e3be320e801042bc1386718af3cbda7130c69fb7b18971afa` and preserved as
+`dsGPT-complex-evidence-42356556204.zip`, durable evidence
+`libfile_fde3_f-0d2f1d5e9b908191a6f3f01637333e29_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The fix leaves already-compacted catalogs intact instead of indexing their removed
+`inputs` array. Repeated fitting preserves counts, digest and navigation pointers;
+exact results and all acceptance limits remain unchanged. Two regression cases
+cover empty/nonempty input inventories and repeated fitting. The saved-state
+replay now completes prompt assembly at estimated 15539/16384 including the
+unchanged 4096 output reserve. This replay is not fresh model acceptance.
+
+Validation: 1176 tests plus 6 subtests passed in 82.65 seconds; focused suite
+48 passed. Ruff, whitespace, CI policy, pinned tracked-source Gitleaks and manual
+four-file publication review passed. Pre-dispatch active/queued/waiting/pending
+counts were all zero; 121 public artifacts totaled 178883427 bytes, none expired.
+No deletion needed. Archive/admin settings unchanged; historical private storage
+remains unverified. Publish with expected-head lease; fresh original acceptance
+must establish actual-model behavior independently of this replay and regressions.
+
+### Platform evidence for b4e34fc (2026-11-07)
+
+Routine CI 42363614217 passed all nine jobs on exact source
+`b4e34fc899c20a9d3b3e080a5b16bd68465a7686`. Five original report ZIPs
+(Windows, Android unit/runtime, backend, browser) were verified against GitHub's
+SHA256 digests and preserved in `dsGPT-ci-test-evidence-b4e34fc.zip`
+(45373 bytes; SHA256
+`c1c3d343869ad473f3ed1fb252eac76b7da404c849238101bab917b6fd8a118b`).
+Durable evidence: `libfile_fde3_f-c663a29c35d8819182aedb99ca106881_0e1c3d7a1ce08191b900cc9270ea7257`.
+Installed Windows native UI/local reply, Credential Manager, scheduled restart,
+reinstall and data preservation passed using separate `qwen3:1.7b` fixture.
+Android lifecycle/diagnostics instrumentation reports OK (1 test).
+Staged inference BLOCKED and production REVIEW labels remain; installed-app
+checks do not erase them. Owner hardware remains unverified. These results are
+not actual 9B complex acceptance or full item 5 completion.
+Original-request run 42363614200, job 128376916580, remains in progress in the
+unchanged-request decision step. No duplicate dispatched or active run altered.
+
+### Actual wrong-hash rejection recovery (2026-11-07)
+
+Original-request run 42363614200 on exact
+`b4e34fc899c20a9d3b3e080a5b16bd68465a7686` failed initial step 46 with
+`no_progress`. The model reached compiler repair but did not complete the app.
+Step 44 read MainActivity, step 45 proposed an edit using the Gradle properties
+hash and received `file_changed_read_before_overwrite`; step 46 requested its
+third unchanged MainActivity read. The rejected edit did not execute. Generated
+native/follow-up jobs were skipped.
+
+Original artifact 13576537299 (160789 bytes) was verified against GitHub SHA256
+`683e36c979513fc702a30e30f20b6c9bff31fa910b9cc44e629bc4c7a7835ad4` and preserved as
+`dsGPT-complex-evidence-42363614200.zip`, durable evidence
+`libfile_fde3_f-f51511cd372c8191b81234fa5404c852_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Treat wrong-hash rejection as nonmutating for prompt recovery and seek an observed
+read of the exact target, not a newer unrelated file. Retain only current-hash
+observed bytes when they fit; stale/partial/omitted source stays readable.
+Runtime hash enforcement, model actions, original request and budgets unchanged.
+Three added cases cover current, stale and partial target observations after a
+newer unrelated source read. Saved-history replay through step 45 now retains
+complete MainActivity and suppresses its redundant read at estimated
+15866/16384 including the unchanged 4096 output reserve. Replay is diagnostic,
+not actual-model acceptance.
+
+Validation: 1179 tests plus 6 subtests passed in 84.23 seconds; focused suite
+31 passed. Ruff, whitespace, CI policy, pinned tracked-source Gitleaks and manual
+four-file publication review passed. Pre-dispatch active/queued/waiting/pending
+counts were zero; 121 public artifacts totaled 178944370 bytes, none expired.
+No deletion needed. Archive/admin settings unchanged; historical private storage
+remains unverified. Publish with an expected-head lease and require fresh actual
+model acceptance for this source.
+
+### Actual EOF/suffix cycle and browser result (2026-11-07)
+
+Original-request run 42381612392 on exact
+`ddaf261255e9dcdec37a2cfb1da0e110115dfc94` failed initial step 25 with
+`no_progress`. Requirement 1 EOF offset 1360 was read at steps 21 and 23,
+interleaved with suffix reads at offsets 136 and 135; step 25 requested EOF
+again and stopped. Generated native/follow-up jobs were skipped. The empty EOF
+receipt was not retained after a nonempty suffix read, making the already
+observed empty result selectable again.
+
+Original artifact 13580110922 (118178 bytes) was digest-verified against GitHub:
+`0f8297c8dbfb5a41d6c5ceb4dae15605bce7e8cb7762a3456d4bba8c52eba952`.
+Durable evidence:
+`libfile_fde3_f-0f5429b6e6e48191892de5405021c058_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Routine CI 42381612436 on the same source FAILED the browser and required jobs;
+the other seven jobs passed. The DOCX search test expected a completed reply but
+observed running when its default five-second poll elapsed. All other 25 browser
+tests passed. Keep that failure distinct from the passing installed Windows UI,
+local reply, Credential Manager, scheduled restart, reinstall/data preservation
+and Android lifecycle/diagnostics instrumentation (one test). Windows uses the
+separate qwen3:1.7b fixture, not actual 9B app acceptance or complete item 5.
+Staged inference BLOCKED / production REVIEW labels remain. Owner hardware
+remains unverified.
+
+All five report ZIPs, including the failed browser report, were digest-verified
+and preserved as `dsGPT-ci-test-evidence-ddaf261.zip`, 46078 bytes, SHA256
+`98ca0d2cb675b9ef6af79892448b3abbae861d15de90d600a1dbcbb99b3f361f`,
+durable evidence
+`libfile_fde3_f-631cee9a6ec0819181edf4775d8991c2_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Recovery now retains a matching verified observed empty EOF receipt from the
+existing bounded history alongside a latest suffix, only when it fits. The
+grammar combines their adjacent verified ranges. A one-character suffix is not
+mistaken for empty EOF. Unseen prefixes/other sections remain available;
+corrupt, nonterminal, wrong-section or omitted receipts do not block reads.
+Runtime checks, actual-model request, model, loop limits and context/output
+budgets remain unchanged. Eight regression cases cover these boundaries and
+tight-budget omission. Saved-history replay through step 24 includes section 1
+suffix 135..1359 plus previously observed EOF 1360 at estimated 15905/16384,
+including the unchanged 4096 output reserve. Replay is not model acceptance.
+
+The DOCX search test now uses the same bounded 12-second completion wait as the
+existing DOCX lifecycle test, retaining every completion, provenance, hidden
+scope and deletion assertion. No fixture response or production inference limit
+changed. Initial local browser execution lacked the pinned Chromium binary;
+installing that test dependency was necessary before browser validation.
+
+Local browser validation: all 26 Playwright tests passed (2.7 minutes), including
+the exact previously failed DOCX search path. Final focused recovery/guard suite:
+56 passed. Publication review covers the five changed source/test/evidence/request
+files only, with no private history, signing material or diagnostic payloads.
+Pre-dispatch inventory: active/queued/waiting/pending counts all zero; 121 public
+artifacts totaled 178937907 bytes, none expired. No deletion was needed. Archive
+and billing settings untouched; historical private storage remains unverified.
+
+Final full suite: 1187 tests plus 6 subtests passed in 213.99 seconds. Ruff,
+whitespace, static CI policy, pinned tracked-source Gitleaks and manual five-file
+publication review passed. Publish with an expected-head lease from ddaf261;
+fresh actual-model and platform CI evidence is still required for the new source.
+
+### Fresh platform CI on e697429 (2026-11-07)
+
+Routine CI 42387568748 passed all nine jobs on exact
+`e697429e17ee77edf7847a101ac017ecc6de60e1`. All 26 public-runner browser tests
+passed without retries or skips, including the previously failed DOCX search.
+Five original report ZIPs were digest-verified and preserved in
+`dsGPT-ci-test-evidence-e697429.zip`, 45096 bytes, SHA256
+`9684b26f580c79fecda7189c38821a4acb2da97a8ec92650b2cb32e813a5ebac`,
+durable evidence
+`libfile_fde3_f-b2465652f8e0819195e7fd7384aa2784_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall and data preservation passed. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Windows uses its separate qwen3:1.7b
+fixture, not the actual 9B complex-app acceptance or complete item 5. The staged
+inference BLOCKED / production REVIEW labels remain; owner hardware is unverified.
+
+Actual original-request run 42387568715, model job 128448098687, remains active
+on the same source after exact model loading and production Docker setup passed.
+Unchanged-request model decisions are in progress; no native generated-app
+acceptance or overall app completion is claimed. No duplicate run dispatched.
+
+Live browser observation at 2026-11-07 16:11 UTC reached initial step 12:
+step 11 write_file recorded, step 12 read_requirements recorded. These bounded
+action categories do not establish correct implementation or a completed build.
+
+### Actual 9B result on e697429 and new-file grammar recovery (2026-11-07)
+
+Original-request run 42387568715 failed at initial step 53 with `no_progress`.
+After the step-50 TaskLedger source read, step 51 proposed an existing-file
+write and was rejected; step 52 proposed identical old/new text and was rejected.
+Step 53 ran the production compiler, which reported undefined `TextLedger` and
+reassignment of a Kotlin `val`; this third consecutive error stopped the task.
+Neither rejected edit executed. The model's prose claimed successful compilation,
+but the recorded compiler failure is authoritative. Generated Android/Windows
+native and follow-up jobs were skipped. This is not completed item 1.
+
+Original artifact 13585042754 was downloaded and digest-verified: 167788 bytes,
+SHA256 `f57063cd91a6af4531903a3a522af91681f73a6888be892b67c3fcd49512132c`.
+The original ZIP is preserved as `dsGPT-complex-evidence-42387568715.zip`, durable
+file `libfile_fde3_f-73bbeac4a34c8191918f6fbd416d3214_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The guided action schema previously allowed `write_file` to select existing paths,
+even though guided execution always rejects them. It now expresses that same
+existing constraint in the grammar using a prefix trie of exact current paths.
+No lookahead or unsupported schema negation is required. New names, prefixes,
+extensions and Unicode remain selectable; targeted edits and source reads retain
+their original contracts. The pattern independently bounds names to 1..240
+characters because runtime converters may not combine pattern/length keywords.
+Execution checks, original request, model, context/output budgets and loop/error
+limits are unchanged. No generated implementation or model action was substituted.
+
+Parser compatibility was checked against the actual Ollama v0.40.13 upstream
+pin: llama.cpp b11963, commit `39febd2adb947b70da35e95f9351b3bf58ad170a`.
+A scratch-only converter built from its unchanged JSON/schema/grammar sources
+converted the observed six-path action schema, 240-character boundary case and
+Unicode/special-character paths without warnings. Initial draft escaping and
+deep nesting produced converter warnings and were corrected before publication;
+the final trie flattens four characters per group and uses supported class escapes.
+This parser check and saved-step-51 exclusion are diagnostic checks, not model
+inference, compiler repair or app acceptance.
+
+Before publication: main still e697429; active/queued/waiting/pending run counts
+were all zero. Public inventory contained 121 artifacts totaling 178928710 bytes,
+none expired. No deletion was needed. Archive and billing settings were untouched;
+historical archive storage remains unverified and cache writes remain disabled.
+
+Final validation: 1194 tests plus 6 subtests passed in 97.37 seconds; the focused
+new-file/recovery/completion suite passed 56 tests in 4.08 seconds. Ruff, whitespace,
+static CI policy, pinned tracked-source Gitleaks and manual four-file publication
+review passed. Publish with expected-head lease from e697429. Fresh actual-model
+and platform CI results remain required; the old run did not test this fix.
+
+### Fresh platform CI on 23688cc (2026-11-07)
+
+Routine CI 42401331977 passed all nine jobs on exact
+`23688cc12eeed7651a752c6243f8af38f2678c5a`. Browser reports 26 expected,
+zero skipped, unexpected or flaky tests. Five original report ZIPs were
+individually digest-verified and preserved as `dsGPT-ci-test-evidence-23688cc.zip`,
+45457 bytes, SHA256
+`51e2e4d69ee6587af7e5d30ff1d1d71605d8bfda57ece86831fbc8819f3c4c0a`,
+durable evidence
+`libfile_fde3_f-44fc4cb2d5008191b5fd12b1f7a7e5ed_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall and data preservation passed. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Windows uses separate qwen3:1.7b; this is
+not actual 9B complex-app acceptance or complete item 5. Staged inference BLOCKED
+and production REVIEW labels remain. Owner hardware remains unverified.
+
+Original-request actual 9B run 42401331943, job 128489520609, is still active on
+this source. Pinned model loading and production Docker setup passed; unchanged
+request model decisions are in progress. No generated-app completion is claimed.
+
+### Actual-model runtime grammar failure on 23688cc (2026-11-07)
+
+Original-request run 42401331943 failed on exact
+`23688cc12eeed7651a752c6243f8af38f2678c5a` after initial step 9 scaffolded
+Android. The next inference request failed with `runtime_unavailable`; Ollama's
+log explicitly reports that repeated expanded grammar rules exceed its complexity
+bound. No subsequent model action ran; generated native/follow-up jobs skipped.
+Original artifact 13586197809 was digest-verified and preserved as
+`dsGPT-complex-evidence-42401331943.zip`, 99269 bytes, SHA256
+`eab278f7efd65039cc0569c742402eb52bf41b2e92fe575be8797b128fe2a312`,
+durable evidence
+`libfile_fde3_f-bbfb64527c3c819183e6b9f3f8db4fad_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The previous schema-conversion check was insufficient: conversion passed, but
+runtime grammar parsing failed. A local driver built against unchanged pinned
+llama.cpp b11963 (`39febd2adb947b70da35e95f9351b3bf58ad170a`, selected by
+Ollama v0.40.13) reproduced the same failure with the previous grammar. Optional
+subtree groups exceeded the parser's expansion guard. Flatten path alternatives
+so only individual characters repeat; keep exact existing-path exclusion, new
+names, prefixes, neighboring names, Unicode, 240-character bounds and targeted
+edits. Runtime validation and all model/request/context/output/loop/error limits
+remain unchanged.
+
+The corrected full scaffold schema and prior observed schema pass both conversion
+and runtime parsing without warnings, as do maximum-length and special-character
+cases. This is parser verification, not fresh actual-model acceptance. A regression
+covers scaffold prefix/extension semantics and forbids repeating expanded groups.
+Full suite: 1195 tests plus 6 subtests passed in 96.73 seconds. Eight focused
+new-file tests, Ruff, whitespace and static CI policy passed. Pinned tracked-source
+Gitleaks and manual four-file publication review passed. Publish with an expected-head
+lease from 23688cc; fresh actual-model and CI results remain required.
+Before dispatch: main remained 23688cc; in-progress/queued/waiting/pending counts
+were all zero. Public inventory: 132 artifacts, 195168518 bytes, none expired.
+No deletion was needed. Historical private storage remains unverified and untouched.
+
+### Fresh platform CI on 329d140 (2026-11-07)
+
+Routine CI 42403711351 passed all nine jobs on exact
+`329d1409b955182d4b70f3b6c81d2adc62a9e8d3`. Browser reports 26 expected,
+zero skipped, unexpected or flaky tests. Five original report ZIPs were
+individually digest-verified and preserved as `dsGPT-ci-test-evidence-329d140.zip`,
+45158 bytes, SHA256
+`41b2309fbb17a61d1b9c012316e57704bcb66a4c8712666db68545c3c317020c`,
+durable evidence
+`libfile_fde3_f-cb7d6049d58c8191aa31047b6e8550ba_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall and data preservation passed. Android lifecycle/diagnostics
+instrumentation reports OK (one test). Windows uses separate qwen3:1.7b; this is
+not actual 9B complex-app acceptance or complete item 5. Staged inference BLOCKED
+and production REVIEW labels remain. Owner hardware remains unverified.
+
+Original-request actual 9B run 42403711453, job 128496789437, is still active on
+this source after exact model load and production Docker setup passed. Unchanged
+request decisions are active; no generated-app completion is claimed.
+
+### Candidate: bind guided edit paths to their current revisions
+
+Prepared locally while actual-model run 42403711453 continues unchanged on
+`329d1409b955182d4b70f3b6c81d2adc62a9e8d3`. This candidate is not part of that run.
+The independent path/hash enums admitted the exact wrong-file hash from saved
+run 42363614200 step 45. Per-path edit variants now exclude that combination and
+retain the correct edit. Runtime compare-and-swap checks remain unchanged.
+
+Three regressions cover distinct/shared hashes, Unicode, restricted selectable
+paths, controller refresh, and a concurrent source change that must still reject
+an already-generated stale edit. Focused revision/new-file suite: 11 passed.
+Full backend suite: 1198 tests plus 6 subtests passed in 120.64 seconds.
+Pinned unchanged llama.cpp b11963 conversion and runtime parsing passed observed,
+maximum-length and special-character schemas with no warnings (50764, 62478 and
+10025 rules respectively). Saved-action/schema replay and parser checks are not
+actual-model acceptance. No model action, original request, budget, loop limit,
+runtime validation, or native acceptance check was substituted or weakened.
+
+### Actual 329d140 timeout and serialized path boundary recovery (2026-11-08)
+
+Original-request actual 9B run 42403711453 completed with failure after initial
+step 74 and 18000.359 seconds. The acceptance deadline raised TimeoutError:
+"Acceptance budget reached; task paused without inventing completion". This was
+not a no-progress stop. No build_project action occurred; generated native and
+follow-up acceptance did not run. Steps 38 and 68 used a different file's hash for
+MainActivity edits and were correctly rejected, confirming the prepared paired
+path/revision schema addresses an observed failure in this run too.
+
+Original artifact 13595529038 was digest-verified and preserved as
+`dsGPT-complex-evidence-42403711453.zip`, 189093 bytes, SHA256
+`e1993bd580546dd1a68a3d05aab6b501bb145f7db7f5dd539057936598322302`,
+durable evidence
+`libfile_fde3_f-58ace56275648191b2bbea2cc15d0c15_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Existing-file writes at steps 11, 42 and 70 were also rejected at execution despite
+the schema's intended exclusion. Investigation reproduced a concrete semantic
+hole with unchanged production llama.cpp b11963: regex wildcards operate on raw
+serialized JSON and can consume quotation marks. A response with path "new"
+followed by a second path "foo.kt" is accepted by the old full action grammar,
+then JSON decoding selects the existing file. Parsed saved actions include extra
+fields; raw response text was not retained, so this reproduction does not prove
+the exact serialization route used by those three actions.
+
+Restrict both trie-divergence characters and remaining path characters to exclude
+quotes, backslashes and ASCII controls. These are already rejected in file paths
+at execution. Pinned production grammar semantic acceptance now rejects the
+reproduced duplicate-path response and exact existing paths, while accepting
+Unicode new paths and existing-name extensions. Six regressions cover serialized
+field boundaries, escaped-path bypasses and controls. Runtime validation, model
+choices, original request, context/output budgets, loop limits and acceptance
+checks remain unchanged. Parser semantic checks are not actual-model acceptance.
+
+Final combined validation: 1204 tests plus 6 subtests passed in 75.89 seconds;
+17 focused new-file/revision tests passed. Pinned unchanged b11963 observed,
+maximum-length and special-character schemas convert and parse without warnings.
+Ruff, whitespace, static CI policy, pinned tracked-source Gitleaks and manual
+five-file source/evidence review passed. No source, signing material or unique
+artifact was deleted. Pre-dispatch main remained 329d140; all in-progress, queued,
+waiting and pending counts were zero. Public inventory: 121 artifacts, 178980160
+bytes, none expired. Historical private storage remains unverified and untouched.
+Publish with an expected-head lease from 329d140, preserving candidate 1963113
+as an ancestor. Fresh actual-model acceptance is still required.
+
+### Fresh platform CI on d257834 (2026-11-08 UTC)
+
+Routine CI 42428425166 passed all nine jobs on exact
+`d257834ef65a180443fa2cba4582f503a8facff0`. Browser report: 26 expected,
+zero skipped, unexpected or flaky tests. Five original report archives were
+individually digest-verified and preserved as `dsGPT-ci-test-evidence-d257834.zip`,
+45723 bytes, SHA256
+`6128a30c9a75d5d6518ffc9231317e4c2fc256ff1697eb01880e562d5acd0b1f`,
+durable evidence
+`libfile_fde3_f-897f983fefe88191a47249b9b4409a74_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Installed Windows native UI/local reply, Credential Manager, scheduled backend
+restart, reinstall/data preservation and uninstall-preserves-data passed.
+Android lifecycle/diagnostics instrumentation reports OK (one test).
+Windows uses separate qwen3:1.7b, not the exact 9B complex-app acceptance or
+complete item 5. Staged inference BLOCKED/production REVIEW labels remain;
+owner hardware remains unverified.
+
+Actual 9B run 42428425205, job 128571686556, remains in progress on this exact
+source after pinned model loading and production Docker toolchain setup passed.
+The unchanged original-request model decisions are active. No duplicate run was
+started or canceled; no final complex-app result or release is claimed.
+
+Live browser observation at 2026-11-08 01:41 UTC: actual run 42428425205
+remained in initial model decisions through step 28. Progress categories recorded
+write_file at 15 and edit_file at 19/23; no tool_error or validation_rejected was
+shown through 28. These categories do not establish source correctness, compilation,
+or native acceptance. Complete final evidence is still pending.
+
+### Actual d257834 result and observed-source priority repair (2026-11-08 UTC)
+
+Actual 9B run 42428425205 completed failure after initial step 42 in 7883.437
+seconds (`no_progress`). Generated native and follow-up jobs were skipped; no
+`build_project` action occurred. Step 29 created a distinct file whose name ends
+in `MainActivity.kt}`. Steps 34–41 then cycled through that file, MainActivity,
+Task and the manifest; step 42 requested MainActivity for the third unchanged
+read. These were actual model actions, not compiler or native acceptance.
+
+Original artifact 13599779272 was size/digest verified and preserved as
+`dsGPT-complex-evidence-42428425205.zip`, 139837 bytes, SHA256
+`9c84f207a3a4868b478e2bfca627ef335de5b61affd08d907b0651f47f255f82`,
+durable evidence
+`libfile_fde3_f-f4c8852bacbc81918b32e35431f24671_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Replay through step 41 reconstructs saved original requirements, section notes,
+the cumulative overview recovered from the review action, observed source bytes,
+build target and bounded action history. Baseline retains three source files but
+omits MainActivity: the generated overview consumes the space needed for that
+page. An earlier replay without the saved overview incorrectly retained all four;
+it was corrected before selecting the repair. This is diagnostic replay, not a
+fresh model run or proof of generated application correctness.
+
+The repair defers the generated overview with requirement navigation when needed
+to retain observed source. Current-hash checks, bounded history, partial-page
+handling, authoritative saved requirements and source edit tools are unchanged.
+Corrected replay retains all four complete current source files at estimated
+15829/16384 tokens including the unchanged 4096 output reserve. No model action,
+generated implementation, request, model, context/output budget, loop limit,
+runtime validation or acceptance check is substituted or relaxed.
+
+Two regression cases cover overview/source competition and a changed source;
+the unchanged-source case fails on baseline. Tight-context assertions verify that
+omitted source remains readable and saved requirements remain byte-for-byte
+unchanged. Focused source/edit grammar suites: 43 passed. Public inventory before
+publication: 121 artifacts, 179001960 bytes, none expired; active, queued, waiting
+and pending run counts all zero. No deletion needed. Prior private-archive
+privacy/Actions disablement and account usage-blocking observations remain the
+administrative baseline; historical private storage is still unverified/untouched.
+
+Full suite: 1206 tests plus six subtests passed in 86.77 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+confirmed the change only prioritizes displayed observed source over a generated
+overview, with two regressions, preserved evidence notes and the narrow acceptance
+request trigger. Fresh actual-model acceptance is required; item 1 remains open.
+
+### Actual ebaeeb3 failure and partial-source read recovery (2026-11-08 UTC)
+
+Actual 9B run 42440608986 failed initial step 17 with `no_progress` after
+2337.177 seconds. Step 11 wrote a 3995-character Task module. Reads 13/15 returned
+only its first 3000 characters, correctly reporting `has_more` and `next_offset`.
+Edits 14/16 invented text around the page boundary and were rejected with zero
+matches. Step 17 requested the unchanged first page a third time. No rejected
+edit executed; no compiler or generated native/follow-up job ran.
+
+Original artifact 13602721675: 107984 bytes, SHA256
+`5a09b73bc075b8f7b82aab7e89adac982fec5e8576d69d371081e38639d87765`.
+It and five routine-CI report ZIPs were individually size/digest checked and
+preserved together in `dsGPT-evidence-ebaeeb3.zip`, 152756 bytes, SHA256
+`3a30fef54f17b28be8b579c26825f263f16339495a0e2608f81a6c61fe131a81`,
+durable evidence
+`libfile_fde3_f-74f9f8bec270819193b810e73f2aaf63_0e1c3d7a1ce08191b900cc9270ea7257`.
+Routine CI 42440608984 passed all nine jobs. Browser: 26 expected, zero
+skipped/unexpected/flaky. Installed Windows UI/local reply, Credential Manager,
+restart/reinstall/data preservation passed; Android lifecycle instrumentation
+reports OK (one test). The separate qwen3:1.7b fixture is not actual 9B acceptance
+or full item 5. Staged inference BLOCKED/production REVIEW labels remain;
+owner hardware is unverified.
+
+Recovery now retains the latest observed matching target page after an unmatched
+edit rejection, within the same history/context bounds. Guided read grammar
+excludes only exact offsets of displayed partial pages whose content, hash,
+length and continuation match current saved source. Other offsets (including
+next_offset), unseen files and edits remain available. Missing, stale, corrupt,
+empty or omitted pages do not qualify. No full file is injected into the prompt;
+current source is used only to verify displayed bytes. Edit feedback explicitly
+explains page boundaries and continuation. Runtime validation is unchanged.
+
+Saved-history replay through step 16 identifies the displayed Task offset 0 at
+estimated 16364/16384 including the unchanged 4096 output reserve. This is
+replay, not fresh actual-model acceptance. Eight regressions cover byte/hash
+verification, omission, changed files, offset grammar, retained partial source,
+rejected-edit atomicity and tight budgets. Focused suites: 51 passed. The unchanged
+pinned b11963 converter/parser accepted the new schema without warnings; semantic
+driver rejects observed offsets 0/30 and accepts unseen offset 3000. No model,
+request, context/output/loop limits, generated actions or acceptance was replaced.
+Public inventory: 121 artifacts, 178996249 bytes, zero expired. Active/queued/
+waiting/pending runs all zero before publication; no deletion needed. Private
+archive and billing settings remain unchanged; historical private storage unverified.
+
+Full suite: 1214 tests plus six subtests passed in 79.69 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual five-file review
+confirmed exact displayed-byte verification and preserved runtime limits. Publish
+with an expected-head lease from ebaeeb3; fresh actual-model acceptance remains
+required and all five-item release gates remain in force.
+
+### Routine platform evidence on 187ab3d (2026-11-08 UTC)
+
+Routine CI 42445714392 passed all nine jobs on exact
+187ab3d23bbec7b916d0637dbc0d58f1efd6c331. Browser report: 26 expected,
+zero skipped/unexpected/flaky. Backend report: 1220 cases, zero errors/failures/
+skips. Windows installed native UI/local reply, Credential Manager, scheduled
+restart, reinstall and data preservation passed. Android lifecycle instrumentation
+reports OK (one test). The separate qwen3:1.7b fixture is not actual 9B acceptance
+or complete item 5. Staged inference BLOCKED/production REVIEW remain; physical
+owner hardware is unverified.
+
+Five original report ZIPs were individually size/digest verified and preserved in
+`dsGPT-ci-test-evidence-187ab3d.zip`, 45392 bytes, SHA256
+`eec38d40f7c42f1be1155ddb0554021ba363f33c0828030802ad7c8ece29334b`,
+durable evidence
+`libfile_fde3_f-58812d5824a88191b614ed74c647282b_0e1c3d7a1ce08191b900cc9270ea7257`.
+Actual 9B run 42445714304, job 128624081250, remains in progress on this exact
+source after pinned model load and production Docker setup passed. Its unchanged
+request decision step is active; no final model acceptance is claimed. No duplicate
+run was dispatched and no active run was cancelled.
+
+### Actual 187ab3d failure and source/requirement comparison recovery
+
+Actual 9B run 42445714304 failed initial step 46 with `no_progress` in
+7760.025 seconds. Requirement 1 offset 0 reads at 40/42 were separated by
+source inspection; reads 43–45 paged MainActivity at 0/3000/6000. Step 46
+requested the same unchanged requirement page a third time. No build_project
+occurred; generated native/follow-up jobs skipped. Earlier edit 27 was rejected
+as unchanged. No rejected edit was executed.
+
+Original artifact 13607162584, 149075 bytes, SHA256
+`b121bb9faccf49a47185aa614c5939024b1506ff2ef8ddce95d4c4d94e73dcf8`,
+verified and durably preserved as `dsGPT-complex-evidence-42445714304.zip`,
+`libfile_fde3_f-4ca99705523c8191a5598092ede64a2b_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Source reads now retain the latest verified observed requirement page from the
+existing bounded history when it fits. Generated overview/section previews may
+be deferred with navigation; older retained pages of unrelated files may be
+omitted to fit the exact comparison. Latest tool result and retained pages of
+its target stay intact. Omitted source remains readable. Missing/corrupt/stale
+requirements do not qualify. Runtime checks, model, original request, context,
+output reserve, loop limits and acceptance remain unchanged.
+
+Saved-history diagnostic through step 45 reconstructs hash-verified scaffold
+files, successful edits, saved section notes and cumulative overview. Baseline
+shows no retained requirement at estimated 16103 tokens including output reserve;
+candidate retains section 1 offset 0 through 1359 at 15605/16384, including the
+unchanged 4096 reserve. This is diagnostic replay, not model acceptance.
+Four regressions cover verified comparison, corrupt/stale text, omitted text and
+budget-driven unrelated-source omission while retaining latest source result.
+Public storage before publication: 99 artifacts, 146510050 bytes, none expired;
+active/queued/waiting/pending counts all zero. No deletion needed. Private archive,
+billing and cache settings remain unchanged; historical private storage unverified.
+
+Final full suite: 1218 tests plus six subtests passed in 81.80 seconds. Focused
+comparison/source/requirement suite: 62 passed. Ruff, whitespace, CI policy and
+pinned tracked-source Gitleaks passed. Manual four-file review confirmed observed
+text only, unchanged runtime enforcement, preserved evidence and narrow dispatch.
+No action schema or grammar syntax changed. Fresh actual-model acceptance required.
+
+### Routine platform evidence on 3ec2706 (2026-11-08 UTC)
+
+Routine CI 42462245444 passed all nine jobs on exact
+3ec270678e0dd57231ee02cf9c66e1b6345b779c. Browser report: 26 expected,
+zero skipped/unexpected/flaky. Backend report: 1224 cases, zero errors/failures/
+skips. Windows installed native UI/local reply, Credential Manager, scheduled
+restart, reinstall and data preservation passed. Android lifecycle instrumentation
+reports OK (one test). The separate qwen3:1.7b fixture is not actual 9B acceptance
+or complete item 5. Staged inference BLOCKED/production REVIEW remain; physical
+owner hardware is unverified.
+
+Five original report ZIPs were individually size/digest verified and preserved in
+`dsGPT-ci-test-evidence-3ec2706.zip`, 46060 bytes, SHA256
+`00251104aa5267bdad12fc00b38fce9f11e808f1c23a1c8aaa38250a15c5ebaf`,
+durable evidence
+`libfile_fde3_f-da718cfb93708191b0f9f403f04e7972_0e1c3d7a1ce08191b900cc9270ea7257`.
+Actual 9B run 42462245456, job 128673835688, remains in progress on this exact
+source after pinned model load and production Docker setup passed. Its unchanged
+request decision step is active; no final model acceptance is claimed. No duplicate
+run was dispatched and no active run was cancelled. These notes do not alter the
+source under acceptance; the ordered release gates remain in force.
+
+### Actual 3ec2706 failure and same-file page retention
+
+Actual 9B run 42462245456 failed initial step 25 with no_progress in
+5177.197 seconds. Step 21 edit_match_not_unique rejected invented source;
+22 read TaskLedger.kt offset 0, 23 read distinct TaskLedger.kt} offset 0,
+24 read TaskLedger.kt offset 3000, then 25 repeated its unchanged offset 0.
+No build_project occurred; generated native/follow-up jobs skipped.
+Original artifact 13612143009, 118130 bytes, SHA256
+`bbc78f34aeaf7b40c990fc6594ac59efb1ae24df81e18a7fde60a1a72f60d5bd`
+is verified and durably preserved as dsGPT-complex-evidence-42462245456.zip,
+`libfile_fde3_f-94f824914aa88191b069aa0d113b8082_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Saved-state replay through step 24 reconstructs verified scaffold, successful
+writes/edits, section notes and cumulative overview. Baseline retained the newer
+unrelated TaskLedger.kt} page at estimated 15356/16384 including output reserve,
+omitting the target prefix. Candidate prioritizes observed pages matching the
+latest source result before unrelated pages, preserving recency within each group.
+It retains TaskLedger.kt offset 0 at 15335/16384 including unchanged 4096 reserve.
+Latest continuation stays intact. Current-hash checks and runtime enforcement are
+unchanged; stale/omitted pages remain readable. This is replay, not model acceptance.
+Two regressions exercise constrained retention and stale-prefix exclusion.
+No grammar syntax, model, original request, context/output or loop limits changed.
+Public inventory: 99 artifacts, 146513826 bytes, none expired; active/queued/waiting/
+pending all zero. No deletion needed; private archive/billing/cache settings untouched.
+
+Full suite: 1220 tests plus six subtests passed in 82.92 seconds. Focused source
+retention/grammar/comparison suite: 14 passed in 1.87 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+confirmed observed source only, unchanged validation and acceptance, preserved
+prior notes and the narrow single-run trigger. Fresh model acceptance is required.
+
+### 854e7f4 setup failures before model execution
+
+Actual run 42470474691 failed during pinned Ollama archive download with HTTP504.
+No application model decisions, Docker builds or generated native checks ran.
+Routine CI 42470474829 failed source-audit on the Gitleaks download HTTP504 and
+Android on the Gradle distribution download's 10000ms read timeout. Backend,
+browser, frontend and Windows native compilation passed; downstream Windows and
+Android runtime acceptance skipped. Backend: 1226 cases, zero failures/errors/skips;
+browser: 26 expected, zero skipped/flaky/unexpected. These are setup failures,
+not evidence that the source-retention fix passed or failed actual-model acceptance.
+
+Original model artifact 13612818207, 4878 bytes, SHA256
+`c2c6a0c21bc239e7ac0652bae1d936036b2cbde6313271ecf944dfccf64b0067`;
+two original test ZIPs individually size/digest verified and three failed-job logs
+preserved in `dsGPT-setup-evidence-854e7f4.zip`, 54925 bytes, SHA256
+`701326393d990d023323cfe948ef89f233c3e9cc7f9d8fcb76788cf759cbd0bb`,
+durable evidence
+`libfile_fde3_f-3603364687ac8191ac3d09d46775b3d1_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Pinned runtime/scanner archive opens now retry HTTP502/503/504 only, at most three
+attempts with 1/2-second backoff before writing any bytes. Other HTTP errors,
+stream failures, sizes and digest mismatches remain fatal. Gradle's distribution
+network timeout is 60000ms; its URL and pinned checksum remain unchanged. No model,
+request, inference budgets, loop limits, acceptance timeouts or cache writes change.
+Focused download/preflight suite: 20 passed; retries and exhaustion tested without
+network or sleeping. This does not count as actual-model acceptance.
+
+Full suite: 1222 tests plus six subtests passed in 78.72 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual six-file review kept
+all digest/size checks and acceptance arguments intact. Public inventory before
+publication: 94 artifacts, 135828053 bytes, none expired; active/queued/waiting/
+pending all zero. No deletion needed. Archive/billing/cache settings untouched.
+
+### 0c5859f production-toolchain setup failure
+
+Actual 9B run 42473436414 failed production Docker setup before application model
+execution. The pinned exact-model load and cold-load preflight passed. SDK/Gradle
+and voice inputs downloaded successfully, then apktool's response-open operation
+raised TimeoutError after the existing 120-second socket timeout. No model task,
+build_project, generated native or follow-up acceptance ran. This is setup failure,
+not evidence for or against the source-page retention fix.
+
+Original artifact 13614622341, 64631 bytes, SHA256
+`f531cd78c8dd27132b8fae3ed9b3baf8e3feb4c0452ad27d0518e0ee2b25e3ed`.
+It and five original CI report ZIPs were individually size/digest verified and
+preserved in `dsGPT-evidence-0c5859f.zip`, 110494 bytes, SHA256
+`b91b2f65d7d1046e2b01997c05e39108b195c5e8156be21c91fa37473049f6ba`,
+durable evidence
+`libfile_fde3_f-867568cb63248191800714dee2a17711_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Routine CI 42473436405 passed all nine jobs on exact
+0c5859f811001d9814c6190395e0e39360e184a3. Backend: 1228 cases, zero failures,
+errors or skips; browser: 26 expected, zero skipped/unexpected/flaky. Windows
+installed native UI/local reply, Credential Manager, scheduled restart, reinstall
+and data preservation passed; Android lifecycle instrumentation reports OK (one
+test). The separate qwen3:1.7b fixture is not actual 9B acceptance or complete
+item 5. Staged inference BLOCKED/production REVIEW remain; owner hardware unverified.
+
+Asset response opens now retry direct or wrapped TimeoutError and HTTP502/503/504
+at most three times, with 1/2-second backoff. The 120-second timeout, URLs, pinned
+sizes/digests and extraction checks remain unchanged. Other open errors, stream
+failures and integrity failures remain fatal. Regressions cover recovery,
+exhaustion, permanent errors, retries before file creation, successful verified
+installation, partial streams, size and digest rejection. Focused asset/release
+suite: 11 passed. No model/request/context/output/loop/acceptance limit changed;
+no cache writes added. Fresh actual-model acceptance is still required.
+
+Full suite: 1231 tests plus six subtests passed in 81.81 seconds. Ruff, whitespace,
+CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+confirmed bounded response-open retries only, unchanged integrity enforcement,
+no private log contents in source, and the unchanged-request single-run trigger.
+Before publication: active/queued/waiting/pending all zero; 105 public artifacts,
+152035174 bytes, none expired. No deletion needed. Private archive, billing and
+cache settings remain untouched.
+
+### 954004d observed alternating requirement reads
+
+Actual 9B run 42476228169 passed exact-model and production Docker setup, then
+failed initial step 27 with no_progress in 4468.404 seconds. Requirement section 4
+was read at steps 22/25 and section 1 at 24/26; step 27 repeated section 4 a third
+time. No build_project occurred; generated native/follow-up checks skipped.
+Step 18 also wrote a distinct MainActivity.kt} path; step 20 invalid path was
+rejected. Those observations do not prove complete source correctness.
+
+Original artifact 13618077583, 126366 bytes, SHA256
+`fea1d52fe05ce967eb668bbf15342f37479b0875738bf9366695c38c9aa8856d`;
+original plus two CI report ZIPs individually size/digest verified and Android
+failure log preserved in dsGPT-evidence-954004d.zip, 158273 bytes, SHA256
+`6b2d0d114b0c77a296a96e315b6bc4b6c2c0aad404c5ba54fe1c44bb79ab0ccb`,
+durable evidence
+`libfile_fde3_f-f0d1fed9f2508191bf668ee428c8d57e_0e1c3d7a1ce08191b900cc9270ea7257`.
+Routine CI 42476228144 failed Android on Gradle distribution HTTP502, before
+compilation; required failed and downstream Windows/Android runtime skipped.
+Source audit/backend/browser/frontend/Windows native compilation passed.
+
+Section comparisons now retain the latest verified observed different section
+from bounded history when it fits, deferring generated overview/preview as needed.
+Empty reads retain the existing same-section recovery behavior. Corrupt/stale
+observations remain unreadable as evidence, and latest result stays intact.
+Saved-history replay through step 26 includes hash-verified scaffold, successful
+edits and cumulative overview: baseline only section 1 at 15884/16384; candidate
+also retains section 4 at 15433/16384 including unchanged 4096 output reserve.
+Replay is diagnostic, not actual-model acceptance. Model/request/context/output/
+loop/runtime checks and grammar syntax are unchanged. No cache writes added.
+
+Final full suite: 1233 tests plus six subtests passed in 81.11 seconds; focused
+comparison/requirement/read suite: 64 passed. An initial candidate broke existing
+beyond-EOF recovery; corrected before publication, with that assertion unchanged.
+Ruff, whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual
+four-file review verified observed-text-only retention and unchanged acceptance.
+Routine evidence: 1237 backend cases with no failures/errors/skips; 26 browser
+expected with zero skipped/unexpected/flaky. Before publication all active/queued/
+pending/waiting counts were zero; 111 public artifacts, 157771249 bytes, none
+expired. No deletion needed; archive/billing/cache settings untouched.
+
+### Routine platform evidence on 83cd085 (2026-11-08 UTC)
+
+Routine CI 42483782726 passed all nine jobs on exact
+83cd085c47022d2113b5e001c942108978e232e5. Backend: 1239 cases, zero failures,
+errors or skips; browser: 26 expected, zero skipped/unexpected/flaky. Windows
+installed native UI/local reply, Credential Manager, scheduled restart, reinstall
+and data preservation passed. Android lifecycle instrumentation reports OK (one
+test). Separate qwen3:1.7b fixture evidence is not actual 9B acceptance or complete
+item 5. Staged inference BLOCKED/production REVIEW remain; owner hardware unverified.
+
+Five original report ZIPs individually size/digest verified and preserved as
+`dsGPT-ci-test-evidence-83cd085.zip`, 45694 bytes, SHA256
+`a3310d2bcc4fbe36ed20bb5b4bb15310c1a822fbc6a4c749d73ce80ecc00c755`,
+durable evidence
+`libfile_fde3_f-b62f29b798c0819191ea718b7aece3df_0e1c3d7a1ce08191b900cc9270ea7257`.
+At this platform checkpoint, actual 9B run 42483782694, job 128741133081, was
+in progress after exact-model load and production Docker setup passed.
+No final model acceptance is claimed. No duplicate or cancelled run; no source,
+acceptance, private archive, billing or cache settings changed.
+
+
+### 83cd085 observed no-change edit and partial read cycle
+
+Actual 9B run 42483782694 completed with failure at initial step 68, no_progress,
+in 16699.114 seconds. Exact-model and production Docker setup passed. Step 21
+attempted build_project and failed Kotlin compilation (including redeclaration
+and unresolved references). Step 25 invoked Gradle directly and failed loading
+its native library; the model read that failure at step 26. Neither result is a
+successful application build. Generated native checks and follow-up skipped.
+
+At step 61 the model changed Task.kt to 3170 characters. Reads 64/66 returned
+its first 3000 characters with next_offset 3000. Edits 65/67 supplied identical
+old/new text and were rejected as edit_has_no_change, with that same current
+source page attached. Step 68 repeated the unchanged first-page read and stopped.
+Other generated source issues remain unverified; this diagnosis does not claim
+that the model's implementation satisfies the requested domain API or behavior.
+
+Original artifact 13627549482, 202831 bytes, SHA256
+`a3ac5aead117d89359579541427b6b57c578df4d6fa1b93cbeefbcda7a4bbc09`,
+size/digest verified and preserved as `dsGPT-complex-evidence-42483782694.zip`,
+durable evidence
+`libfile_fde3_f-fb0063ed7cb88191a667c581983e5ee1_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+Partial-page guidance now recognizes the exact page attached to a recorded
+no-change edit when the adjacent action is edit_file for that same path. All
+existing byte/hash/length/offset/continuation checks remain required. Other
+errors, mismatched actions and stale/corrupt/omitted text remain readable.
+Unseen offsets and edits remain available. No grammar syntax, runtime validation,
+model, original request, context/output budgets, loop limits or acceptance changes.
+
+Saved-history replay through step 67 reconstructed hash-verified scaffold and
+successful edits, including saved notes and cumulative overview. Both prompts
+use estimated 16045/16384 including unchanged 4096 output reserve. Baseline
+recognizes no displayed partial page after the no-change edit; candidate recognizes
+Task.kt offset 0 and leaves offset 3000 available. Replay is diagnostic only,
+not actual-model acceptance. Focused source/read/feedback tests: 88 passed.
+
+Final full suite: 1242 tests plus six subtests passed in 81.33 seconds. Ruff,
+whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual four-file
+review confirmed the matching-action and current-source checks, preserved prior
+platform evidence and unchanged acceptance trigger. Before publication all
+active/queued/waiting/pending counts were zero; 100 public artifacts, 141552045
+bytes, none expired. No deletion needed. Archive/billing/cache settings untouched.
+
+### Routine platform evidence on 92187c7 (2026-11-08 UTC)
+
+Routine CI 42507901096 passed all nine jobs on exact
+92187c7ebca2c7be136785116ddeb9c61e9d7e26. Backend: 1248 cases, no failures,
+errors or skips. Browser: 26 expected, zero skipped/unexpected/flaky. Installed
+Windows native UI/local reply, Credential Manager, scheduled restart, reinstall
+and data preservation passed. Android lifecycle instrumentation: OK (one test).
+Separate qwen3:1.7b fixture evidence is not actual 9B acceptance or complete item 5.
+Staged inference BLOCKED/production REVIEW remain; owner hardware unverified.
+
+Five original report ZIPs individually size/digest verified and preserved as
+`dsGPT-ci-test-evidence-92187c7.zip`, 46276 bytes, SHA256
+`32e884bd081297777bd2ab3d4f0e6d1fa4060898efb4266b1c2bad09c454f69d`,
+durable evidence
+`libfile_fde3_f-fc37d0395100819187b53c178d5def9b_0e1c3d7a1ce08191b900cc9270ea7257`.
+Actual 9B run 42507901320, job 128814418461, remains in progress after exact-model
+load and production Docker setup passed, with original-request decisions active.
+No final model acceptance claimed. No duplicate/cancelled run or source, acceptance,
+private archive, billing or cache changes.
+
+### Actual-model failure and rejected-edit context recovery (2026-11-08 UTC)
+
+Run 42507901320 on exact 92187c7 completed with initial task no_progress at
+step 50 after 9935.173 seconds. Exact model and production Docker setup passed.
+Step 24 build_project failed Kotlin compilation. Subsequent edits did not produce
+another build. Step 45 changed a lambda type annotation, step 47 reverted it;
+reads 44 and 48 therefore observed the same source again. Step 49 proposed an
+unmatched unchanged replacement (zero matches); step 50 repeated that read and
+correctly hit the existing loop guard. Generated native and follow-up jobs skipped.
+No item 1 acceptance, deliverable correctness, or item 5 completion is claimed.
+
+Original artifact 13633424454 verified at 168971 bytes, SHA256
+`24e2bacef01bb456b0ea4a4f08c1bf9c1c05a60c982c1026dd13dbc75e2dc026`,
+preserved as `dsGPT-complex-evidence-42507901320.zip`, durable evidence
+`libfile_fde3_f-7bb2faea6c4481919ecd883040f8e39a_0e1c3d7a1ce08191b900cc9270ea7257`.
+
+The bounded rejection prompt could omit the latest observed exact source while
+retaining generated requirement overview/preview. Add a fallback that defers that
+preview when necessary to fit the source and rejection feedback together. Current
+hash and observed-page checks, latest result, source bytes and full saved requirements
+remain intact. No model/request/runtime/context/output/loop/grammar/acceptance changes.
+An initial candidate removing rejected proposal text was discarded: a replay missing
+build state and session summary did not reproduce the actual pressure.
+
+Corrected saved-history replay through 49 reconstructs verified scaffold/edits,
+review notes/overview, recorded failed build and latest session summary. Baseline
+omits the source at 16331/16384 estimated tokens including 4096 output reserve;
+candidate retains complete MainActivity.kt at 15745/16384 (before wording cleanup).
+Replay is diagnostic only. Regression test fails on baseline and passes with the
+fallback; stale observed source remains rejected. Focused feedback/source tests:
+50 passed. Before publication, active/queued/waiting/pending all zero; 89 public
+artifacts, 125295382 bytes, none expired. No deletion needed. Archive, billing and
+cache settings untouched.
+
+Final full suite: 1244 tests plus six subtests passed in 86.19 seconds. Ruff,
+whitespace, CI policy and pinned tracked-source Gitleaks passed. Manual four-file
+review passed. Final replay remains 15745/16384 including output reserve. Original
+request and all runtime/model/acceptance limits remain unchanged.
+
+## c74fa73 platform evidence and actual-model outcome
+
+Routine CI 42528136497 passed all nine jobs on exact c74fa73. Backend: 1250 cases
+including subtests, no failures/errors/skips; browser: 26 expected, no flaky,
+skipped or unexpected results. Windows regressions: 139 cases, no failures/errors,
+one POSIX-only fixture skip with separate Windows CLI acceptance. Disposable
+Windows installed UI/local reply/Credential Manager/scheduled restart/reinstall/data
+preservation and Android lifecycle instrumentation (OK, one test) passed. Separate
+qwen3:1.7b fixture is not actual9B acceptance or complete item 5; staged inference
+BLOCKED/production REVIEW and owner-hardware unverified limitations remain.
+Five individually verified report ZIPs were preserved in dsGPT-ci-test-evidence-c74fa73.zip,
+46806 bytes, SHA256 4aa0c60b9b9d8fbfe11128943a16e1c96956ab764efb52a0a0fe11fd5b535bb1.
+These notes reconstruct the prior uncommitted platform evidence after workspace
+maintenance removed the checkout; committed source was recovered from public main.
+
+Actual9B run 42528136541 passed pinned model and production Docker setup, then
+failed initial step 58 with no_progress after 9695.123 seconds. No build_project
+occurred; native checks and follow-up were skipped. Steps 53/56 read section 3;
+55/57 read section 1; step 58 attempted section 3 again. Earlier malformed-looking
+but distinct source paths were created; generated source remains unverified.
+Original artifact 13641623457 was verified and durably preserved as
+ dsGPT-complex-evidence-42528136541.zip (171141 bytes), SHA256
+99653f83535f0fe6cd48a2ce090431566f3db114f2e676c56709803617e6e485.
+
+A hash-checked diagnostic replay through step 57 restored scaffold bytes and edits,
+recorded review notes, cumulative overview and latest session summary. Baseline
+already retained section 3 (offset 0, 1506 characters) alongside latest section 1,
+at 16322/16384 estimated tokens including 4096 output reserve. This was not another
+missing-section defect: EOF guidance suggested starting any other section despite
+visible retained text. Candidate guidance instead reuses retained pages and reads
+another section only for missing text. Candidate replay retains section 3 and the
+observed section 1 EOF receipt at 16343/16384. Replay is diagnostic, not acceptance.
+Model, original request, grammar syntax and all runtime/context/output/loop/native
+acceptance limits remain unchanged. Focused requirement checks: 24 passed.
+Full suite: 1244 tests plus six subtests passed in 80.72 seconds. Ruff, whitespace,
+static CI policy and pinned tracked-source Gitleaks passed; manual four-file review
+found no private data or acceptance changes. Before dispatch: active, queued,
+waiting and pending all zero; 89 public artifacts, 125329318 bytes, none expired.
+Local disk has 50 GiB available; no artifact deletion needed. Private archive,
+billing, cache settings and signing material remain untouched.
+
+## e4b6860 routine platform evidence
+
+CI 42545441117 passed all nine jobs on exact e4b68603e17678497d745f7e622474f27bd919cd.
+Backend: 1250 cases including subtests, no failures/errors/skips. Browser: 26
+expected, zero flaky/skipped/unexpected. Windows regressions: 139 cases, zero
+failures/errors and one POSIX fixture skip; separate Windows CLI acceptance passed.
+Android unit tests: 24 cases, zero failures/errors/skips. Android lifecycle
+instrumentation: OK (one test). Disposable Windows installed native UI, local
+reply, Credential Manager, scheduled restart, reinstall/data preservation and
+uninstall preserving data all passed. Separate qwen3:1.7b fixture is not actual9B
+acceptance or complete item 5. Staged inference remains BLOCKED, production REVIEW;
+physical owner hardware remains unverified.
+Five report ZIPs individually verified against GitHub size/digest/source commit
+were preserved in dsGPT-ci-test-evidence-e4b6860.zip, 45990 bytes, SHA256
+4a1a4f3de0b1646f4693f37394fb3af5e0b17a10e1a42f342b3f96c491b04b4b.
+Actual9B run 42545441112, job 128929305804, remains in progress after exact model
+and production Docker setup succeeded. No final actual-model artifact yet; no
+additional acceptance run dispatched or cancelled.
+
+## e4b6860 actual-model failure and path-error guidance
+
+Actual9B run 42545441112 passed pinned model and production Docker setup, then
+failed initial step 26 with no_progress after 4916.596 seconds. No build_project
+occurred; generated native checks and follow-up were skipped. Rejected writes
+used paths with appended formatting or trailing whitespace. Steps 21/24 read
+section 2 at EOF (offset 869); step 26 attempted the same empty page again.
+Step 22 had read the unchanged scaffold source; no generated implementation was
+verified. Original artifact 13645694988 was size/digest checked and durably
+preserved as dsGPT-complex-evidence-42545441112.zip (128029 bytes), SHA256
+2bdbc194c7122e7b56924f41b9b6653cfb9a426b7730793d7ab44b8f5cdbdf41.
+
+The validation result identified invalid_project_path, but next-step guidance
+emphasized incomplete JSON. Candidate guidance specifically directs copying the
+observed path without appended formatting, using edit_file for existing files,
+and distinguishes requirement text from source old_text. It neither repairs nor
+executes rejected actions. Path validation, grammar, model, original request,
+runtime/context/output budgets, loop limits and acceptance remain unchanged.
+Two regression cases fail on baseline and pass candidate; focused suite: 35 passed.
+Hash-checked saved-history replay through step 25 reconstructs scaffold, actions,
+review notes, cumulative overview and latest valid session summary. Baseline and
+candidate both retain the exact source and requirement section 2 at offset 0.
+Baseline uses 15864/16384 estimated tokens including 4096 output reserve; candidate
+uses 15924. Replay is diagnostic only, not actual-model acceptance.
+Full suite: 1246 tests plus six subtests passed in 82.37 seconds. Ruff, whitespace,
+static CI policy and pinned tracked-source Gitleaks passed. Manual four-file review
+found no private material or changed acceptance. Before retry: active, queued,
+waiting and pending all zero; 89 artifacts, 125350642 bytes, none expired. No
+artifact deletion needed. Archive settings, billing and signing remain untouched.
+
+## 554fd34 routine platform evidence
+
+CI 42556287281 passed all nine jobs on exact 554fd34d47359fcb657bb2ed4a08fbe24a67c22e.
+Backend: 1252 cases including subtests, no failures/errors/skips. Browser: 26
+expected, zero flaky/skipped/unexpected. Windows regressions: 139 cases, zero
+failures/errors and one POSIX fixture skip; separate Windows CLI acceptance passed.
+Android unit tests: 24 cases, zero failures/errors/skips. Android lifecycle
+instrumentation: OK (one test). Disposable Windows installed native UI, local
+reply, Credential Manager, scheduled restart, reinstall/data preservation and
 uninstall preserving data all passed. Separate qwen3:1.7b fixture is not actual9B
 acceptance or complete item 5. Staged inference remains BLOCKED, production REVIEW;
 physical owner hardware remains unverified.
