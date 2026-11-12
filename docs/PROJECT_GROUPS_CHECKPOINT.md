@@ -46,3 +46,12 @@ hashes, message rows, memories and original file bytes are compared before/after
 A v30 database migration preserves old records. Real desktop and Android focused
 checks are authored but not yet run; the generated desktop API types must be
 reconciled from the disposable-runner output before main promotion.
+
+Focused run `43289109215` on `efd73dc` compiled the Android application/test
+and passed the one real Compose group browsing/connection clearing check. All
+eight backend grouping checks and desktop TypeScript build passed. The desktop
+browser then failed to find the selector by its exact accessible name after groups
+loaded. The correction supplies a stable explicit accessible name; the test is
+unchanged. The follow-up workflow selects only the affected desktop check and
+keeps the generated API types even if browser validation fails. Android source is
+unchanged, so its successful focused check is reused. Item 4 remains open.

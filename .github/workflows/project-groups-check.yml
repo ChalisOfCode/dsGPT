@@ -35,9 +35,9 @@ jobs:
           cd clients/desktop
           npm ci --ignore-scripts --no-audit --no-fund
           npm run types
+          cp src/api-schema.d.ts ../../reports/groups-api-schema.d.ts
           npm run build
           npx --no-install playwright test --config=playwright.groups.config.ts
-          cp src/api-schema.d.ts ../../reports/groups-api-schema.d.ts
       - name: Bound synthetic reports and generated contract
         id: reports
         if: always()
@@ -52,28 +52,3 @@ jobs:
           path: reports/
           retention-days: 1
           if-no-files-found: error
-  android:
-    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 18
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {persist-credentials: false}
-      - name: Compile Android and check group browsing and connection clearing
-        working-directory: clients/android
-        shell: bash
-        run: |
-          set -euo pipefail
-          export JAVA_HOME="$JAVA_HOME_17_X64"
-          export PATH="$JAVA_HOME/bin:$PATH"
-          export GRADLE_USER_HOME="$(mktemp -d "$RUNNER_TEMP/dsgpt-gradle.XXXXXX")"
-          trap 'rm -rf -- "$GRADLE_USER_HOME"' EXIT
-          bash gradlew --no-daemon --no-build-cache --no-configuration-cache --console=plain testDebugUnitTest --tests com.dsgpt.mobile.ProjectGroupsViewTest
-          python3 - <<'PY'
-          from pathlib import Path
-          from xml.etree import ElementTree
-          rows = [ElementTree.parse(p).getroot() for p in Path('app/build/test-results/testDebugUnitTest').glob('TEST-*.xml')]
-          counts = {k: sum(int(r.attrib[k]) for r in rows) for k in ('tests','errors','failures','skipped')}
-          print('Group browsing', counts)
-          assert counts == {'tests':1,'errors':0,'failures':0,'skipped':0}
-          PY

@@ -45,7 +45,7 @@ export function ProjectGroups({client, active, owner}: {client: Client; active: 
     <button disabled={busy} onClick={() => void act(live => loadGroups(0, live))}>Browse project groups</button>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     {opened && <>
-      <label>Project group<select value={groupId} disabled={busy} onChange={e => {
+      <label>Project group<select aria-label="Project group" value={groupId} disabled={busy} onChange={e => {
         setGroupId(e.target.value); setMembers([]); clearReview();
         setName(groups.find(g => g.id === e.target.value)?.name || "");
       }}><option value="">New group / no group selected</option>{groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select></label>
