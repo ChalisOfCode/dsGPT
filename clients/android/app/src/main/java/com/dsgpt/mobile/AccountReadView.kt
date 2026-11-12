@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.SecureFlagPolicy
@@ -81,7 +82,7 @@ private fun PrivateAccountDialog(loadGrants: suspend () -> List<AccountReadGrant
     AlertDialog(onDismissRequest = close,
         properties = DialogProperties(securePolicy = SecureFlagPolicy.SecureOn),
         title = { Text("Private account pages") },
-        text = { LazyColumn(Modifier.heightIn(max = 450.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        text = { LazyColumn(Modifier.heightIn(max = 450.dp).testTag("private-account-scroll"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item { Text("The PC owner must grant this phone access to the current task and saved account page. Page text stays in this view; it is not sent to the model or saved with the task.") }
             item { TextButton(onClick = { load() }, enabled = !busy) { Text("Check private account grants") } }
             if (busy) item { Text("Checking private account access…") }

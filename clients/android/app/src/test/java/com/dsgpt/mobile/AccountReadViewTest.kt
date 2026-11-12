@@ -31,7 +31,9 @@ class AccountReadViewTest {
         compose.onNodeWithText("Check private account grants").performClick()
         compose.onNodeWithText("Read approved page").performScrollTo().performClick()
         compose.onNodeWithText("Synthetic private page").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Only the beginning of the page is shown.").assertExists()
+        val notice = "Only the beginning of the page is shown."
+        compose.onNodeWithTag("private-account-scroll").performScrollToNode(hasText(notice))
+        compose.onNodeWithText(notice).assertIsDisplayed()
         compose.onNodeWithText("Close private account view").performClick()
         compose.onNodeWithText("Private account pages").performClick()
         compose.onNodeWithText("Synthetic private page").assertDoesNotExist()
