@@ -109,7 +109,7 @@ CI `43280663340` passed all nine jobs, including Windows installation validation
 The single terminal item-3 alert was delivered by run `43288787309` in issue 1.
 No final installers are delivered at this stage.
 
-## 4. Group related imported projects — focused acceptance passed, integration pending
+## 4. Group related imported projects — passed
 
 Recognize and propose coherent projects from related imports using observable
 metadata/content, preserving originals and letting the owner correct associations.
@@ -118,9 +118,11 @@ The isolated implementation is described in `PROJECT_GROUPS_CHECKPOINT.md`;
 backend preservation/permission checks pass. Actual-backend desktop Chrome review,
 correction, rename and removal passed in `43289697441`; native Android compilation
 and Compose browsing/connection clearing passed in `43289109215`. Generated client
-types are reconciled. Main integration is pending; no terminal item-4 alert yet.
+types are reconciled. Main `5638a5d` passed all nine integration jobs in
+`43292113633`. The single terminal item-4 alert `43294611261` delivered issue 1
+comment `6834304747`. No duplicate alert is required.
 
-## 5. Software upgrade/reconnect and empty-response diagnosis — queued after 4
+## 5. Software upgrade/reconnect and empty-response diagnosis — in progress
 
 Automate runtime metrics and failure diagnosis, tool readiness, data/credential
 preservation through software upgrades, and paired-device reconnect regression
@@ -133,6 +135,9 @@ claims, but those targeted tests are optional and not a routine release gate.
 Record hardware behavior as unverified when not observed. The 2026-11-03 public
 build authorization supersedes the former mandatory physical-device handoff.
 Signing identity and data-preservation acceptance remain required.
+The initial bounded Work inference receipt implementation and remaining native
+upgrade gates are documented in `UPGRADE_RUNTIME_CHECKPOINT.md`. No final
+installers or item-5 completion are claimed.
 
 
 ### Focused production HTTPS transport evidence

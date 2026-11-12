@@ -75,6 +75,7 @@ ERROR_HELP = {
         "turn off thinking if supported, then resume. No tool action was executed for this reply."
     ),
     "inference_failed": "Local inference failed. Check runtime health and available memory.",
+    "inference_diagnostics_full": "Restart the backend to recover interrupted inference receipts.",
     "runtime_protocol_error": "The local runtime returned an incomplete or invalid response.",
     "research_failed": "A public research tool failed. Check its saved source status.",
     "managed_runtime_start_failed": "The managed local runtime could not start.",
@@ -166,6 +167,8 @@ def inference_details(store, models):
 
 
 def work_details(store):
+    from .work_inference import recent
+
     rows = store.all(
         "SELECT id,task_id,status,result,cleanup_pending,created_at,updated_at "
         "FROM work_executions ORDER BY updated_at DESC LIMIT 50"
@@ -179,10 +182,15 @@ def work_details(store):
         executions.append(row)
     return {
         "recent_executions": executions,
+        "recent_inference_attempts": recent(store),
+        "inference_attempt_retention": 200,
         "limit": 50,
         "task_counts": store.all("SELECT status,COUNT(*) AS count FROM work_tasks GROUP BY status"),
         "limitations": [
             "Commands, filenames, project contents and raw build/test logs are excluded.",
+            "Work inference configuration is frozen per attempt, not current registration.",
+            "Configured digest is a pin, not an observed runtime measurement.",
+            "Stream completion does not establish a valid action or successful tool execution.",
             "Review private compiler details in the authenticated Work log viewer.",
         ],
     }

@@ -1,0 +1,54 @@
+name: Focused Work inference diagnostics
+on:
+  push:
+    branches: [work/upgrade-diagnostics-5638a5d]
+    paths: [.github/workflows/upgrade-diagnostics-check.yml, src/dsgpt/work_inference.py, tests/test_work_inference.py]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: upgrade-diagnostics-check
+  cancel-in-progress: false
+jobs:
+  windows-diagnostics:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 6
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: src
+      PIP_NO_CACHE_DIR: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.13'}
+      - name: Install disposable locked dependencies without shared caches
+        run: python -m pip install --no-cache-dir -r requirements-dev.lock
+      - name: Verify bounded diagnostics, native process recovery and migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pytest -p no:cacheprovider -q --tb=short tests/test_work_inference.py tests/test_empty_model_response.py --junitxml=reports/work-inference.xml
+          python - <<'PY'
+          from xml.etree import ElementTree
+          root = ElementTree.parse('reports/work-inference.xml').getroot()
+          totals = {k: sum(int(s.get(k, 0)) for s in root.iter('testsuite'))
+                    for k in ('tests', 'failures', 'errors', 'skipped')}
+          print('Work diagnostics checks:', totals)
+          assert totals['tests'] >= 37 and all(totals[k] == 0 for k in ('failures', 'errors', 'skipped'))
+          PY
+      - name: Bound synthetic report storage
+        id: report
+        if: always() && hashFiles('reports/work-inference.xml') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+        run: python scripts/ci_artifact_guard.py reports/work-inference.xml
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always() && steps.report.outcome == 'success' && !cancelled()
+        with:
+          name: work-inference-${{ github.sha }}
+          path: reports/work-inference.xml
+          retention-days: 1
+          if-no-files-found: error

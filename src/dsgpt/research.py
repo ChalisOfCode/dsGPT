@@ -6,6 +6,7 @@ memory. Synthesis has no tools; fetched content is untrusted evidence, not instr
 
 import json
 import re
+from contextlib import nullcontext
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -14,6 +15,7 @@ from . import generation
 from .inference import InferenceError, ollama_input_estimate
 from .storage import canonical, uid
 from .web_retrieval import LocalSearch, PublicReader, ResearchError, public_url
+from .work_inference import Attempt
 
 
 class ResearchOptions(BaseModel):
@@ -233,9 +235,11 @@ class Research:
             )
         return output
 
-    async def collect(self, model, messages, schema):
+    async def collect(self, model, messages, schema, attempt=None):
         chunks, size = [], 0
         async for event in self.inference.stream(model, messages, response_schema=schema):
+            if attempt is not None:
+                attempt.observe(event)
             if event["kind"] == "delta":
                 size += len(event["data"]["text"].encode())
                 if size > 32000:
@@ -267,7 +271,13 @@ class Research:
         ]
         try:
             async with self.scheduler.acquire(kind, identifier):
-                raw = await self.collect(model, messages, AutomaticSearchPlan.model_json_schema())
+                with (
+                    Attempt(self.store, identifier, "research_plan", model)
+                    if kind == "work" else nullcontext()
+                ) as attempt:
+                    raw = await self.collect(
+                        model, messages, AutomaticSearchPlan.model_json_schema(), attempt=attempt
+                    )
             plan = AutomaticSearchPlan.model_validate_json(raw)
             return (
                 list(dict.fromkeys(q.strip()[:500] for q in plan.queries if q.strip()))

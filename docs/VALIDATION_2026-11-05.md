@@ -3101,3 +3101,30 @@ log bundle `dsGPT-group-desktop-evidence-43289697441.zip`, 23000 bytes, SHA256
 `caa89adb8a19ef3070335c97343b5b3f9eb9017e4a507a190daa1a7500711498`.
 No unchanged Android rerun, no model/office rerun, and no terminal item-4 alert
 before main integration.
+
+Integration `43290205949` on `f58a6bc` failed five legacy migration fixtures;
+the other source/frontend/browser/Android/native Windows compilation jobs passed.
+The installer was skipped and the required join failed. Backend: 1390 cases
+including subtests, five failures, zero errors, 22 expected skips. Desktop Chrome:
+31 expected, zero flaky/unexpected/skipped; private browser: 45 passed. Android:
+36 unit cases and lifecycle `OK (1 test)`. This is not an integration pass.
+Four original report ZIPs were individually size/digest verified and retained
+with a bounded backend failure excerpt in private
+`dsGPT-ci-failure-evidence-f58a6bc.zip`, 60842 bytes, SHA256
+`15515f24cb21b1f69736caa9f1980e313bc61e3b812280dfd090d63328d06f5e`.
+The five-case fixture-only repair is `5638a5d`; its integration result must be
+observed separately. No product migration or assertion was weakened.
+
+Grouping integration repair `43292113633` on exact
+`5638a5df6984403db1d6a0d5418e0c1f2455b72b` passed all nine jobs. Backend 1390
+cases including subtests, zero failures/errors, 22 expected skips; desktop 31
+expected and private browser 45 passed without flaky/unexpected/skipped cases.
+Android 36 unit cases and lifecycle `OK (1 test)` passed. Windows 172 cases,
+zero failures/errors, two platform skips, and native installation/credential/
+restart/reinstall/data checks passed with the separate qwen3:1.7b fixture.
+That fixture is not item 1 or full item 5; owner hardware remains unverified.
+Five original report ZIPs were individually size/digest verified, then preserved
+privately as `dsGPT-ci-test-evidence-5638a5d.zip`, 53910 bytes, SHA256
+`756be374f0836f036738fea828dab6ccc447f17d6a3b57162c3184ac175f09c1`.
+Item-4 alert `43294611261` on `c69ff0c2b1c30e5348330418a3ec37ef8f92bc9e`
+passed and posted issue 1 comment `6834304747`; do not duplicate.

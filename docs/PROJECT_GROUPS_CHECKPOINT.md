@@ -81,3 +81,12 @@ helper. All five affected upgrade cases pass locally in 1.04s with their origina
 backup, content, schema, foreign-key and replay assertions unchanged. No production
 code, schema migration, client code or acceptance criteria changed in this repair.
 Do not treat the failed integration run as a pass.
+
+The fixture-only repair `5638a5d` passed all nine integration jobs in
+`43292113633`: backend 1390 cases including subtests, zero failures/errors and
+22 expected skips; desktop 31 expected and private browser 45 with no failures,
+flaky cases or skips; Android 36 unit cases plus lifecycle `OK (1 test)`;
+Windows 172 cases, zero failures/errors and two platform skips. Native installer,
+credentials, restart, reinstall and data preservation passed the separate local
+inference fixture; this does not complete item 5. The one terminal item-4 alert
+`43294611261` posted issue 1 comment `6834304747`.

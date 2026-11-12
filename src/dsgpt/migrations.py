@@ -591,3 +591,13 @@ CREATE TRIGGER group_input_delete AFTER DELETE ON work_inputs BEGIN
 END;
 """
 REQUIRED_TABLES[31] = {"project_groups", "project_group_links", "project_group_requests"}
+
+MIGRATIONS[32] = """
+CREATE TABLE work_inference_attempts (
+ id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES work_tasks(id) ON DELETE CASCADE,
+ status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+ payload TEXT NOT NULL
+);
+CREATE INDEX work_inference_task ON work_inference_attempts(task_id,created_at);
+"""
+REQUIRED_TABLES[32] = {"work_inference_attempts"}

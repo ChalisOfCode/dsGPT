@@ -9,7 +9,7 @@ from uuid import uuid4
 from .migrations import MIGRATIONS, REQUIRED_TABLES
 
 APPLICATION_ID = 0x44534750
-SCHEMA_VERSION = 31
+SCHEMA_VERSION = 32
 
 
 def utcnow():

@@ -69,7 +69,7 @@ async def test_completed_empty_stream_classifies_error_without_reasoning_leak(
     )
 
 
-@pytest.mark.parametrize("phase", ["action", "specification", "image"])
+@pytest.mark.parametrize("phase", ["action", "specification", "inline_specification", "image"])
 @pytest.mark.parametrize("limited", [False, True])
 @pytest.mark.parametrize("reply", ["", " \n"])
 async def test_work_blocks_first_empty_reply_without_rewriting_prior_evidence(
@@ -80,10 +80,12 @@ async def test_work_blocks_first_empty_reply_without_rewriting_prior_evidence(
 
         async def stream(self, *args, **kwargs):
             self.calls += 1
+            yield {"kind": "context", "data": {"method": "runtime_tokenizer", "input_tokens": 19}}
             if reply:
                 yield {"kind": "delta", "data": {"text": reply}}
             if limited:
                 yield {"kind": "warning", "data": {"code": "output_limit"}}
+            yield {"kind": "metrics", "data": {"eval_count": 3, "thinking_chunks": 2}}
 
     store = Store(tmp_path)
     model = Model("local", "Fixture", "ollama", "http://127.0.0.1:11434", "local")
@@ -113,7 +115,10 @@ async def test_work_blocks_first_empty_reply_without_rewriting_prior_evidence(
                     (tid, "reference.png", b"fixture", "h", '{"image":true}'),
                 )
     before = store.all("SELECT * FROM work_steps WHERE task_id=?", (tid,))
-    await work._step(store.one("SELECT * FROM work_tasks WHERE id=?", (tid,)))
+    await work._step(
+        store.one("SELECT * FROM work_tasks WHERE id=?", (tid,)),
+        inline_original=phase != "specification",
+    )
     current = work.get(tid)
     code = "output_limit" if limited else "empty_model_response"
     assert current["status"] == "blocked" and current["session"]["error_code"] == code
@@ -124,3 +129,13 @@ async def test_work_blocks_first_empty_reply_without_rewriting_prior_evidence(
     assert store.one("SELECT content FROM work_files WHERE task_id=?", (tid,))["content"] == "Hello"
     assert store.one("SELECT code FROM diagnostic_events ORDER BY id DESC LIMIT 1")["code"] == code
     assert not store.all("SELECT * FROM work_executions WHERE task_id=?", (tid,))
+    from dsgpt.work_inference import recent
+
+    attempt, = recent(store, tid)
+    assert attempt["phase"] == {
+        "image": "input_image", "inline_specification": "action"
+    }.get(phase, phase)
+    assert attempt["next_step"] == 2 and attempt["error_code"] == code
+    assert attempt["context"]["input_tokens"] == 19
+    assert attempt["metrics"]["thinking_chunks"] == 2
+    assert attempt["output_bytes"] == len(reply.encode())

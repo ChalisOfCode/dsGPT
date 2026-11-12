@@ -2,6 +2,8 @@
 
 
 def remove_project_groups(db):
+    # These fixtures reconstruct a pre-v31 database from the current schema.
+    db.execute("DROP TABLE work_inference_attempts")
     for name in (
         "group_history_remove",
         "group_history_delete",
