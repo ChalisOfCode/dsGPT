@@ -82,7 +82,7 @@ private fun ProjectGroupsDialog(request: suspend (String) -> String, close: () -
             } }
             if(selected.isNotEmpty()) item { Text("Linked originals · $selected") }
             items(members) { source ->
-                Text(source.getString("title") + " · " + source.getString("kind") + "\nOriginal SHA256: " + source.getString("source_sha256") + "\nSource: " + source.getString("id"))
+                Text(source.getString("title") + " · " + source.getString("kind") + "\nSource fingerprint: " + source.getString("source_sha256") + "\nSource: " + source.getString("id"))
             }
             if(selected.isNotEmpty() && members.isEmpty()) item { Text("No current visible links. Changed or removed sources need owner review.") }
         } },

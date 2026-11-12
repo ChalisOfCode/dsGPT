@@ -35,7 +35,7 @@ class ProjectGroupsViewTest {
         compose.onNodeWithText("Refresh groups").performClick()
         compose.onNodeWithText("Allowed orchard").performClick()
         compose.onNodeWithTag("project-groups-scroll").performScrollToNode(hasText("Original source", substring = true))
-        compose.onNodeWithText("Original source · history\nOriginal SHA256: fixture-hash\nSource: $id").assertIsDisplayed()
+        compose.onNodeWithText("Original source · history\nSource fingerprint: fixture-hash\nSource: $id").assertIsDisplayed()
         assertTrue(paths.all { it.startsWith("/v1/project-groups") })
         compose.runOnIdle { epoch++ }
         compose.onNodeWithText("Original source", substring=true).assertDoesNotExist()

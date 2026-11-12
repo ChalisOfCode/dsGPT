@@ -28,6 +28,8 @@ Only the owner can edit. Read APIs recheck source scopes. A mixed history/Work g
 requires both scopes, including its name, and adding a kind only tightens that
 requirement. Grouping cannot grant source access. Hidden/removed sources are omitted.
 Links contain identities/hashes/decisions, not copied messages or evidence excerpts.
+Fingerprints mean normalized imported identity, Work revision metadata, or original
+input bytes according to source kind; they are not a full-archive backup hash.
 The desktop supports review/correction/rename/removal; Android is read-only and
 clears its displayed metadata on connection changes or backgrounding.
 

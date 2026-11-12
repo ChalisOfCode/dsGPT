@@ -55,7 +55,7 @@ export function ProjectGroups({client, active, owner}: {client: Client; active: 
         const result = await client.request<{members: Source[]}>(`/v1/project-groups/${chosen.id}`);
         if (live()) setMembers(result.members);
       })}>Read linked sources</button>}
-      <ul aria-label="Linked originals">{members.map(s => <li key={s.key}>{s.title} · {s.kind}{s.name && ` · ${s.name}`}<br/>Original SHA256: <code>{s.source_sha256}</code><br/>Source: {s.id}</li>)}</ul>
+      <ul aria-label="Linked originals">{members.map(s => <li key={s.key}>{s.title} · {s.kind}{s.name && ` · ${s.name}`}<br/>Source fingerprint: <code>{s.source_sha256}</code><br/>Source: {s.id}</li>)}</ul>
       {owner && <>
         <label>Group name<input value={name} maxLength={120} disabled={busy} onChange={e => setName(e.target.value)}/></label>
         {chosen && <>
