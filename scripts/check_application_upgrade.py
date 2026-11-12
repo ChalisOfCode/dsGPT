@@ -14,6 +14,9 @@ import sqlite3
 import subprocess
 from pathlib import Path
 
+TABLE_KEYS = {"conversations": "id", "messages": "id", "work_tasks": "id",
+              "devices": "id", "work_files": "task_id,path"}
+
 BASELINE_SHA256 = "99d879e7f7f4e415fb2e54a0ed4c45c184196235c119f6e58b6686dc38b13a9a"
 
 
@@ -33,9 +36,9 @@ def snapshot(database):
     # Fixed inert synthetic rows; no tokens, paths or raw messages go to reports.
     with sqlite3.connect(database) as db:
         result = {}
-        for table in ("conversations", "messages", "work_tasks", "devices"):
+        for table, order in TABLE_KEYS.items():
             columns = [row[1] for row in db.execute(f"PRAGMA table_info({table})")]
-            rows = db.execute(f"SELECT * FROM {table} ORDER BY id").fetchall()
+            rows = db.execute(f"SELECT * FROM {table} ORDER BY {order}").fetchall()
             result[table] = {"columns": columns, "rows": rows}
         return result
 
@@ -43,19 +46,29 @@ def snapshot(database):
 def check_snapshot(database, expected):
     with sqlite3.connect(database) as db:
         for table, record in expected.items():
-            if table not in {"conversations", "messages", "work_tasks", "devices"}:
+            if table not in TABLE_KEYS:
                 raise ValueError("Unexpected snapshot table")
             columns = record["columns"]
             if not columns or any(not re.fullmatch(r"[a-z_]+", c) for c in columns):
                 raise ValueError("Unexpected snapshot column")
             # New additive columns are allowed; every old value must match exactly.
-            rows = db.execute(f"SELECT {','.join(columns)} FROM {table} ORDER BY id").fetchall()
+            rows = db.execute(
+                f"SELECT {','.join(columns)} FROM {table} ORDER BY {TABLE_KEYS[table]}"
+            ).fetchall()
             if [list(row) for row in rows] != [list(row) for row in record["rows"]]:
                 raise AssertionError("Original database records changed")
         if db.execute("PRAGMA quick_check").fetchone()[0] != "ok":
             raise AssertionError("Upgraded database is invalid")
         if db.execute("PRAGMA foreign_key_check").fetchone():
             raise AssertionError("Upgraded database references are invalid")
+
+
+def check_identity(actual, expected):
+    # Compare authority as well as ID: reconnect must not silently broaden access.
+    if (actual.get("id") != expected.get("id")
+            or actual.get("role") != expected.get("role")
+            or sorted(actual.get("scopes", [])) != sorted(expected.get("scopes", []))):
+        raise AssertionError("Paired identity or authority changed")
 
 
 def manifest(install_dir, expected_source=None):
@@ -99,7 +112,8 @@ def phase(args):
             chat = managed.owner_request(directory, "POST", "/v1/conversations", {
                 "title": "Synthetic prior-release conversation"})
             task = managed.owner_request(directory, "POST", "/v1/work/tasks", {
-                "title": "Synthetic prior-release Work", "requirements": "Preserve café 原文"})
+                "title": "Synthetic prior-release Work", "requirements": "Preserve café 原文",
+                "source_files": [{"name": "original.txt", "text": "Original café 原文\n"}]})
             code = managed.owner_request(directory, "POST", "/v1/pairings", {
                 "scopes": ["chat", "work", "diagnostics"]})["code"]
             with httpx.Client(trust_env=False, follow_redirects=False, timeout=10) as client:
@@ -123,9 +137,10 @@ def phase(args):
             identity = client.get(managed.ORIGIN + "/v1/device", headers=headers)
             identity.raise_for_status()
             if args.phase == "baseline":
-                before["device_id"] = identity.json()["id"]
-            elif identity.json()["id"] != before["device_id"]:
-                raise AssertionError("Paired device identity changed")
+                before["device_identity"] = {
+                    key: identity.json()[key] for key in ("id", "role", "scopes")}
+            else:
+                check_identity(identity.json(), before["device_identity"])
             for path in ("/v1/conversations/" + before["chat_id"] + "/messages",
                          "/v1/work/tasks/" + before["task_id"]):
                 client.get(managed.ORIGIN + path, headers=headers).raise_for_status()
@@ -160,8 +175,7 @@ def phase(args):
                 response = client.get(managed.ORIGIN + "/v1/device", headers={
                     "Authorization": "Bearer " + before["paired_token"]})
                 response.raise_for_status()
-                if response.json()["id"] != before["device_id"]:
-                    raise AssertionError("Reconnect after restart changed identity")
+                check_identity(response.json(), before["device_identity"])
         finally:
             managed.stop(directory)
         check_snapshot(store.path, before["snapshot"])
@@ -169,7 +183,7 @@ def phase(args):
             "baseline_source": before["source"], "candidate_source": source,
             "baseline_installer_sha256": BASELINE_SHA256,
             "old_schema": before["schema"], "new_schema": schema,
-            "old_rows_preserved": True, "migration_backup_verified": True,
+            "old_rows_and_imported_work_source_preserved": True, "migration_backup_verified": True,
             "owner_and_desktop_credentials_preserved": True,
             "paired_identity_and_scopes_reconnected": True, "backend_restart_passed": True,
             "scope": "Installed Windows backend; no model or physical/Tailscale claim."
@@ -180,6 +194,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
     parser.add_argument("--candidate", type=Path)
+    parser.add_argument("--candidate-sha256")
     parser.add_argument("--source", required=True)
     parser.add_argument("--install-dir", type=Path, required=True)
     parser.add_argument("--private", type=Path, required=True)
@@ -198,7 +213,11 @@ def main():
         return
     if digest(args.baseline) != BASELINE_SHA256:
         raise ValueError("Prior delivered installer hash mismatch")
-    if digest(args.candidate) == BASELINE_SHA256:
+    if (not args.candidate_sha256
+            or not re.fullmatch(r"[a-f0-9]{64}", args.candidate_sha256)
+            or digest(args.candidate) != args.candidate_sha256):
+        raise ValueError("Exact reviewed candidate installer hash required")
+    if args.candidate_sha256 == BASELINE_SHA256:
         raise ValueError("Upgrade candidate equals old installer")
     data = Path(os.environ["LOCALAPPDATA"]) / "dsGPT/managed/data"
     if data.exists() or args.install_dir.exists() or args.private.exists():

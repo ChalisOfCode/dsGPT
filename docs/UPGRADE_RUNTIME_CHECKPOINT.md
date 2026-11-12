@@ -84,3 +84,15 @@ public challenge and encrypted APK bytes cross public storage; signing keys,
 backups and credentials are excluded. Receiver secrets and plaintext copies are
 deleted on exit. The protocol's three synthetic checks pass locally; this is
 not APK, installed upgrade, AndroidKeyStore or reconnect acceptance.
+
+The independent exact-APK receiver run `43317969336` on `ea97b6f` passed
+tracked-source scanning and generated its one-run public challenge. Binary
+transfer did not occur; exact APK signature/install checks remain unexecuted.
+The receiver has a bounded input wait and always deletes its temporary key.
+Do not retry that input route without resolving transfer authorization.
+
+The Windows upgrade driver additionally pins the candidate installer digest,
+seeds original Work source text through the old application API and compares
+its stored rows, and checks paired role/scopes as well as identity before and
+after restart. Four local driver guards pass (0.02 seconds). This remains
+unexecuted installed acceptance, not a replacement for actual old-to-new tests.
