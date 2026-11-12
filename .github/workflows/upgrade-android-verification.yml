@@ -1,4 +1,4 @@
-# Fresh one-run receiver after prior input window expired.
+# Fresh receiver using bounded multipart ciphertext transfer.
 name: Exact private Android candidate verification
 on:
   push:
