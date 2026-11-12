@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest
 from conftest import new_chat, pair, wait_run
+from schema_fixtures import remove_project_groups
 from test_document_processing import SAMPLES, tools
 
 
@@ -120,6 +121,7 @@ def test_version19_upgrade_verifies_legacy_hash_before_adding_receipt(
     backend.store.backup(upgraded / "dsgpt.db")
     # Exact v19 layout, with real accepted messages/documents/work input from the API.
     with sqlite3.connect(upgraded / "dsgpt.db") as db:
+        remove_project_groups(db)
         for table in (
             "account_browser_profiles",
             "account_browser_writes",

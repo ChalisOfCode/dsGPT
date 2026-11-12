@@ -71,3 +71,13 @@ Original desktop report ZIP: 12360 bytes, SHA256
 `649c6c9deefcb3b94a43a482b8838cced31cd257b9a94205660d972be1722c38`.
 Private report/log bundle `dsGPT-group-desktop-evidence-43289697441.zip`:
 23000 bytes, SHA256 `caa89adb8a19ef3070335c97343b5b3f9eb9017e4a507a190daa1a7500711498`.
+
+Main integration `43290205949` exposed five legacy fixture failures: the v19–v22
+fixtures started with a current database but had not removed the new v31 grouping
+tables/triggers before setting an older user_version. The production migration
+correctly rejected that inconsistent fixture with `table already exists`. Four
+fixture setup functions now use the existing explicit grouping-schema removal
+helper. All five affected upgrade cases pass locally in 1.04s with their original
+backup, content, schema, foreign-key and replay assertions unchanged. No production
+code, schema migration, client code or acceptance criteria changed in this repair.
+Do not treat the failed integration run as a pass.

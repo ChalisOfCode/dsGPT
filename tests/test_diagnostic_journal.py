@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import httpx
 import pytest
 from conftest import new_chat, pair, send, wait_run
+from schema_fixtures import remove_project_groups
 from test_inference import ollama_handler, ollama_model
 
 from dsgpt import network_diagnostics
@@ -206,6 +207,7 @@ def test_configured_retention_is_loaded_and_validated(tmp_path):
 def test_v20_upgrade_preserves_data_and_backups_before_creating_journal(tmp_path):
     store = Store(tmp_path)
     with store.transaction() as db:
+        remove_project_groups(db)
         for table in (
             "account_browser_profiles",
             "account_browser_writes",

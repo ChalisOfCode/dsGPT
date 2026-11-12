@@ -10,6 +10,7 @@ from uuid import uuid4
 import httpx
 import pytest
 from fastapi import HTTPException
+from schema_fixtures import remove_project_groups
 
 from dsgpt.config import Model
 from dsgpt.dictation import Dictation
@@ -188,6 +189,7 @@ def test_v21_profile_upgrade_keeps_messages_and_makes_a_backup(tmp_path):
             "INSERT INTO conversations(id,title,created_at,updated_at) VALUES(?,?,?,?)",
             ("keep-chat", "Keep my chat", utcnow(), utcnow()),
         )
+        remove_project_groups(db)
         for table in (
             "account_browser_profiles",
             "account_browser_writes",

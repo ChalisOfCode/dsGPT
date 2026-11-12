@@ -9,6 +9,7 @@ from dataclasses import replace
 
 import httpx
 import pytest
+from schema_fixtures import remove_project_groups
 
 from dsgpt.builds import WorkBuilds, snapshot_hash
 from dsgpt.config import Model
@@ -227,6 +228,7 @@ def test_revision_keeps_source_but_restarts_spec_review_and_expands_deliverables
 def test_real_v22_upgrade_keeps_profile_data_and_backup(tmp_path):
     store, _, task, _ = setup(tmp_path)
     with store.transaction() as db:
+        remove_project_groups(db)
         for table in (
             "account_browser_profiles",
             "account_browser_writes",
