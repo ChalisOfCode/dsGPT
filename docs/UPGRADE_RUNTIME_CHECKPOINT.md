@@ -91,6 +91,28 @@ transfer did not occur; exact APK signature/install checks remain unexecuted.
 The receiver has a bounded input wait and always deletes its temporary key.
 Do not retry that input route without resolving transfer authorization.
 
+The owner subsequently authorized only the encrypted original/candidate APK pair
+on an isolated public branch, including ciphertext history retention. Keys,
+backups, credentials and plaintext binaries remain excluded. The multipart
+receiver on `dad8a8c` completed run `43326864291`: independent Android SDK
+verification passed for both exact APKs, the pinned original certificate and
+production identity matched, and version 23 increased to 24. The temporary
+receiver key and plaintext copies were destroyed successfully. Original signature
+receipts: 702 bytes, SHA-256
+`cc904cc61f1dc67703124b34e01f5d3dd3d1e0c764bbaf4a0896c621482d339f`.
+This establishes SDK signature continuity, not installed upgrade acceptance.
+
+The next driver uses those unchanged APKs on a disposable API-28 emulator.
+It installs a temporary fixture CA and synthetic hostname in the emulator's
+system image; APK trust policies remain unchanged. The old app pairs with the
+actual backend over TLS. The driver observes the app's encrypted preferences,
+updates with `adb install -r` without uninstall/data injection, and checks UID,
+AndroidKeyStore-backed authenticated reconnect, same device/scopes/token,
+visible prior chat, offline credential preservation and fresh-backend reconnect.
+Private observations never become public reports. Only fixed outcome fields are
+retained. The controlled CA/hostname is not physical Tailscale evidence.
+Two local driver guard/TLS fixture checks pass; installed checks remain pending.
+
 The Windows upgrade driver additionally pins the candidate installer digest,
 seeds original Work source text through the old application API and compares
 its stored rows, and checks paired role/scopes as well as identity before and
