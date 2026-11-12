@@ -1,3 +1,4 @@
+# Fresh one-run receiver after prior input window expired.
 name: Exact private Android candidate verification
 on:
   push:
