@@ -1,0 +1,85 @@
+# Exact production upgrade with controlled disposable emulator fixtures.
+name: Exact production Android upgrade acceptance
+on:
+  push:
+    branches: [work/android-upgrade-driver-dad8]
+    paths: [.github/workflows/upgrade-android-acceptance.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: upgrade-android-acceptance
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_NO_CACHE_DIR: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.13'}
+      - name: Scan public tracked source
+        run: python scripts/scan_public_source.py
+      - name: Prepare disposable confidential receiver
+        run: |
+          python -m pip install --no-cache-dir cryptography==50.0.0
+          python scripts/upgrade_binary_transfer.py prepare --directory "$RUNNER_TEMP/apk-private" --challenge public-challenge/challenge.json --run "$GITHUB_RUN_ID" --source "$GITHUB_SHA"
+      - name: Bound public challenge storage
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+        run: python scripts/ci_artifact_guard.py public-challenge
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: receiver-${{ github.run_id }}
+          path: public-challenge/challenge.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Receive only the hash-pinned original and candidate APKs
+        run: python scripts/upgrade_binary_transfer.py receive --directory "$RUNNER_TEMP/apk-private" --challenge public-challenge/challenge.json --run "$GITHUB_RUN_ID" --source "$GITHUB_SHA"
+      - name: Independently verify both exact APK signatures and production identities
+        run: |
+          set -euo pipefail
+          for name in baseline candidate; do
+            python scripts/verify_android_release.py --apk "$RUNNER_TEMP/apk-private/$name.apk" --build-tools "$ANDROID_HOME/build-tools/35.0.0" --output "reports/$name-signature.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          before = json.loads(Path('reports/baseline-signature.json').read_text())
+          after = json.loads(Path('reports/candidate-signature.json').read_text())
+          assert before['certificate_sha256'] == after['certificate_sha256']
+          assert before['application_id'] == after['application_id'] == 'com.dsgpt.mobile'
+          assert before['version_code'] < after['version_code'] == 24
+          print('Original and candidate SDK signatures, identity and increasing version verified.')
+          PY
+      - name: Boot fresh disposable emulator
+        run: bash scripts/ci_android_upgrade_emulator.sh
+      - name: Verify in-place upgrade, AndroidKeyStore and reconnect
+        run: python scripts/check_android_upgrade.py --baseline "$RUNNER_TEMP/apk-private/baseline.apk" --candidate "$RUNNER_TEMP/apk-private/candidate.apk" --report reports/android-upgrade.json
+      - name: Stop emulator and delete its private fixture data
+        if: always()
+        run: |
+          adb -s emulator-5554 emu kill || true
+          rm -rf -- "$RUNNER_TEMP/dsgpt-upgrade-android" "$RUNNER_TEMP/upgrade-emulator.log"
+      - name: Destroy confidential receiver and plaintext binary copies
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/apk-private"
+      - name: Bound signature receipts
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+        run: python scripts/ci_artifact_guard.py reports
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: success()
+        with:
+          name: exact-android-upgrade-${{ github.sha }}
+          path: reports/
+          retention-days: 1
+          if-no-files-found: error

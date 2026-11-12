@@ -96,3 +96,23 @@ seeds original Work source text through the old application API and compares
 its stored rows, and checks paired role/scopes as well as identity before and
 after restart. Four local driver guards pass (0.02 seconds). This remains
 unexecuted installed acceptance, not a replacement for actual old-to-new tests.
+
+Independent exact-APK verification passed in run `43326864291` on `dad8a8c`.
+Both production APKs passed SDK verification with the original certificate and
+application ID; version code increased from 23 to 24. Receiver cleanup passed.
+The 702-byte original report archive has SHA-256
+`cc904cc61f1dc67703124b34e01f5d3dd3d1e0c764bbaf4a0896c621482d339f`.
+This establishes signature continuity, not installed data/reconnect acceptance.
+
+The isolated `check_android_upgrade.py` driver targets the exact verified pair
+without rebuilding either APK. A fresh API28 emulator uses test-only system
+trust and DNS for a controlled HTTPS fixture. The production automatic-pairing
+activity saves the initial credential through AndroidKeyStore. `adb install -r`
+must retain the UID and encrypted preference bytes. Subsequent automatic setup
+uses deliberately invalid pairing codes: only authenticated reuse can succeed.
+Two cold starts and a temporary HTTP503 outage/recovery must preserve the same
+credential; the fixture rejects any second pairing. The harness's three focused
+negative-control checks pass, including a real local TLS server test. Emulator
+execution is still required. These are not real backend/Tailscale or physical
+Pixel tests. Keys generated here are disposable TLS fixture keys, never app
+signing material. Reports contain no fixture token, saved ciphertext or key.
