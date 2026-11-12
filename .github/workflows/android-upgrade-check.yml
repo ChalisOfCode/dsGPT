@@ -1,4 +1,4 @@
-# Separate final restart observations after the first installed run's failure.
+# Bound fixture shutdown with a connected client after verified restart observations.
 name: Exact production Android in-place upgrade
 on:
   push:

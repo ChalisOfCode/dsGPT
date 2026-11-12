@@ -1,6 +1,9 @@
 """Driver guards and actual TLS/API fixture, not installed Android acceptance."""
+import asyncio
 import importlib.util
 import ssl
+import threading
+import time
 from pathlib import Path
 
 import httpx
@@ -53,3 +56,45 @@ def test_controlled_tls_backend_retains_actual_paired_authority_after_restart(tm
             assert identity.json() == expected
             assert backend.observed_tokens == observed
             assert len(backend.devices()) == 1
+
+
+def test_fixture_shutdown_cancels_inflight_request_and_releases_listener(tmp_path):
+    """A connected client must not keep the disposable backend alive forever."""
+    driver.certificate(tmp_path)
+    context = ssl.create_default_context(cafile=str(tmp_path / "ca.pem"))
+    entered, cancelled = threading.Event(), threading.Event()
+    backend = driver.Backend(tmp_path)
+
+    @backend.app.get("/fixture-held-request")
+    async def held_request():
+        entered.set()
+        try:
+            await asyncio.sleep(60)
+        finally:
+            cancelled.set()
+
+    outcomes = []
+
+    def request():
+        try:
+            with httpx.Client(verify=context, trust_env=False, timeout=15,
+                              headers={"Host": driver.HOST}) as client:
+                response = client.get(f"https://127.0.0.1:{driver.PORT}/fixture-held-request")
+                outcomes.append(response.status_code)
+        except httpx.HTTPError:
+            outcomes.append("disconnected")
+
+    with backend:
+        reader = threading.Thread(target=request, daemon=True)
+        reader.start()
+        assert entered.wait(5)
+        started = time.monotonic()
+    assert time.monotonic() - started < 8
+    reader.join(3)
+    assert cancelled.is_set()
+    assert not reader.is_alive()
+    assert not backend.thread.is_alive()
+    assert outcomes == [500] or outcomes == ["disconnected"]
+    # A fresh actual backend must bind the same TLS listener and retained store.
+    with driver.Backend(tmp_path, backend.token) as restarted:
+        assert restarted.request("/v1/device")["role"] == "owner"

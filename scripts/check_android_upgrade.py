@@ -144,6 +144,7 @@ class Backend:
         self.client.__enter__()
         self.server = uvicorn.Server(uvicorn.Config(
             self.app, host="127.0.0.1", port=PORT, lifespan="off", access_log=False,
+            timeout_graceful_shutdown=2,
             log_level="critical", ssl_keyfile=str(self.private / "tls-key.pem"),
             ssl_certfile=str(self.private / "tls.pem")))
         self.thread = threading.Thread(target=self.server.run, daemon=True)

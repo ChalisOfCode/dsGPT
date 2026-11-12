@@ -143,3 +143,16 @@ The pending Windows/backend package metadata is aligned to 0.10.0, including
 the native/web package locks and Windows uninstall registry version. Dependency
 versions are unchanged. The already built Android 0.10.0 APK remains byte-for-byte
 unchanged. This metadata preparation is not a new build, installation or release.
+
+
+Android retry 43330237220 on 12afe58 passed the separate restarted backend
+identity, token, scopes, encrypted vault, original chat/Work/message and native
+history assertions, then failed at backend_restart_shutdown (RuntimeError).
+The fixed receipt is privately preserved: 239 bytes, SHA256
+fd83e7019263079cc1b69cdf44b7315579a53abd2bac7d7f2b75e7bfedb80498.
+Fixture Uvicorn previously had no graceful-shutdown deadline. It now cancels
+in-flight requests after two seconds, while still requiring the server thread
+to exit. An actual TLS held-request test confirms cancellation, reader and server
+exit, and rebinding the same listener with retained owner authority. Three local
+driver tests pass; this is not a substitute for the pending installed retry.
+The same already SDK-verified APK pair is retained without rebuilding/signing.
