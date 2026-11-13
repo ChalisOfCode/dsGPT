@@ -8,6 +8,7 @@ cffi==2.0.0
 charset-normalizer==3.5.2
 click==8.5.0
 coverage==7.16.2
+cryptography==50.0.0
 fastapi==0.143.3
 filelock==4.2.4
 flatbuffers==25.12.19
