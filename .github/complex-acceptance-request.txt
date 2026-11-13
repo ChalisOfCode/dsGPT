@@ -1,6 +1,0 @@
-Request: bounded-native-smoke-2026-11-09
-Replace the multi-hour Task Ledger run with two short real 9B edits.
-Cap inference at six minutes total. Independently compile and launch both
-revisions on disposable Windows and Android.
-
-Retry: constrain each model edit to its exact observed file hash.
