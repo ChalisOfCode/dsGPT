@@ -148,3 +148,10 @@ file in 0.264 seconds. There was no substituted endpoint, resolver, TLS trust or
 response and no credential was sent. This exercises actual public DNS pinning,
 TLS hostname verification and bounded byte delivery on that route. It does not
 replace authenticated production Docker or Android acceptance.
+
+
+Item 5 native boundaries now pass: installed Android `43332013571` and actual
+Windows schema-25-to-32 upgrade `43401779035`, with original signing/data/credentials
+and reconnect preserved. Final source integration remains pending. Retained Windows
+EXE source is `6ae57f4`; retained production Android source is `82f9c68`.
+No final delivery or terminal item-5 alert yet.

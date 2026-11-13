@@ -241,3 +241,25 @@ Original 238-byte report SHA256:
 `7818faee84338f265b05378667f7653b902176da39f3a30bcd98c5b46ff6b371`.
 Receiver and cleanup succeeded. The retained source-6ae EXE and signed APK are
 unchanged; no rebuild or final acceptance is claimed.
+
+
+Actual old-to-candidate Windows acceptance `43401779035` on test driver `b145176`
+passed every installed check and confidential cleanup. The old delivered EXE
+(source `a0967ebdd74893c698b15ba3b4d2c4b6994fe57c`, schema 25) upgraded to the
+exact retained source-`6ae57f4` installer (schema 32). All original columns/rows,
+imported Work source, checked prior-schema backup, owner/desktop credentials,
+paired identity/role/scopes, both actual native history views, inert model-directory
+bytes and fresh-backend reconnect passed. No model or physical Tailscale/owner
+hardware result is implied. Original report: 535 bytes, SHA256
+`c93493407afd0bfe7a58abbfede15e61f8030b29f95cd5d047210cdec960d2a4`.
+The accepted EXE remains 60,431,157 bytes, SHA256
+`a6f20d1b517120b962b1c023bed47eab523d72dbc09cbc1d432941d35ad18331`;
+no build was repeated during the three installed-driver retries.
+
+Both native old-to-new boundaries now pass; final source integration is pending.
+For the already accepted exact Android source tree, routine CI references the
+hash-pinned production signature receipt instead of rebuilding that APK. Changed
+Android trees still compile production input; unit, separate test-APK compilation
+and lifecycle checks remain mandatory. The final Windows/APK deliverables remain
+the privately retained, installed-tested exact bytes. No release or item-5 terminal
+alert is claimed before integration completes.

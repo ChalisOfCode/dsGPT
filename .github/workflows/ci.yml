@@ -147,7 +147,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {persist-credentials: false}
-      - name: Build unsigned production input and separate test APKs once
+      - name: Check Android and reuse the accepted production input when unchanged
         shell: bash
         run: |
           set -euo pipefail
@@ -155,13 +155,20 @@ jobs:
           export PATH="$JAVA_HOME/bin:$PATH"
           mkdir -p artifacts/android
           cd clients/android
-          bash gradlew --no-daemon testDebugUnitTest assembleRelease
-          # Routine consumers use only the two acceptance APKs. Keep evidence of
-          # the separate production build without retaining an unused binary.
-          release_apk=app/build/outputs/apk/release/app-release-unsigned.apk
-          test -s "$release_apk"
-          sha256sum "$release_apk" > ../../artifacts/android/production-unsigned.sha256
-          stat -c '%s' "$release_apk" > ../../artifacts/android/production-unsigned.bytes
+          bash gradlew --no-daemon testDebugUnitTest
+          # This exact complete Android source tree produced the privately retained
+          # APK accepted by SDK 43326864291 and installed-upgrade 43332013571.
+          # Do not rebuild/re-sign it merely for unrelated backend/test changes.
+          if [ "$(git rev-parse HEAD:clients/android)" = 8bc5e211ef8d24f8bd124b6d243b76eb9639dc8d ]; then
+            echo '371fddab952e5ca984a284bb026cad472b2270f652a9f7af88adb15d4425f91b  ../../config/android-upgrade-signature.json' | sha256sum -c -
+            cp ../../config/android-upgrade-signature.json ../../artifacts/android/production-verified-reference.json
+          else
+            bash gradlew --no-daemon assembleRelease
+            release_apk=app/build/outputs/apk/release/app-release-unsigned.apk
+            test -s "$release_apk"
+            sha256sum "$release_apk" > ../../artifacts/android/production-unsigned.sha256
+            stat -c '%s' "$release_apk" > ../../artifacts/android/production-unsigned.bytes
+          fi
           bash gradlew --no-daemon -Pacceptance assembleDebug assembleDebugAndroidTest
           cp app/build/outputs/apk/debug/app-debug.apk ../../artifacts/android/acceptance.apk
           cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk ../../artifacts/android/acceptance-test.apk
