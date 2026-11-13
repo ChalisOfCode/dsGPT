@@ -122,7 +122,7 @@ types are reconciled. Main `5638a5d` passed all nine integration jobs in
 `43292113633`. The single terminal item-4 alert `43294611261` delivered issue 1
 comment `6834304747`. No duplicate alert is required.
 
-## 5. Software upgrade/reconnect and empty-response diagnosis — in progress
+## 5. Software upgrade/reconnect and empty-response diagnosis — passed
 
 Automate runtime metrics and failure diagnosis, tool readiness, data/credential
 preservation through software upgrades, and paired-device reconnect regression
@@ -155,3 +155,29 @@ Windows schema-25-to-32 upgrade `43401779035`, with original signing/data/creden
 and reconnect preserved. Final source integration remains pending. Retained Windows
 EXE source is `6ae57f4`; retained production Android source is `82f9c68`.
 No final delivery or terminal item-5 alert yet.
+
+
+## Final software acceptance — 2026-11-13
+
+All five ordered items passed. Final integration `43404498135` on `f11780b`
+passed all nine jobs. Backend JUnit: 1428 cases, zero failures/errors, 23 expected
+skips; desktop 31 and private browser 45 passed; Android 36 unit checks and one
+lifecycle check passed; Windows 172 cases with two platform skips passed.
+The installed production upgrades remain `43332013571` (Android) and
+`43401779035` (Windows). Physical hardware and Tailscale remain unverified.
+
+The retained production files are delivered as 0.10.0; they were not rebuilt or
+re-signed after installed acceptance. Windows is unsigned. Original Android
+certificate and package identity are preserved. The five original integration
+report ZIPs are privately preserved together: 56,797 bytes, SHA256
+`e43b16a2fa64030a59ea77ed6e42059349df0bc9dbb06b26c87d90fd752c5e7a`.
+
+- Windows EXE: 60,431,157 bytes; SHA256
+  `a6f20d1b517120b962b1c023bed47eab523d72dbc09cbc1d432941d35ad18331`.
+- Android APK: 7,769,952 bytes; SHA256
+  `d3ce920b2ee1e7d5110f959d9c663c3e284619a234e7f35f73975feef8c512db`.
+- Upgrade ZIP with instructions/checksums/acceptance scope: 67,768,749 bytes; SHA256
+  `4290d88ace9675fb5e46ab7622fc5012a91a9d2a2e0a678bc74ce4303d0f4524`.
+
+This final evidence note is on the isolated completion branch. Main remains the
+exact tested integration source; preceding pending-status paragraphs are historical.
