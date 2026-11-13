@@ -51,7 +51,7 @@ def check_snapshot(database, expected):
             if table not in TABLE_KEYS:
                 raise ValueError("Unexpected snapshot table")
             columns = record["columns"]
-            if not columns or any(not re.fullmatch(r"[a-z_]+", c) for c in columns):
+            if not columns or any(not re.fullmatch(r"[a-z_][a-z0-9_]*", c) for c in columns):
                 raise ValueError("Unexpected snapshot column")
             # New additive columns are allowed; every old value must match exactly.
             rows = db.execute(

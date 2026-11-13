@@ -23,12 +23,17 @@ def test_original_rows_exactly_preserved_while_new_columns_are_allowed(tmp_path)
             db.execute(f"CREATE TABLE {table}(id TEXT PRIMARY KEY,content TEXT)")
             db.execute(f"INSERT INTO {table} VALUES('one','Original café 原文')")
     with sqlite3.connect(database) as db:
-        db.execute("CREATE TABLE work_files(task_id TEXT,path TEXT,content TEXT)")
-        db.execute("INSERT INTO work_files VALUES('one','original.txt','café 原文')")
+        db.execute("CREATE TABLE work_files(task_id TEXT,path TEXT,content TEXT,sha256 TEXT)")
+        db.execute("INSERT INTO work_files VALUES(?,?,?,?)",
+                   ("one", "original.txt", "café 原文", "retained-hash"))
     original = json.loads(json.dumps(driver.snapshot(database)))
     with sqlite3.connect(database) as db:
         db.execute("ALTER TABLE work_tasks ADD COLUMN new_metadata TEXT")
     driver.check_snapshot(database, original)
+    for invalid in ("2invalid", "content) FROM work_files;--", "content,name"):
+        malformed = {"work_files": {"columns": [invalid], "rows": []}}
+        with pytest.raises(ValueError, match="snapshot column"):
+            driver.check_snapshot(database, malformed)
     with sqlite3.connect(database) as db:
         db.execute("UPDATE messages SET content='silently changed'")
     with pytest.raises(AssertionError, match="records changed"):

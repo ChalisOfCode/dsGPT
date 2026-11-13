@@ -1,5 +1,5 @@
 name: Exact production Windows upgrade
-# Retained-installer retry: native profile follows the existing webview-ID contract.
+# Retained-installer retry: preserve schema identifiers containing numeric hash suffixes.
 on:
   push:
     branches: [work/windows-upgrade-9483]

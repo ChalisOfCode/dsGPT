@@ -227,3 +227,17 @@ assertion, credential seeding rule or candidate byte changed; the next check reu
 the same source-6ae installer. Diagnostic cleanup succeeded. Original report:
 241 bytes, SHA256 `446ee79c1d02d58bc305014ff5425ff02590ac73bf3290adb115cd1f0b7e9736`.
 This diagnosis is not installed acceptance or item-5 completion.
+
+
+Corrected-profile run `43400463285` on `f78043a` progressed through both actual
+installed native clients, old history visibility, credential/paired authority and
+model-directory preservation. It then failed in candidate `check_snapshot` line 55:
+the driver's identifier guard rejected valid schema column names containing digits
+(such as SHA256 fields). This occurred before row comparison, not evidence of lost
+data. The guard now accepts SQL identifiers with digits after the first character;
+exact comparisons remain unchanged. A fixture with a retained sha256 column passes,
+while malformed/injected identifiers still fail. Six local guards pass (0.04 seconds).
+Original 238-byte report SHA256:
+`7818faee84338f265b05378667f7653b902176da39f3a30bcd98c5b46ff6b371`.
+Receiver and cleanup succeeded. The retained source-6ae EXE and signed APK are
+unchanged; no rebuild or final acceptance is claimed.
