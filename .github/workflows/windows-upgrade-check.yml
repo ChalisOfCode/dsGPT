@@ -53,6 +53,25 @@ jobs:
           python scripts/ci_provenance.py write shared/frontend $env:GITHUB_SHA
           Remove-Item -Recurse -Force clients/desktop/dist
           scripts/ci_windows.ps1 -BuildOnly
+      - name: Preserve compiled inputs before the confidential handoff
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          New-Item -ItemType Directory -Force artifacts/windows-build/backend | Out-Null
+          Copy-Item dist/*.whl artifacts/windows-build/backend/
+          Copy-Item dist/windows-client artifacts/windows-build/client -Recurse
+          Copy-Item shared/frontend artifacts/windows-build/frontend -Recurse
+          python scripts/ci_provenance.py write artifacts/windows-build $env:GITHUB_SHA
+      - name: Bound compiled input storage
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: python scripts/ci_artifact_guard.py artifacts/windows-build
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: windows-build-${{ github.sha }}
+          path: artifacts/windows-build/
+          retention-days: 1
+          if-no-files-found: error
       - name: Prepare bounded confidential Windows receiver
         run: python scripts/upgrade_windows_transfer.py prepare --directory "$env:RUNNER_TEMP/windows-private" --challenge public-challenge/challenge.json --run "$env:GITHUB_RUN_ID" --source "$env:GITHUB_SHA"
       - name: Bound challenge storage

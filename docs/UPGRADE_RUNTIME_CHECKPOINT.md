@@ -184,3 +184,13 @@ acceptance fails, avoiding unnecessary rebuilds. This is not a final release.
 The confidential transport uses a separate Windows cryptographic domain and
 branch prefix, with 100 MiB envelope limit and the existing 384 KiB parts.
 Ten focused local transport/driver checks pass. Native execution remains pending.
+
+
+Windows source e7e4408 run 43384210506 compiled the backend/web/native client
+successfully, then the ten-minute encrypted input window expired. The actual
+installer build/upgrade did not run; cleanup succeeded. No compiled output was
+retained by that revision. The next workflow preserves hash-bound wheel, native
+client and frontend outputs before opening the receiver, under the unchanged
+one-day/300MiB repository guard. These are build inputs, not accepted installers.
+Bounded failure evidence: 764 bytes, SHA256
+555c6e49b1813efb52ad32f6581cc0c93f77ad5a7f0bff7d4e6cbf1cb5a51718.
