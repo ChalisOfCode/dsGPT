@@ -3195,3 +3195,15 @@ are privately preserved. Original failure report: 206 bytes, SHA256
 `afc9523fac0d0dc85c5c8c134047817b4b243906475996f0c37a545028dc0c68`.
 Six focused driver/privacy guards pass locally (0.03 seconds). This is not
 installed acceptance, item-5 completion or final delivery. Main is unchanged.
+
+
+Retained-installer diagnostic `43399256671` on `eb4d01a` reproduced the
+baseline failure at `native_history` line 121 (native process exited), after
+successful retained-source/hash verification and encrypted input receipt.
+The driver supplied `upgrade-native-profile`, but the existing native acceptance
+contract explicitly requires `webview-<32-hex-run-id>` and aborts otherwise.
+The driver now uses that required isolated profile name. No application, installer,
+assertion, credential seeding rule or candidate byte changed; the next check reuses
+the same source-6ae installer. Diagnostic cleanup succeeded. Original report:
+241 bytes, SHA256 `446ee79c1d02d58bc305014ff5425ff02590ac73bf3290adb115cd1f0b7e9736`.
+This diagnosis is not installed acceptance or item-5 completion.

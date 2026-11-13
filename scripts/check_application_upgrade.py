@@ -109,7 +109,7 @@ def native_history(install_dir, directory, private, identifier, seed):
     debug_port = port()
     env = dict(os.environ, DSGPT_ACCEPTANCE_RUN_ID=identifier,
                DSGPT_ACCEPTANCE_DEBUG_PORT=str(debug_port),
-               DSGPT_ACCEPTANCE_PROFILE=str(private / "upgrade-native-profile"))
+               DSGPT_ACCEPTANCE_PROFILE=str(private / ("webview-" + identifier)))
     child = subprocess.Popen([str(install_dir / "client/dsGPT.exe")], env=env,
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     cdp = None
