@@ -51,6 +51,7 @@ jobs:
           New-Item -ItemType Directory -Force shared/frontend | Out-Null
           Copy-Item clients/desktop/dist/* shared/frontend -Recurse
           python scripts/ci_provenance.py write shared/frontend $env:GITHUB_SHA
+          Remove-Item -Recurse -Force clients/desktop/dist
           scripts/ci_windows.ps1 -BuildOnly
       - name: Prepare bounded confidential Windows receiver
         run: python scripts/upgrade_windows_transfer.py prepare --directory "$env:RUNNER_TEMP/windows-private" --challenge public-challenge/challenge.json --run "$env:GITHUB_RUN_ID" --source "$env:GITHUB_SHA"
