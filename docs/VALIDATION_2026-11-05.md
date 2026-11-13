@@ -3174,3 +3174,24 @@ was bound to a fresh ephemeral receiver; cleanup succeeded. No signing key,
 backup or plaintext APK was published, and no APK was rebuilt or resigned.
 This is signature continuity only. Installed Android and Windows upgrades,
 credential/data preservation and reconnect still gate item 5 and delivery.
+
+
+Windows run `43396872188` on `6ae57f4` successfully received the authorized
+hash-pinned inputs, compiled once and built the production 0.10.0 installer.
+Installed acceptance failed in the old-release baseline phase with AssertionError;
+the candidate upgrade phase did not run. Cleanup succeeded. The next bounded
+check reports only fixed driver function/line and exception type, never values,
+locals or raw traceback. It reuses the exact retained installer without compilation
+or packaging and keeps every acceptance assertion unchanged.
+
+Original candidate artifact: 60,583,629 bytes, SHA256
+`3a279c418088d5a871d5110b49c375af2ec25ca89a2d275675169065521979a6`.
+Contained EXE: 60,431,157 bytes, SHA256
+`a6f20d1b517120b962b1c023bed47eab523d72dbc09cbc1d432941d35ad18331`.
+Compiled-input original artifact: 5,676,718 bytes, SHA256
+`7b35d0ac1bf9209f02f932b3939c911c19dbdb273fb460f95f1ca565d4bdec09`.
+All source manifests/file hashes and ZIP integrity were checked; both archives
+are privately preserved. Original failure report: 206 bytes, SHA256
+`afc9523fac0d0dc85c5c8c134047817b4b243906475996f0c37a545028dc0c68`.
+Six focused driver/privacy guards pass locally (0.03 seconds). This is not
+installed acceptance, item-5 completion or final delivery. Main is unchanged.

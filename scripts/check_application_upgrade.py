@@ -271,6 +271,18 @@ def phase(args):
         }, indent=2) + "\n")
 
 
+def failure_record(phase_name, error):
+    # Fixed source coordinates only: never traceback text, locals or exception values.
+    record = {"passed": False, "phase": phase_name, "error_type": type(error).__name__}
+    frame = error.__traceback__
+    while frame is not None:
+        if Path(frame.tb_frame.f_code.co_filename).resolve() == Path(__file__).resolve():
+            record["driver_function"] = frame.tb_frame.f_code.co_name
+            record["driver_line"] = frame.tb_lineno
+        frame = frame.tb_next
+    return record
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path)
@@ -293,9 +305,7 @@ def main():
         try:
             phase(args)
         except Exception as exc:
-            args.report.write_text(json.dumps({
-                "passed": False, "phase": args.phase, "error_type": type(exc).__name__
-            }) + "\n")
+            args.report.write_text(json.dumps(failure_record(args.phase, exc)) + "\n")
             raise RuntimeError("Installed upgrade phase failed") from None
         return
     if digest(args.baseline) != BASELINE_SHA256:

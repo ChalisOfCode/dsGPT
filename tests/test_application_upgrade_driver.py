@@ -74,3 +74,16 @@ def test_existing_model_directory_bytes_cannot_be_replaced_or_silently_reseeded(
     path.write_bytes(b"X" + original[1:])
     with pytest.raises(AssertionError, match="fixture bytes changed"):
         driver.preserved_model_file(tmp_path, receipt)
+
+
+def test_failure_location_excludes_private_values_and_external_paths():
+    secret = "synthetic-private-exception-value"
+    try:
+        driver.check_identity({"id": secret}, {"id": "original"})
+    except AssertionError as error:
+        record = driver.failure_record("baseline", error)
+    assert record == {"passed": False, "phase": "baseline", "error_type": "AssertionError",
+                      "driver_function": "check_identity", "driver_line":
+                      driver.check_identity.__code__.co_firstlineno + 5}
+    assert secret not in json.dumps(record)
+    assert str(Path(__file__).parent) not in json.dumps(record)
