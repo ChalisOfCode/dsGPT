@@ -1,0 +1,99 @@
+name: Exact production Windows upgrade
+on:
+  push:
+    branches: [work/windows-upgrade-9483]
+    paths: [.github/workflows/windows-upgrade-check.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: production-windows-upgrade
+  cancel-in-progress: false
+env:
+  DSGPT_ZERO_COST_READY: ${{ vars.DSGPT_ZERO_COST_READY }}
+  PIP_NO_CACHE_DIR: '1'
+  PYTHONUTF8: '1'
+jobs:
+  audit:
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - name: Scan public source and CI policy
+        run: |
+          python scripts/scan_public_source.py
+          python scripts/check_ci_policy.py
+  upgrade:
+    needs: audit
+    if: github.event.repository.private == false && vars.DSGPT_ZERO_COST_READY == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.13'}
+      - name: Build exact backend and native client once
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          python -m pip install --no-cache-dir build==1.6.1 setuptools==84.0.0 wheel==0.48.0 packaging==26.3 cryptography==50.0.0
+          python -m build --wheel --no-isolation
+          Push-Location clients/desktop
+          try {
+            npm ci --ignore-scripts --no-audit --no-fund
+            npm test
+            npm run build
+          } finally { Pop-Location }
+          New-Item -ItemType Directory -Force shared/frontend | Out-Null
+          Copy-Item clients/desktop/dist/* shared/frontend -Recurse
+          python scripts/ci_provenance.py write shared/frontend $env:GITHUB_SHA
+          scripts/ci_windows.ps1 -BuildOnly
+      - name: Prepare bounded confidential Windows receiver
+        run: python scripts/upgrade_windows_transfer.py prepare --directory "$env:RUNNER_TEMP/windows-private" --challenge public-challenge/challenge.json --run "$env:GITHUB_RUN_ID" --source "$env:GITHUB_SHA"
+      - name: Bound challenge storage
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: python scripts/ci_artifact_guard.py public-challenge
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: windows-receiver-${{ github.run_id }}
+          path: public-challenge/challenge.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Receive exact old EXE and already verified APK
+        run: python scripts/upgrade_windows_transfer.py receive --directory "$env:RUNNER_TEMP/windows-private" --challenge public-challenge/challenge.json --run "$env:GITHUB_RUN_ID" --source "$env:GITHUB_SHA"
+      - name: Build production installer and check old-to-new upgrade
+        shell: pwsh
+        run: scripts/ci_windows_upgrade.ps1
+      - name: Bound candidate storage
+        id: candidate_storage
+        if: always() && hashFiles('artifacts/windows-upgrade/SOURCE.json') != ''
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: python scripts/ci_artifact_guard.py artifacts/windows-upgrade
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always() && steps.candidate_storage.outcome == 'success' && !cancelled()
+        with:
+          name: windows-upgrade-candidate-${{ github.sha }}
+          path: artifacts/windows-upgrade/
+          retention-days: 1
+          if-no-files-found: error
+      - name: Bound acceptance receipt
+        id: receipt_storage
+        if: always() && hashFiles('reports/windows-upgrade/*.json') != ''
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: python scripts/ci_artifact_guard.py reports/windows-upgrade
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always() && steps.receipt_storage.outcome == 'success' && !cancelled()
+        with:
+          name: windows-upgrade-reports-${{ github.sha }}
+          path: reports/windows-upgrade/
+          retention-days: 1
+          if-no-files-found: error
+      - name: Destroy confidential receiver and private observations
+        if: always()
+        shell: pwsh
+        run: |
+          Remove-Item -Recurse -Force "$env:RUNNER_TEMP/windows-private", "$env:RUNNER_TEMP/windows-upgrade-observations" -ErrorAction SilentlyContinue

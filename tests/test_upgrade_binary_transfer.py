@@ -90,3 +90,10 @@ def test_partitioned_transfer_is_bounded_and_hash_checked(monkeypatch):
     replies["manifest.json"] = json.dumps({**manifest, "parts": 10000}).encode()
     with pytest.raises(ValueError, match="Invalid transfer manifest"):
         transfer.fetch_envelope("https://example.test/fixed")
+
+
+def test_windows_protocol_domain_rejects_android_ciphertext(envelope, monkeypatch):
+    private, challenge, _, sealed = envelope
+    monkeypatch.setattr(transfer, "DOMAIN", b"dsGPT disposable Windows upgrade transfer v1\x00")
+    with pytest.raises(ValueError):
+        transfer.unseal(sealed, challenge, private, "42", "a" * 40)

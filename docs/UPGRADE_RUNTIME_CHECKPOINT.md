@@ -171,3 +171,16 @@ Original bounded report ZIP: 519 bytes, SHA256
 cc6e48d31be0091629e91c8c9fadf41aae1e9c1b87c8dc2a37902b20c443fce4.
 Item 5 remains open for actual Windows old-to-new installation and final source/
 packaging integration. No final installers or terminal item-5 alert are released.
+
+The owner authorized the encrypted prior Windows installer transfer after the
+Android pass. The isolated Windows workflow builds the backend/native client
+once, receives only the hash-pinned prior EXE and already verified candidate APK,
+and assembles a fresh pinned runtime. It uses the unchanged production packager
+and original Android signature receipt. The old-to-new test checks installed
+provenance, original rows/imports, native prior-chat visibility, credentials,
+paired identity/scopes, migration backup and inert model-directory bytes.
+The candidate installer is retained with source/hash provenance even if upgrade
+acceptance fails, avoiding unnecessary rebuilds. This is not a final release.
+The confidential transport uses a separate Windows cryptographic domain and
+branch prefix, with 100 MiB envelope limit and the existing 384 KiB parts.
+Ten focused local transport/driver checks pass. Native execution remains pending.

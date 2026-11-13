@@ -25,6 +25,7 @@ FILES = {
 }
 MAX_ENVELOPE = 26 * 1024 * 1024
 DOMAIN = b"dsGPT disposable APK transfer v1\x00"
+TRANSFER_PREFIX = "android"
 
 
 def canonical(value):
@@ -169,7 +170,7 @@ def main():
     if not args.run.isdigit():
         raise ValueError("Invalid run")
     url = ("https://raw.githubusercontent.com/ChalisOfCode/dsGPT/"
-           f"transfer/android-{args.run}")
+           f"transfer/{TRANSFER_PREFIX}-{args.run}")
     deadline = time.monotonic() + 600
     try:
         while time.monotonic() < deadline:

@@ -290,7 +290,13 @@ def main():
            for path in (args.install_dir, args.private)):
         raise ValueError("Installation and private receipt must remain in owned runner paths")
     if args.phase:
-        phase(args)
+        try:
+            phase(args)
+        except Exception as exc:
+            args.report.write_text(json.dumps({
+                "passed": False, "phase": args.phase, "error_type": type(exc).__name__
+            }) + "\n")
+            raise RuntimeError("Installed upgrade phase failed") from None
         return
     if digest(args.baseline) != BASELINE_SHA256:
         raise ValueError("Prior delivered installer hash mismatch")
